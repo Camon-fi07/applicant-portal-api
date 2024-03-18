@@ -1,0 +1,858 @@
+openapi: 3.0.3
+info:
+  title: Swagger University - OpenAPI 3.0
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+servers:
+  - url: https://university.swagger.io/api/v3
+tags:
+  - name: user service
+  - name: applicant service
+  - name: admission service
+  - name: dictionary service
+paths:
+  /user/role:
+    put:
+      tags:
+        - user service
+      summary: changing user's roles (for admin)
+      operationId: changeUserRoles
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRolesDto'
+      responses:
+        '200':
+          description: 'OK'
+
+  /applicant/{applicantId}/profile:
+    get:
+      tags:
+        - applicant service
+      summary: get the applicant profile
+      operationId: getApplicantProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          required: true
+          name: applicantId
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicantFullDto'
+                
+    patch:
+      tags:
+        - applicant service
+      summary: edit the applicant profile
+      operationId: editApplicantProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          required: true
+          name: applicantId
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicantEditDto'
+      responses:
+        '200':
+          description: 'OK'
+          
+  /applicant/{applicantId}/passport:
+    get:
+      tags:
+        - applicant service
+      summary: get applicant passport
+      operationId: getApplicantPassport
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          required: true
+          name: applicantId
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportDto'
+    put:
+      tags:
+        - applicant service
+      summary: edit the applicant passport
+      operationId: editApplicantPassport
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          required: true
+          name: applicantId
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportDto'
+      responses:
+        '200':
+          description: 'OK'
+    delete:
+      tags:
+        - applicant service
+      parameters:
+        - in: path
+          required: true
+          name: applicantId
+          schema:
+            type: string
+            format: uuid
+      summary: delete applicant passport(scan)
+      operationId: deleteApplicantPassport
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 'OK'
+          
+  /applicant/{applicantId}/education:
+    get:
+      tags:
+        - applicant service
+      summary: get the applicant education document
+      operationId: getApplicantEducation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          required: true
+          name: applicantId
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EducationDocumentDto'
+    put:
+      tags:
+        - applicant service
+      summary: edit the applicant education document
+      operationId: editApplicantEducation
+      parameters:
+        - in: path
+          required: true
+          name: applicantId
+          schema:
+            type: string
+            format: uuid
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EducationDocumentDto'
+      responses:
+        '200':
+          description: 'OK'
+          
+    delete:
+      tags:
+        - applicant service
+      summary: delete applicant education document(scan)
+      operationId: deleteApplicantEducation
+      parameters:
+        - in: path
+          required: true
+          name: applicantId
+          schema:
+            type: string
+            format: uuid
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 'OK'
+                
+  /admission/priority:
+    put:
+      tags:
+        - admission service
+      summary: change the application priorities
+      operationId: applicantPriorities
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePriorityDto'
+      responses:
+        '200':
+          description: 'OK'
+          
+  /admission/status:
+    put:
+      tags:
+        - admission service
+      summary: change the application status
+      operationId: applicationStatus
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Status'
+      responses:
+        '200':
+          description: 'OK'
+      
+  /admission/{applicationId}/takeApplication:
+    post:
+      tags:
+        - admission service
+      summary: take the application
+      operationId: takeApplication
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          required: true
+          name: applicationId
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'OK'
+          
+  /admission/managers:
+    get:
+      tags:
+        - admission service
+      summary: get a list of managers (for general manager)
+      operationId: managers
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDto'
+                
+  /admission/registerManager:
+    post:
+      tags:
+        - admission service
+      summary: register manager (for admin)
+      operationId: registerManager
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagerRegisterDto'
+      responses:
+        '200':
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponseDto'
+                
+  /admission/{id}/deleteManager:
+    delete:
+      tags:
+        - admission service
+      summary: delete manager (for admin)
+      operationId: deleteManager
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: string
+            format: uuid
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "OK"
+          
+  /admission/{id}/editManager:
+    put:
+      tags:
+        - admission service
+      summary: edit manager (for admin)
+      operationId: editManager
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: string
+            format: uuid
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagerEditDto'
+      responses:
+        '200':
+          description: "OK"
+          
+  /admission/{managerId}/assignApplication/{applicationId}:
+    post:
+      tags:
+        - admission service
+      summary: assign a manager for admission (for general manager)
+      operationId: assignApplication
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          required: true
+          name: managerId
+          schema:
+            type: string
+            format: uuid
+            
+        - in: path
+          required: true
+          name: applicationId
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'OK'
+          
+          
+  /admission/{applicationId}/returnApplication:
+    delete:
+      tags:
+        - admission service
+      summary: return the application in the general pool
+      operationId: returnApplication
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          required: true
+          name: applicationId
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'OK'
+          
+  /admission/applications:
+    get:
+      tags:
+        - admission service
+      summary: get all appllications
+      operationId: allApplications
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            
+        - in: query
+          name: name
+          schema:
+            type: string
+            
+        - in: query
+          name: faculty
+          schema:
+            type: string
+            
+        - in: query
+          name: program
+          schema:
+            type: string
+        
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/Status'
+        
+        - in: query
+          name: isManager
+          schema:
+            type: boolean
+            
+        - in: query
+          name: manager
+          schema:
+            type: string
+            format: uuid
+            
+        - in: query
+          name: lastUpdate
+          schema:
+            $ref: '#/components/schemas/Sorting'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationPagedListDto'      
+                
+                
+  /dictionary/import:
+    post:
+      tags:
+        - dictionary service
+      security:
+        - bearerAuth: []
+      summary: import guide (for admin)
+      operationId: importGuide
+      parameters:
+        - in: query
+          name: guideType
+          schema:
+            $ref: '#/components/schemas/Guide'
+      responses:
+        '200':
+          description: 'OK'
+          
+  /dictionary/importStatus:
+    get:
+      tags:
+        - dictionary service
+      security:
+        - bearerAuth: []
+      summary: check the status of importing guide (for admin)
+      operationId: checkImportStatusGuide
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                type: string
+  
+    
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    Role:
+      type: string
+      enum:
+        - applicant
+        - manager
+        - generalManager
+        - administrator
+        
+    Guide:
+      type: string
+      enum:
+        - faculties
+        - programs
+        - educationDocumentsType
+        - educationLevels      
+  
+    Status:
+      type: string
+      enum:
+        - created
+        - underConsideration
+        - confirmed
+        - rejected
+        - closed
+        
+    Sorting:
+      type: string
+      enum:
+        - ASC
+        - DESC
+      
+    Gender:
+      type: string
+      enum:
+        - male
+        - female
+        
+    UserRolesDto:
+      type: array
+      items:
+        $ref: '#/components/schemas/Role'
+        
+    EducationLevelModel:
+      type: object
+      required: ['id', 'name']
+      properties:
+        id: 
+          type: string
+          format: uuid
+        name:
+          type: string
+    
+    TokenResponseDto:
+      type: object
+      required: ['token']
+      properties:
+        token:
+          type: string
+          
+          
+    ManagerRegisterDto:
+      type: object
+      required: ['email', 'password', 'phoneNumber', 'lastname', 'middlename', 'firstname', 'gender', 'birthDate', 'role']
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          example: test
+        phoneNumber:
+          type: string
+          example: '89236433212'
+        lastname:
+          type: string
+          example: 'Иванов'
+        middlename:
+          type: string
+          example: 'Иванов'
+        firstname:
+          type: string
+          example: 'Иван'
+        role:
+          type: string
+          enum:
+            - manager
+            - generalManager
+        gender:
+          $ref: '#/components/schemas/Gender'
+        birthDate:
+          type: string
+          format: date
+    
+    ManagerEditDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          example: test
+        phoneNumber:
+          type: string
+          example: '89236433212'
+        lastname:
+          type: string
+          example: 'Иванов'
+        middlename:
+          type: string
+          example: 'Иванов'
+        firstname:
+          type: string
+          example: 'Иван'
+        role:
+          type: string
+          enum:
+            - manager
+            - generalManager
+        gender:
+          $ref: '#/components/schemas/Gender'
+        birthDate:
+          type: string
+          format: date
+          
+    UserDto:
+      type: object
+      required: ['email', 'phoneNumber', 'lastname', 'middlename', 'firstname', 'gender', 'birthDate']
+      properties:
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+          example: '89236433212'
+        lastname:
+          type: string
+        middlename:
+          type: string
+        firstname:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRolesDto'
+        gender:
+          $ref: '#/components/schemas/Gender'
+        birthDate:
+          type: string
+          format: date
+          
+    
+    ApplicantDto:
+      type: object
+      required: ['email', 'phoneNumber', 'lastname', 'middlename', 'firstname', 'gender', 'birthDate', 'citizenship']
+      properties:
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+          example: '89236433212'
+        lastname:
+          type: string
+        middlename:
+          type: string
+        firstname:
+          type: string
+        gender:
+          $ref: '#/components/schemas/Gender'
+        citizenship:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        passport:
+          $ref: '#/components/schemas/PassportDto'
+        education:
+          $ref: '#/components/schemas/EducationDocumentDto'
+          
+    ApplicantFullDto:
+      type: object
+      required: ['email', 'phoneNumber', 'lastname', 'middlename', 'firstname', 'gender', 'birthDate', 'citizenship']
+      properties:
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+          example: '89236433212'
+        lastname:
+          type: string
+        middlename:
+          type: string
+        firstname:
+          type: string
+        gender:
+          $ref: '#/components/schemas/Gender'
+        citizenship:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        passport:
+          $ref: '#/components/schemas/PassportDto'
+        education:
+          $ref: '#/components/schemas/EducationDocumentDto'
+        programs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgramPriorityDto'
+    
+    ApplicantEditDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        phoneNumber:
+          type: string
+          example: '89236433212'
+        lastname:
+          type: string
+          example: 'Иванов'
+        password:
+          type: string
+        middlename:
+          type: string
+          example: 'Иванов'
+        firstname:
+          type: string
+          example: 'Иван'
+        gender:
+          $ref: '#/components/schemas/Gender'
+        citizenship:
+          type: string
+        birthDate:
+          type: string
+          format: date
+          
+          
+    ProgramPriorityModel:
+      type: object
+      required: ['programId', 'priority']
+      properties:
+        programId:
+          type: string
+          format: uuid
+        facultyId:
+          type: string
+          format: uuid
+        priority:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 5
+    
+    ProgramPriorityDto:
+      type: object
+      required: ['program', 'faculty', 'priority']
+      properties:
+        id: 
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+        language:
+          type: string
+        educationForm:
+          type: string
+        educationLevel:
+          $ref: '#/components/schemas/EducationLevelModel'
+          
+        faculty:
+          type: object
+          required: ['id', 'name']
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+        priority:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 5
+        
+            
+    PassportDto:
+      type: object
+      required: ['series', 'number', 'birthPlace', 'issued']
+      properties:
+        series:
+          type: number
+          format: int32
+        number:
+          type: number
+          format: int32
+        birthPlace:
+          type: string
+        issued:
+          type: string
+        document:
+          type: string
+          format: binary
+          
+          
+    EducationDocumentDto:
+      type: object
+      required: ['name', 'educationTypeId']
+      properties:
+        name:
+          type: string
+        educationTypeId:
+          type: string
+          format: uuid
+        document:
+          type: string
+          format: binary
+            
+    ApplicationDto:
+      type: object
+      required: ['user', 'programs']
+      properties:
+        id:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/ApplicantDto'
+        programs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgramPriorityDto'
+        status:
+          $ref: '#/components/schemas/Status'
+          
+    ApplicationPagedListDto:
+      type: object
+      properties:
+        programs: 
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationDto'
+        pagination:
+          $ref: '#/components/schemas/PageInfoModel'
+      
+    PageInfoModel:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int32
+        count:
+          type: integer
+          format: int32
+        current:
+          type: integer
+          format: int32
+          
+      
+    ChangePriorityDto:
+      type: array
+      items:
+        $ref: '#/components/schemas/ProgramPriorityModel'
+ 

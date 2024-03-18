@@ -49,7 +49,7 @@ paths:
       tags:
         - user service
       summary: getting user's profile
-      operationId: Gettingprofile
+      operationId: gettingProfile
       security:
         - bearerAuth: []
       responses:
@@ -63,7 +63,7 @@ paths:
       tags:
         - user service
       summary: changing user's profile
-      operationId: Editingprofile
+      operationId: editingProfile
       security:
         - bearerAuth: []
       requestBody:
@@ -142,25 +142,8 @@ paths:
       responses:
         '200':
           description: 'OK'
-                
-                
-  /admission/priority:
-    put:
-      tags:
-        - admission service
-      summary: change the applicant priorities
-      operationId: applicantPriorities
-      security:
-        - bearerAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ChangePriorityDto'
-      responses:
-        '200':
-          description: 'OK'
-        
+          
+          
           
   /applicant/passport:
     get:
@@ -195,7 +178,7 @@ paths:
     delete:
       tags:
         - applicant service
-      summary: delete applicant passport
+      summary: delete applicant passport(scan)
       operationId: deleteApplicantPassport
       security:
         - bearerAuth: []
@@ -237,10 +220,28 @@ paths:
     delete:
       tags:
         - applicant service
-      summary: delete applicant education document
+      summary: delete applicant education document(scan)
       operationId: deleteApplicantEducation
       security:
         - bearerAuth: []
+      responses:
+        '200':
+          description: 'OK'
+                
+                
+  /admission/priority:
+    put:
+      tags:
+        - admission service
+      summary: change the application priorities
+      operationId: applicantPriorities
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePriorityDto'
       responses:
         '200':
           description: 'OK'
@@ -263,11 +264,11 @@ paths:
         '200':
           description: 'OK'
           
-  /admission/applications:
+  /admission/application:
     get:
       tags:
         - admission service
-      summary: get appllication
+      summary: get application
       operationId: gettingApplication
       security:
         - bearerAuth: []
@@ -395,8 +396,15 @@ components:
         - manager
         - generalManager
         - administrator
-        
-        
+    Status:
+      type: string
+      enum:
+        - created
+        - underConsideration
+        - confirmed
+        - rejected
+        - closed
+      
     Gender:
       type: string
       enum:
@@ -517,6 +525,11 @@ components:
         birthDate:
           type: string
           format: date
+        passport:
+          $ref: '#/components/schemas/PassportDto'
+        education:
+          $ref: '#/components/schemas/EducationDocumentDto'
+        
     
     UserEditDto:
       type: object
@@ -724,6 +737,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProgramPriorityDto'
+        status:
+          $ref: '#/components/schemas/Status'
       
     PageInfoModel:
       type: object

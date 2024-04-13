@@ -3,10 +3,8 @@ using User.BL.Extensions;
 using User.BL.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-TokenProperties tokenProperties = new();
-builder.Configuration.GetSection(nameof(TokenProperties)).Bind(tokenProperties);
 
-builder.Services.AddAuthenticationCustom(tokenProperties);
+builder.Services.AddAuthenticationCustom(builder.Configuration);
 
 builder.Services.AddUserDB(builder.Configuration);
 builder.Services.ConfigureIdentityDependencies();

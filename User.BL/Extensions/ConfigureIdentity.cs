@@ -12,7 +12,7 @@ namespace User.BL.Extensions
     {
 
         public static void ConfigureIdentityDependencies(this IServiceCollection services) { 
-            services.AddIdentity<UserEntity, Role>(options => { options.SignIn.RequireConfirmedEmail = true; })
+            services.AddIdentity<UserEntity, Role>()
                 .AddEntityFrameworkStores<UserDBContext>()
                 .AddDefaultTokenProviders()
                 .AddSignInManager<SignInManager<UserEntity>>()

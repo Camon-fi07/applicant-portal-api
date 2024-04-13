@@ -16,8 +16,11 @@ namespace User.BL.Extensions
             services.AddDbContext<UserDBContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
         }
 
-        public static void AddAuthenticationCustom(this IServiceCollection services, TokenProperties tokenProperties)
+        public static void AddAuthenticationCustom(this IServiceCollection services, IConfiguration configuration)
         {
+            TokenProperties tokenProperties = new();
+            configuration.GetSection("TokenProperties:accessToken").Bind(tokenProperties);
+
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

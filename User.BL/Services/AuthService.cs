@@ -25,10 +25,10 @@ namespace User.BL.Services
 
         public async Task<TokenResponseDto> Login(LoginDto loginData) { 
             var user = await _userManager.FindByEmailAsync(loginData.Email);
-            if (user == null) { return null; }
+            if (user == null) throw new BadHttpRequestException("Пользователя с таким email не существует");
             var identity = await _signInManager.CheckPasswordSignInAsync(user, loginData.Password, false);
 
-            if (!identity.Succeeded) { return null; }
+            if (!identity.Succeeded) throw new BadHttpRequestException("Неверный email или пароль");
 
             return new TokenResponseDto
             {
@@ -56,8 +56,6 @@ namespace User.BL.Services
                 PhoneNumber = registerData.PhoneNumber,
                 UserName = registerData.Email
             };
-
-            
 
             var result = await _userManager.CreateAsync(user, registerData.Password);
 

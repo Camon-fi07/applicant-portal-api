@@ -3,7 +3,7 @@ using Microsoft.OpenApi.Models;
 
 namespace Common.Extensions
 {
-    public static class ConfiureSwagger
+    public static class ConfigureSwagger
     {
         public static void AddSwaggerAuth(this IServiceCollection serviceCollection)
         {

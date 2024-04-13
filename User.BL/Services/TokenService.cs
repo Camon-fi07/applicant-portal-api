@@ -40,11 +40,10 @@ namespace User.BL.Services
                     new Claim(ClaimTypes.Sid, id.ToString()),
                 }),
                 Expires = DateTime.UtcNow.Add(TimeSpan.Parse(tokenProperties.lifetime)),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256),
             };
             var token = _tokenHandler.CreateToken(tokenDescriptor);
             return _tokenHandler.WriteToken(token);
         }
-
     }
 }

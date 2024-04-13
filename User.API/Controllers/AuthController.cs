@@ -14,9 +14,17 @@ namespace User.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<TokenResponseDto>> register([FromBody] RegisterApplicantDto data)
+        public async Task<ActionResult<TokenResponseDto>> Register([FromBody] RegisterApplicantDto data)
         {
             var token = await _authService.RegisterApplicant(data);
+
+            return Ok(token);
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<TokenResponseDto>> Login([FromBody] LoginDto data)
+        {
+            var token = await _authService.Login(data);
 
             return Ok(token);
         }

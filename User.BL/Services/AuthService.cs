@@ -25,10 +25,10 @@ namespace User.BL.Services
             _userDBContext = userDBContext;
         }
 
-        public async Task<TokenResponseDto> Login(LoginDto loginData) { 
-            var user = await _userManager.FindByEmailAsync(loginData.Email);
+        public async Task<TokenResponseDto> Login(LoginDto loginDto) { 
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null) throw new BadHttpRequestException("Пользователя с таким email не существует");
-            var identity = await _signInManager.CheckPasswordSignInAsync(user, loginData.Password, false);
+            var identity = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
             if (!identity.Succeeded) throw new BadHttpRequestException("Неверный email или пароль");
             var refreshToken = await _tokenService.GenerateRefreshToken(user);
@@ -42,9 +42,9 @@ namespace User.BL.Services
             };
         }
 
-        public async Task<TokenResponseDto> RegisterApplicant(RegisterApplicantDto registerData)
+        public async Task<TokenResponseDto> RegisterApplicant(RegisterApplicantDto registerApplicantDto)
         {
-            var user = await RegisterUser(RegisterMapper.TranslateApplicantRegisterToUserRegister(registerData));
+            var user = await RegisterUser(RegisterMapper.TranslateApplicantRegisterToUserRegister(registerApplicantDto));
 
             var resultRole = await _userManager.AddToRoleAsync(user, RoleType.Applicant.ToString());
 
@@ -53,7 +53,7 @@ namespace User.BL.Services
             var applicant = new Applicant
             {
                 Id = Guid.NewGuid(),
-                Citizenship = registerData.Citizenship,
+                Citizenship = registerApplicantDto.Citizenship,
                 User = user,
             };
 
@@ -80,9 +80,9 @@ namespace User.BL.Services
             await _userManager.UpdateAsync(user);
         }
 
-        public async Task<TokenResponseDto> RegisterManager(RegisterManagerDto registerData)
+        public async Task<TokenResponseDto> RegisterManager(RegisterManagerDto registerManagerDto)
         {
-            var user = await RegisterUser(RegisterMapper.TranslateManagerRegisterToUserRegister(registerData));
+            var user = await RegisterUser(RegisterMapper.TranslateManagerRegisterToUserRegister(registerManagerDto));
 
             var resultRole = await _userManager.AddToRoleAsync(user, RoleType.Manager.ToString());
 

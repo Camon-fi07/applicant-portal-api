@@ -16,18 +16,26 @@ namespace User.API.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpPost("register")]
-        public async Task<ActionResult<TokenResponseDto>> Register([FromBody] RegisterApplicantDto data)
+        [HttpPost("register/applicant")]
+        public async Task<ActionResult<TokenResponseDto>> RegisterApplicant([FromBody] RegisterApplicantDto registerApplicantDto)
         {
-            var token = await _authService.RegisterApplicant(data);
+            var token = await _authService.RegisterApplicant(registerApplicantDto);
+
+            return Ok(token);
+        }
+
+        [HttpPost("register/manager")]
+        public async Task<ActionResult<TokenResponseDto>> RegisterManager([FromBody] RegisterManagerDto registerManagerDto)
+        {
+            var token = await _authService.RegisterManager(registerManagerDto);
 
             return Ok(token);
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<TokenResponseDto>> Login([FromBody] LoginDto data)
+        public async Task<ActionResult<TokenResponseDto>> Login([FromBody] LoginDto loginDto)
         {
-            var token = await _authService.Login(data);
+            var token = await _authService.Login(loginDto);
 
             return Ok(token);
         }
@@ -42,9 +50,9 @@ namespace User.API.Controllers
         }
 
         [HttpPost("refresh")]
-        public async Task<ActionResult<TokenResponseDto>> RefreshToken([FromBody] RefreshTokenDto data)
+        public async Task<ActionResult<TokenResponseDto>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
         {
-            var token = await _tokenService.RefreshToken(data);
+            var token = await _tokenService.RefreshToken(refreshTokenDto);
             return Ok(token);
         }
     }

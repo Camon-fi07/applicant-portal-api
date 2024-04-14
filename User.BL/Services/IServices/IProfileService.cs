@@ -9,6 +9,6 @@ namespace User.BL.Services.IServices
         public Task<ProfileDto> GetProfile(string token);
         public Task EditApplicantProfile(string token, EditApplicantProfileDto editApplicantProfileDto);
         public Task EditManagerProfile(string token, EditManagerDto editManagerDto);
-
+        public Task ResetPassword(string token, ResetPasswordDto resetPasswordDto);
     }
 }

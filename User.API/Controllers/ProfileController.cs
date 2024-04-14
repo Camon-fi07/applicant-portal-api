@@ -51,5 +51,14 @@ namespace User.API.Controllers
             var roles = await _profileService.GetUserRoles(token);
             return Ok(roles);
         }
+
+        [HttpPost("passwordReset")]
+        [Authorize(Policy = "TokenNotInBlackList")]
+        public async Task<ActionResult<List<RoleType>>> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+        {
+            string token = HttpContext.Request.Headers["Authorization"];
+            await _profileService.ResetPassword(token, resetPasswordDto);
+            return Ok();
+        }
     }
 }

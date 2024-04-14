@@ -17,9 +17,21 @@ namespace User.BL.Services
             _roleManager = roleManager; 
         }
 
-        public async Task<List<RoleType>> GetUserRoles(string token)
+        public async Task<List<RoleType?>> GetUserRoles(string token)
         {
-            return new List<RoleType>() { };
+            var userId = _tokenService.GetUserIdByToken(token);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null) throw new UnauthorizedAccessException("Инвалидный токен");
+
+            var roles = (await _userManager.GetRolesAsync(user)).Select(role => {
+                var roleType = GetRoleType(role);
+                if (roleType is null) throw new UnauthorizedAccessException();
+
+                return roleType!;
+            });
+
+            return roles.ToList();
         }
 
         public async Task<ProfileDto> GetProfile(string token)

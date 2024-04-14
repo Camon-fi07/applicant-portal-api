@@ -10,7 +10,7 @@ namespace User.BL.Services.IServices
 {
     public interface IProfileService
     {
-        public Task<List<RoleType>> GetUserRoles(string token);
-        public Task<ProfileDto> GetProfile(string userName);
+        public Task<List<RoleType?>> GetUserRoles(string token);
+        public Task<ProfileDto> GetProfile(string token);
     }
 }

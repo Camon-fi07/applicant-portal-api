@@ -1,4 +1,5 @@
 ﻿using Common.Dto.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using User.BL.Services.IServices;
 
@@ -29,6 +30,15 @@ namespace User.API.Controllers
             var token = await _authService.Login(data);
 
             return Ok(token);
+        }
+
+        [Authorize(Policy = "TokenNotInBlackList")]
+        [HttpPost("logout")]
+        public async Task<ActionResult<TokenResponseDto>> Logout()
+        {
+            string token = HttpContext.Request.Headers["Authorization"];
+            await _authService.Logout(token);
+            return Ok();
         }
 
         [HttpPost("refresh")]

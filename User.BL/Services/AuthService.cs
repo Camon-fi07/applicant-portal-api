@@ -13,14 +13,14 @@ namespace User.BL.Services
         private readonly UserManager<UserEntity> _userManager;
         private readonly SignInManager<UserEntity> _signInManager;
         private readonly ITokenService _tokenService;
-        private readonly UserDBContext _dbContext;
+        private readonly UserDBContext _userDBContext;
 
-        public AuthService(UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager, ITokenService tokenService, UserDBContext dBContext)
+        public AuthService(UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager, ITokenService tokenService, UserDBContext userDBContext)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _tokenService = tokenService;
-            _dbContext = dBContext;
+            _userDBContext = userDBContext;
         }
 
         public async Task<TokenResponseDto> Login(LoginDto loginData) { 
@@ -75,8 +75,8 @@ namespace User.BL.Services
                 User = user,
             };
 
-            await _dbContext.Applicants.AddAsync(applicant);
-            await _dbContext.SaveChangesAsync();
+            await _userDBContext.Applicants.AddAsync(applicant);
+            await _userDBContext.SaveChangesAsync();
 
             var refreshToken = _tokenService.GenerateRefreshToken(user.Id);
             user.RefreshToken = refreshToken;
@@ -88,6 +88,18 @@ namespace User.BL.Services
                 RefreshToken = refreshToken
             };
 
+        }
+
+        public async Task Logout(string token) {
+            var userId = _tokenService.GetUserIdByToken(token);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null) throw new UnauthorizedAccessException("Инвалидный токен");
+
+            await _userDBContext.BannedTokens.AddAsync(new TokenEntity() { Token=token});
+            user.RefreshToken = null;
+            await _userDBContext.SaveChangesAsync();
+            await _userManager.UpdateAsync(user);
         }
 
         public Task<TokenResponseDto> RegisterManager(RegisterManagerDto registerData)

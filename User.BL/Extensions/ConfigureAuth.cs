@@ -8,6 +8,10 @@ using System.Text;
 using User.BL.Models;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.AspNetCore.Builder;
+using User.DAL.Entities;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 
 namespace User.BL.Extensions
 {
@@ -44,9 +48,15 @@ namespace User.BL.Extensions
                         var token = (JsonWebToken)context.SecurityToken;
                         context.Request.Headers["Authorization"] = token.EncodedToken;
                         return Task.CompletedTask;
-                    }
+                    },
                 };
             });
+
+            services.AddSingleton<IAuthorizationHandler, TokenBlackListHandler>();
+
+            services.AddAuthorizationBuilder()
+                .AddPolicy("TokenNotInBlackList", policy => policy.Requirements.Add(new TokenBlackListRequirement()));
         }
+
     }
 }

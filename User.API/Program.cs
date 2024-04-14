@@ -4,10 +4,9 @@ using User.BL.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddAuthenticationCustom(builder.Configuration);
-
 builder.Services.AddUserDB(builder.Configuration);
 builder.Services.ConfigureIdentityDependencies();
+builder.Services.AddAuthenticationCustom(builder.Configuration);
 builder.Services.ConfigureUserServices();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

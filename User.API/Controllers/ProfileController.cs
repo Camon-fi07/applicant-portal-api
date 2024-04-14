@@ -16,7 +16,7 @@ namespace User.API.Controllers
         }
 
         [HttpGet("get")]
-        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "TokenNotInBlackList")]
         public async Task<ActionResult<ProfileDto>> GetProfile()
         {
             string token = HttpContext.Request.Headers["Authorization"];

@@ -1,4 +1,4 @@
-﻿using Common.Dto.Auth;
+﻿using User.BL.Dto.Auth;
 
 namespace User.BL.Services.IServices
 {

@@ -1,6 +1,6 @@
 ﻿using Common.Enums;
 
-namespace Common.Dto.Profile
+namespace User.BL.Dto.Profile
 {
     public class ProfileDto
     {

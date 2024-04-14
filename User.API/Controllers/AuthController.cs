@@ -1,4 +1,4 @@
-﻿using Common.Dto.Auth;
+﻿using User.BL.Dto.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using User.BL.Services.IServices;

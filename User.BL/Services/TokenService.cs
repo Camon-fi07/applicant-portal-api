@@ -5,10 +5,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Common.Dto.Auth;
+using User.BL.Dto.Auth;
 using User.DAL.Entities;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http.HttpResults;
 using User.DAL;
 
 
@@ -27,27 +26,35 @@ namespace User.BL.Services
             _userDBContext = userDBContext;
         }
 
-        public string GenerateAccessToken(Guid userId) {
+        public async Task<string> GenerateAccessToken(UserEntity user) {
             var tokenProperties = new TokenProperties(); 
             _configuration.GetSection("TokenProperties:accessToken").Bind(tokenProperties);
-            return GenerateToken(userId, tokenProperties);
+            return await GenerateToken(user, tokenProperties);
         }
 
-        public string GenerateRefreshToken(Guid userId) {
+        public async Task<string> GenerateRefreshToken(UserEntity user) {
             var tokenProperties = new TokenProperties();
             _configuration.GetSection("TokenProperties:refreshToken").Bind(tokenProperties);
-            return GenerateToken(userId, tokenProperties);
+            return await GenerateToken(user, tokenProperties);
         }
 
-        private string GenerateToken(Guid id, TokenProperties tokenProperties)
+        private async Task<string> GenerateToken(UserEntity user, TokenProperties tokenProperties)
         {
             var key = Encoding.ASCII.GetBytes(tokenProperties.secret);
+            var claims = new List<Claim> {
+               new Claim(ClaimTypes.Name, user.UserName),
+               new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+               new Claim(ClaimTypes.Sid, user.Id.ToString()),
+            };
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Sid, id.ToString()),
-                }),
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.Add(TimeSpan.Parse(tokenProperties.lifetime)),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256),
             };
@@ -57,18 +64,17 @@ namespace User.BL.Services
 
         public async Task<TokenResponseDto> RefreshToken(RefreshTokenDto refreshTokenDto)
         {
-            var userId = GetUserIdByToken(refreshTokenDto.RefreshToken);
-            var user = await _userManager.FindByIdAsync(userId.ToString());
+            var user = await GetUserByToken(refreshTokenDto.RefreshToken);
 
-            if (user == null || user.RefreshToken != refreshTokenDto.RefreshToken) throw new UnauthorizedAccessException("Инвалидный токен");
+            if (user.RefreshToken != refreshTokenDto.RefreshToken) throw new UnauthorizedAccessException("Инвалидный токен");
 
             await _userDBContext.BannedTokens.AddAsync(new TokenEntity(){ Token=refreshTokenDto.AccessToken});
             await _userDBContext.SaveChangesAsync();
 
-            return new TokenResponseDto() { RefreshToken = refreshTokenDto.RefreshToken, AccessToken = GenerateAccessToken(userId) };
+            return new TokenResponseDto() { RefreshToken = refreshTokenDto.RefreshToken, AccessToken = await GenerateAccessToken(user) };
         }
 
-        public Guid GetUserIdByToken(string token)
+        public async Task<UserEntity> GetUserByToken(string token)
         {
             if (!_tokenHandler.CanReadToken(token)) throw new UnauthorizedAccessException("Инвалидный токен");
 
@@ -78,7 +84,11 @@ namespace User.BL.Services
 
             if (userId == null) throw new UnauthorizedAccessException("Инвалидный токен");
 
-            return new Guid(userId);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null) throw new UnauthorizedAccessException("Инвалидный токен");
+
+            return user;
         }
     }
 }

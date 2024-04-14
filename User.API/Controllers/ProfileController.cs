@@ -1,6 +1,7 @@
-﻿using Common.Dto.Profile;
+﻿using Common.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using User.BL.Dto.Profile;
 using User.BL.Services.IServices;
 
 namespace User.API.Controllers
@@ -24,9 +25,27 @@ namespace User.API.Controllers
             return Ok(user);
         }
 
+        [HttpPut("applicant")]
+        [Authorize(Policy = "TokenNotInBlackList", Roles = "Applicant")]
+        public async Task<IActionResult> EditApplicantProfile([FromBody] EditApplicantProfileDto editApplicantProfileDto)
+        {
+            string token = HttpContext.Request.Headers["Authorization"];
+            await _profileService.EditApplicantProfile(token, editApplicantProfileDto);
+            return Ok();
+        }
+
+        [HttpPut("manager")]
+        [Authorize(Policy = "TokenNotInBlackList", Roles = "Manager")]
+        public async Task<IActionResult> EditManagerProfile([FromBody] EditManagerDto editManagerDto)
+        {
+            string token = HttpContext.Request.Headers["Authorization"];
+            await _profileService.EditManagerProfile(token, editManagerDto);
+            return Ok();
+        }
+
         [HttpGet("roles")]
         [Authorize(Policy = "TokenNotInBlackList")]
-        public async Task<ActionResult<ProfileDto>> GetUserRoles()
+        public async Task<ActionResult<List<RoleType>>> GetUserRoles()
         {
             string token = HttpContext.Request.Headers["Authorization"];
             var roles = await _profileService.GetUserRoles(token);

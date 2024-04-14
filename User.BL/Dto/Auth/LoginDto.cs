@@ -1,4 +1,4 @@
-﻿namespace Common.Dto.Auth
+﻿namespace User.BL.Dto.Auth
 {
     public class LoginDto
     {

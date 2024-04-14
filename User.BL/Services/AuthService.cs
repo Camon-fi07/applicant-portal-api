@@ -1,10 +1,12 @@
 ﻿using User.BL.Services.IServices;
 using User.DAL.Entities;
-using Common.Dto.Auth;
+using User.BL.Dto.Auth;
 using Common.Enums;
 using Microsoft.AspNetCore.Identity;
 using User.DAL;
 using Microsoft.AspNetCore.Http;
+using User.BL.Models;
+using User.BL.Mappers;
 
 namespace User.BL.Services
 {
@@ -29,40 +31,20 @@ namespace User.BL.Services
             var identity = await _signInManager.CheckPasswordSignInAsync(user, loginData.Password, false);
 
             if (!identity.Succeeded) throw new BadHttpRequestException("Неверный email или пароль");
-            var refreshToken = _tokenService.GenerateRefreshToken(user.Id);
+            var refreshToken = await _tokenService.GenerateRefreshToken(user);
             user.RefreshToken = refreshToken;
             await _userManager.UpdateAsync(user);
 
             return new TokenResponseDto
             {
-                AccessToken = _tokenService.GenerateAccessToken(user.Id),
+                AccessToken = await _tokenService.GenerateAccessToken(user),
                 RefreshToken = refreshToken
             };
         }
 
         public async Task<TokenResponseDto> RegisterApplicant(RegisterApplicantDto registerData)
         {
-            if(await _userManager.FindByEmailAsync(registerData.Email) != null)
-            { 
-                throw new BadHttpRequestException("Пользователь с таким email уже существует");
-            }
-
-            var user = new UserEntity
-            {
-                Id = Guid.NewGuid(),
-                Gender = registerData.Gender,
-                Lastname = registerData.Lastname,
-                Middlename = registerData.Middlename,
-                Firstname = registerData.Firstname,
-                BirthDate = registerData.BirthDate,
-                Email = registerData.Email,
-                PhoneNumber = registerData.PhoneNumber,
-                UserName = registerData.Email
-            };
-
-            var result = await _userManager.CreateAsync(user, registerData.Password);
-
-            if (!result.Succeeded) throw new BadHttpRequestException(result.Errors.ToList().ToString());
+            var user = await RegisterUser(RegisterMapper.TranslateApplicantRegisterToUserRegister(registerData));
 
             var resultRole = await _userManager.AddToRoleAsync(user, RoleType.Applicant.ToString());
 
@@ -78,23 +60,19 @@ namespace User.BL.Services
             await _userDBContext.Applicants.AddAsync(applicant);
             await _userDBContext.SaveChangesAsync();
 
-            var refreshToken = _tokenService.GenerateRefreshToken(user.Id);
+            var refreshToken = await _tokenService.GenerateRefreshToken(user);
             user.RefreshToken = refreshToken;
             await _userManager.UpdateAsync(user);
 
             return new TokenResponseDto
             {
-                AccessToken = _tokenService.GenerateAccessToken(user.Id),
+                AccessToken = await _tokenService.GenerateAccessToken(user),
                 RefreshToken = refreshToken
             };
-
         }
 
         public async Task Logout(string token) {
-            var userId = _tokenService.GetUserIdByToken(token);
-            var user = await _userManager.FindByIdAsync(userId.ToString());
-
-            if (user == null) throw new UnauthorizedAccessException("Инвалидный токен");
+            var user = await _tokenService.GetUserByToken(token);
 
             await _userDBContext.BannedTokens.AddAsync(new TokenEntity() { Token=token});
             user.RefreshToken = null;
@@ -102,9 +80,60 @@ namespace User.BL.Services
             await _userManager.UpdateAsync(user);
         }
 
-        public Task<TokenResponseDto> RegisterManager(RegisterManagerDto registerData)
+        public async Task<TokenResponseDto> RegisterManager(RegisterManagerDto registerData)
         {
-            throw new NotImplementedException();
+            var user = await RegisterUser(RegisterMapper.TranslateManagerRegisterToUserRegister(registerData));
+
+            var resultRole = await _userManager.AddToRoleAsync(user, RoleType.Manager.ToString());
+
+            if (!resultRole.Succeeded) throw new BadHttpRequestException(resultRole.Errors.ToList().ToString());
+
+            var manager = new Manager
+            {
+                Id = Guid.NewGuid(),
+                User = user,
+            };
+
+            await _userDBContext.Managers.AddAsync(manager);
+            await _userDBContext.SaveChangesAsync();
+
+            var refreshToken = await _tokenService.GenerateRefreshToken(user);
+            user.RefreshToken = refreshToken;
+            await _userManager.UpdateAsync(user);
+
+            return new TokenResponseDto
+            {
+                AccessToken = await _tokenService.GenerateAccessToken(user),
+                RefreshToken = refreshToken
+            };
+        }
+
+        private async Task<UserEntity> RegisterUser(UserRegisterModel userRegisterModel)
+        {
+            if (await _userManager.FindByEmailAsync(userRegisterModel.Email) != null)
+            {
+                throw new BadHttpRequestException("Пользователь с таким email уже существует");
+            }
+
+            var user = new UserEntity
+            {
+                Id = Guid.NewGuid(),
+                Gender = userRegisterModel.Gender,
+                Lastname = userRegisterModel.Lastname,
+                Middlename = userRegisterModel.Middlename,
+                Firstname = userRegisterModel.Firstname,
+                BirthDate = userRegisterModel.BirthDate,
+                Email = userRegisterModel.Email,
+                PhoneNumber = userRegisterModel.PhoneNumber,
+                UserName = userRegisterModel.Email
+            };
+
+            var result = await _userManager.CreateAsync(user, userRegisterModel.Password);
+
+            if (!result.Succeeded) throw new BadHttpRequestException(result.Errors.ToList().ToString());
+            await _userManager.UpdateAsync(user);
+
+            return user;
         }
     }
 }

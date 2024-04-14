@@ -9,8 +9,10 @@ namespace User.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        public AuthController(IAuthService authService) {
+        private readonly ITokenService _tokenService;
+        public AuthController(IAuthService authService, ITokenService tokenService) {
             _authService = authService;
+            _tokenService = tokenService;
         }
 
         [HttpPost("register")]
@@ -26,6 +28,13 @@ namespace User.API.Controllers
         {
             var token = await _authService.Login(data);
 
+            return Ok(token);
+        }
+
+        [HttpPost("refresh")]
+        public async Task<ActionResult<TokenResponseDto>> RefreshToken([FromBody] RefreshTokenDto data)
+        {
+            var token = await _tokenService.RefreshToken(data);
             return Ok(token);
         }
     }

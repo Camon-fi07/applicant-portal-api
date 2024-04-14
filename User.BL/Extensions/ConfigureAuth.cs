@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using User.BL.Models;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace User.BL.Extensions
 {
@@ -27,22 +28,21 @@ namespace User.BL.Extensions
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(x =>
             {
-                x.RequireHttpsMetadata = false;
                 x.SaveToken = true;
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(tokenProperties.secret)),
-                    ValidateIssuer = true,
+                    ValidateIssuer = false,
                     ValidateLifetime = true,
-                    ValidateAudience = true
+                    ValidateAudience = false
                 };
                 x.Events = new JwtBearerEvents
                 {
                     OnTokenValidated = context =>
                     {
-                        var token = context.SecurityToken as JwtSecurityToken;
-                        context.Request.Headers["Authorization"] = token.RawData;
+                        var token = (JsonWebToken)context.SecurityToken;
+                        context.Request.Headers["Authorization"] = token.EncodedToken;
                         return Task.CompletedTask;
                     }
                 };

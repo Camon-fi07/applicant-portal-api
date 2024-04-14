@@ -191,6 +191,16 @@ namespace User.DAL.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
+            modelBuilder.Entity("User.DAL.Entities.TokenEntity", b =>
+                {
+                    b.Property<string>("Token")
+                        .HasColumnType("text");
+
+                    b.HasKey("Token");
+
+                    b.ToTable("BannedTokens");
+                });
+
             modelBuilder.Entity("User.DAL.Entities.UserEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -251,6 +261,9 @@ namespace User.DAL.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");

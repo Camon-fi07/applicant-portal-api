@@ -29,11 +29,14 @@ namespace User.BL.Services
             var identity = await _signInManager.CheckPasswordSignInAsync(user, loginData.Password, false);
 
             if (!identity.Succeeded) throw new BadHttpRequestException("Неверный email или пароль");
+            var refreshToken = _tokenService.GenerateRefreshToken(user.Id);
+            user.RefreshToken = refreshToken;
+            await _userManager.UpdateAsync(user);
 
             return new TokenResponseDto
             {
                 AccessToken = _tokenService.GenerateAccessToken(user.Id),
-                RefreshToken = _tokenService.GenerateRefreshToken(user.Id)
+                RefreshToken = refreshToken
             };
         }
 
@@ -75,9 +78,14 @@ namespace User.BL.Services
             await _dbContext.Applicants.AddAsync(applicant);
             await _dbContext.SaveChangesAsync();
 
-            return new TokenResponseDto() {
+            var refreshToken = _tokenService.GenerateRefreshToken(user.Id);
+            user.RefreshToken = refreshToken;
+            await _userManager.UpdateAsync(user);
+
+            return new TokenResponseDto
+            {
                 AccessToken = _tokenService.GenerateAccessToken(user.Id),
-                RefreshToken = _tokenService.GenerateRefreshToken(user.Id)
+                RefreshToken = refreshToken
             };
 
         }

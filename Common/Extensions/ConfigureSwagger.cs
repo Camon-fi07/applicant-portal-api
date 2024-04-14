@@ -13,6 +13,8 @@ namespace Common.Extensions
                 {
                     Name = "Authorization",
                     In = ParameterLocation.Header,
+                    BearerFormat = "JWT",
+                    Type = SecuritySchemeType.Http,
                     Scheme = "Bearer"
                 });
 

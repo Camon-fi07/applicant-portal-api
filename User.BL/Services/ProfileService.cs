@@ -60,8 +60,6 @@ namespace User.BL.Services
             };
         }
 
-        
-
         private RoleType? GetRoleType(string role)
         {
             foreach (var roleType in Enum.GetValues(typeof(RoleType)).Cast<RoleType>())

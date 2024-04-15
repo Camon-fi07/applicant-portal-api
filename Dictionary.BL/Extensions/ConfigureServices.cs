@@ -10,6 +10,8 @@ namespace Dictionary.BL.Extensions
         {
             services.AddHttpClient();
             services.AddScoped<IImportingService, ImportingService>();
+            services.AddScoped<IGettingService, GettingService>();
+
         }
     }
 }

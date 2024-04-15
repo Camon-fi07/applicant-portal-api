@@ -4,6 +4,7 @@ using Dictionary.BL.Models;
 using Dictionary.BL.Services.IServices;
 using Dictionary.DAL;
 using Dictionary.DAL.Entities;
+using Dictionary.DAL.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -30,11 +31,21 @@ namespace Dictionary.BL.Services
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
         }
 
+        public async Task<List<ImportingStatusEntity>> GetImportingStatuses()
+        {
+            var statuses = await _dictionaryDBContext.ImportingStatuses.ToListAsync();
+            return statuses;
+        }
+
         public async Task ImporDocumentTypes()
         {
             var httpResponse = await _httpClient.GetAsync($"{_remoteDictionary.URL}/document_types");
 
-            if (!httpResponse.IsSuccessStatusCode) throw new Exception("Произошла ошибка");
+            if (!httpResponse.IsSuccessStatusCode) {
+                await AddImportingStatus((int)httpResponse.StatusCode, "Произошла ошибка при запросе", GuideType.DocumentTypes);
+
+                throw new Exception("Произошла ошибка");
+            };
 
             var documentTypes = JsonConvert.DeserializeObject<List<EducationDocumentTypeDto>>(await httpResponse.Content.ReadAsStringAsync());
 
@@ -61,13 +72,19 @@ namespace Dictionary.BL.Services
             }
 
             await _dictionaryDBContext.SaveChangesAsync();
+
+            await AddImportingStatus((int)httpResponse.StatusCode, "Всё прошло успешно", GuideType.DocumentTypes);
         }
 
         public async Task ImportEducationLevels()
         {
             var httpResponse = await _httpClient.GetAsync($"{_remoteDictionary.URL}/education_levels");
 
-            if (!httpResponse.IsSuccessStatusCode) throw new Exception("Произошла ошибка");
+            if (!httpResponse.IsSuccessStatusCode) {
+                await AddImportingStatus((int)httpResponse.StatusCode, "Произошла ошибка при запросе", GuideType.EducationLevels);
+
+                throw new Exception("Произошла ошибка");
+            };
 
             var educationLevels = JsonConvert.DeserializeObject<List<EducationLevelDto>>(await httpResponse.Content.ReadAsStringAsync());
             
@@ -80,13 +97,18 @@ namespace Dictionary.BL.Services
             }
 
             await _dictionaryDBContext.SaveChangesAsync();
+            await AddImportingStatus((int)httpResponse.StatusCode, "Всё прошло успешно", GuideType.EducationLevels);
         }
 
         public async Task ImportFaculties()
         {
             var httpResponse = await _httpClient.GetAsync($"{_remoteDictionary.URL}/faculties");
 
-            if (!httpResponse.IsSuccessStatusCode) throw new Exception("Произошла ошибка");
+            if (!httpResponse.IsSuccessStatusCode) {
+                await AddImportingStatus((int)httpResponse.StatusCode, "Произошла ошибка при запросе", GuideType.Faculties);
+
+                throw new Exception("Произошла ошибка");
+            };
 
             var faculties = JsonConvert.DeserializeObject<List<EducationFacultyDto>>(await httpResponse.Content.ReadAsStringAsync());
 
@@ -104,6 +126,7 @@ namespace Dictionary.BL.Services
             }
 
             await _dictionaryDBContext.SaveChangesAsync();
+            await AddImportingStatus((int)httpResponse.StatusCode, "Всё прошло успешно", GuideType.Faculties);
         }
 
         public async Task ImportPrograms()
@@ -113,7 +136,11 @@ namespace Dictionary.BL.Services
 
             var httpResponse = await _httpClient.GetAsync(requestURL);
 
-            if (!httpResponse.IsSuccessStatusCode) throw new Exception("Произошла ошибка");
+            if (!httpResponse.IsSuccessStatusCode) {
+                await AddImportingStatus((int)httpResponse.StatusCode, "Произошла ошибка при запросе", GuideType.EducationPrograms);
+
+                throw new Exception("Произошла ошибка");
+            };
 
             var programsPagedListModel = JsonConvert.DeserializeObject<ProgramPagedListModel>(await httpResponse.Content.ReadAsStringAsync());
             var programs = programsPagedListModel.Programs;
@@ -141,6 +168,21 @@ namespace Dictionary.BL.Services
                     Name = program.Name,
                 });
             }
+
+            await _dictionaryDBContext.SaveChangesAsync();
+            await AddImportingStatus((int)httpResponse.StatusCode, "Всё прошло успешно", GuideType.EducationPrograms);
+        }
+
+        private async Task AddImportingStatus(int statusCode, string description, GuideType guideType)
+        {
+            _dictionaryDBContext.ImportingStatuses.Add(new ImportingStatusEntity()
+            {
+                CreateTime = DateTime.UtcNow,
+                StatusCode = statusCode,
+                GuideType = guideType,
+                Id = Guid.NewGuid(),
+                Description = description
+            });
 
             await _dictionaryDBContext.SaveChangesAsync();
         }

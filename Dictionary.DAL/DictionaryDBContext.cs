@@ -9,6 +9,7 @@ namespace Dictionary.DAL
         public DbSet<EducationDocumentTypeEntity> EducationDocumentTypes { get; set; }
         public DbSet<FacultyEntity> Faculties { get; set; }
         public DbSet<EducationProgramEntity> EducationPrograms { get; set; }
+        public DbSet<ImportingStatusEntity> ImportingStatuses { get; set; }
 
         public DictionaryDBContext(DbContextOptions options) : base(options)
         {

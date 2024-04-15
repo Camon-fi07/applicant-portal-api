@@ -116,6 +116,30 @@ namespace Dictionary.DAL.Migrations
                     b.ToTable("Faculties");
                 });
 
+            modelBuilder.Entity("Dictionary.DAL.Entities.ImportingStatusEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("GuideType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StatusCode")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ImportingStatuses");
+                });
+
             modelBuilder.Entity("EducationDocumentTypeEntityEducationLevelEntity", b =>
                 {
                     b.Property<int>("NextEducationLevelsId")

@@ -1,53 +1,61 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.JsonWebTokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using User.BL.Models;
 using User.DAL;
+using User.DAL.Entities;
 
 namespace User.BL.Extensions
 {
-    public class TokenBlackListHandler:  AuthorizationHandler<TokenBlackListRequirement>
+    public class TokenBlackListHandler: AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly SignInManager<UserEntity> _signInManager;
+        private readonly UserManager<UserEntity> _userManager;
 
-        public TokenBlackListHandler(IServiceProvider serviceProvider)
+        public TokenBlackListHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        ISystemClock clock,
+        SignInManager<UserEntity> signInManager,
+        UserManager<UserEntity> userManager,
+        IServiceProvider serviceProvider) : base(options, logger, encoder, clock)
         {
             _serviceProvider = serviceProvider;
+            _signInManager = signInManager;
+            _userManager = userManager;
         }
 
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, TokenBlackListRequirement requirement)
+        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var userDbContext = scope.ServiceProvider.GetRequiredService<UserDBContext>();
+            var userDbContext = _serviceProvider.GetRequiredService<UserDBContext>();
 
-                string token = _serviceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            string token = Request.Headers["Authorization"].FirstOrDefault();
 
-                var bannedToken = userDbContext.BannedTokens.FirstOrDefault(t => t.Token == token);
+            var bannedToken = userDbContext.BannedTokens.FirstOrDefault(t => t.Token == token);
 
-                if (bannedToken != null)
-                {
-                    context.Fail();
-                }
-                else
-                {
-                    context.Succeed(requirement);
-                }
-            }
+            if (bannedToken != null) return AuthenticateResult.Fail("Токен забанен");
 
-            return Task.CompletedTask;
+
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)?.Value;
+
+            if(userId == null) return AuthenticateResult.Fail("Пользователь не найден");
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null) return AuthenticateResult.Fail("Пользователь не найден");
+
+            var principal = await _signInManager.CreateUserPrincipalAsync(user);
+            var ticket = new AuthenticationTicket(principal, Scheme.Name);
+            return AuthenticateResult.Success(ticket);
         }
     }
 }

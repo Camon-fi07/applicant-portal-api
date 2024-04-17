@@ -6,12 +6,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using User.BL.Models;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.AspNetCore.Builder;
-using User.DAL.Entities;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
 
 namespace User.BL.Extensions
 {
@@ -50,13 +47,7 @@ namespace User.BL.Extensions
                         return Task.CompletedTask;
                     },
                 };
-            });
-
-            services.AddSingleton<IAuthorizationHandler, TokenBlackListHandler>();
-
-            services.AddAuthorizationBuilder()
-                .AddPolicy("TokenNotInBlackList", policy => policy.Requirements.Add(new TokenBlackListRequirement()));
+            }).AddScheme<AuthenticationSchemeOptions, TokenBlackListHandler>("TokenBlackList", options => { });
         }
-
     }
 }

@@ -17,7 +17,7 @@ namespace User.API.Controllers
         }
 
         [HttpGet("")]
-        [Authorize(Policy = "TokenNotInBlackList")]
+        [Authorize]
         public async Task<ActionResult<ProfileDto>> GetProfile()
         {
             string token = HttpContext.Request.Headers["Authorization"];
@@ -26,7 +26,7 @@ namespace User.API.Controllers
         }
 
         [HttpPut("applicant")]
-        [Authorize(Policy = "TokenNotInBlackList", Roles = "Applicant")]
+        [Authorize(AuthenticationSchemes = "TokenBlackList", Roles = "Applicant")]
         public async Task<IActionResult> EditApplicantProfile([FromBody] EditApplicantProfileDto editApplicantProfileDto)
         {
             string token = HttpContext.Request.Headers["Authorization"];
@@ -35,7 +35,7 @@ namespace User.API.Controllers
         }
 
         [HttpPut("manager")]
-        [Authorize(Policy = "TokenNotInBlackList", Roles = "Manager")]
+        [Authorize(AuthenticationSchemes = "TokenBlackList", Roles = "Manager")]
         public async Task<IActionResult> EditManagerProfile([FromBody] EditManagerDto editManagerDto)
         {
             string token = HttpContext.Request.Headers["Authorization"];
@@ -44,7 +44,7 @@ namespace User.API.Controllers
         }
 
         [HttpGet("roles")]
-        [Authorize(Policy = "TokenNotInBlackList")]
+        [Authorize(AuthenticationSchemes = "TokenBlackList")]
         public async Task<ActionResult<List<RoleType>>> GetUserRoles()
         {
             string token = HttpContext.Request.Headers["Authorization"];
@@ -53,7 +53,7 @@ namespace User.API.Controllers
         }
 
         [HttpPost("passwordReset")]
-        [Authorize(Policy = "TokenNotInBlackList")]
+        [Authorize(AuthenticationSchemes = "TokenBlackList")]
         public async Task<ActionResult<List<RoleType>>> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
         {
             string token = HttpContext.Request.Headers["Authorization"];

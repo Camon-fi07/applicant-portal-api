@@ -33,7 +33,7 @@ namespace Dictionary.BL.Services
             if(name != null) levels = levels.Where(l => l.Name.ToLower().StartsWith(name.ToLower())).ToList();
             return levels.Select(l => EducationLevelMapper.TranslateLevelEntityToDto(l)).ToList();
         }
-
+        
         public async Task<List<EducationFacultyDto>> GetFaculties(string? name)
         {
             var faculties = _dictionaryDBContext.Faculties.ToList();

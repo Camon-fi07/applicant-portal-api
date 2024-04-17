@@ -40,7 +40,7 @@ namespace User.API.Controllers
             return Ok(token);
         }
 
-        [Authorize(Policy = "TokenNotInBlackList")]
+        [Authorize(AuthenticationSchemes = "TokenBlackList")]
         [HttpPost("logout")]
         public async Task<ActionResult<TokenResponseDto>> Logout()
         {

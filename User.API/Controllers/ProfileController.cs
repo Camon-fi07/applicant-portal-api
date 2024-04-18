@@ -18,7 +18,7 @@ namespace User.API.Controllers
         }
 
         [HttpGet("")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = "TokenBlackList")]
         public async Task<ActionResult<ProfileDto>> GetProfile()
         {
             string token = HttpContext.Request.Headers["Authorization"];

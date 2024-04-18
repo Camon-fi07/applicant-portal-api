@@ -4,6 +4,7 @@ using User.BL.Services.IServices;
 using Common.Dto;
 using Common.RabbitMQ;
 using User.BL.Dto;
+using Common.Models;
 
 
 namespace User.API.Controllers
@@ -25,6 +26,14 @@ namespace User.API.Controllers
         public async Task<ActionResult<TokenResponseDto>> Login([FromBody] LoginDto loginDto)
         {
             var token = await _authService.Login(loginDto);
+
+            return Ok(token);
+        }
+
+        [HttpPost("register")]
+        public async Task<ActionResult<TokenResponseDto>> RegisterApplicant([FromBody] UserRegisterModel userRegisterModel)
+        {
+            var token = await _authService.RegisterUser(userRegisterModel);
 
             return Ok(token);
         }

@@ -23,7 +23,6 @@ namespace Applicant.API.Controllers
         }
 
         [HttpPost("profile")]
-        [Authorize(Roles = "Applicant")]
 
         public async Task<ActionResult<ApplicantProfileDto>> GetApplicantProfile()
         {
@@ -32,7 +31,6 @@ namespace Applicant.API.Controllers
         }
 
         [HttpPut("profile")]
-        [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> EditApplicantProfile([FromBody] EditApplicantProfileDto editApplicantProfileDto)
         {
             await _applicantService.EditApplicantProfile(editApplicantProfileDto);

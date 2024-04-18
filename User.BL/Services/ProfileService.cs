@@ -5,6 +5,7 @@ using User.DAL.Entities;
 using User.DAL;
 using Microsoft.AspNetCore.Http;
 using User.BL.Dto;
+using Common.Dto;
 
 namespace User.BL.Services
 {

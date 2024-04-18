@@ -7,7 +7,7 @@ namespace User.BL.Services.IServices
     public interface IAuthService
     {
         public Task<TokenResponseDto> Login(LoginDto loginDto);
-        public Task<TokenResponseDto> RegisterUser(UserRegisterWithRoleModel userRegisterModel);
+        public Task<TokenResponseDto> RegisterUser(UserRegisterModel userRegisterModel);
         public Task Logout(string token);
     }
 }

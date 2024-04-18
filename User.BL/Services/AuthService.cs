@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Common.Dto;
 using Common.Models;
 using User.BL.Dto;
+using Common.Enums;
 
 namespace User.BL.Services
 {
@@ -50,7 +51,7 @@ namespace User.BL.Services
             await _userManager.UpdateAsync(user);
         }
 
-        public async Task<TokenResponseDto> RegisterUser(UserRegisterWithRoleModel userRegisterModel)
+        public async Task<TokenResponseDto> RegisterUser(UserRegisterModel userRegisterModel)
         {
             if (await _userManager.FindByEmailAsync(userRegisterModel.Email) != null)
             {
@@ -75,7 +76,7 @@ namespace User.BL.Services
             if (!result.Succeeded) throw new BadHttpRequestException(result.Errors.ToList().ToString());
             await _userManager.UpdateAsync(user);
 
-            var resultRole = await _userManager.AddToRoleAsync(user, userRegisterModel.Role.ToString());
+            var resultRole = await _userManager.AddToRoleAsync(user, RoleType.Applicant.ToString());
 
             if (!resultRole.Succeeded) throw new BadHttpRequestException(resultRole.Errors.ToList().ToString());
 

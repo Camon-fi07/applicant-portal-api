@@ -1,5 +1,6 @@
-﻿using User.BL.Dto.Profile;
-using Common.Enums;
+﻿using Common.Enums;
+using Common.Dto;
+using User.BL.Dto;
 
 namespace User.BL.Services.IServices
 {
@@ -7,8 +8,7 @@ namespace User.BL.Services.IServices
     {
         public Task<List<RoleType?>> GetUserRoles(string token);
         public Task<ProfileDto> GetProfile(string token);
-        public Task EditApplicantProfile(string token, EditApplicantProfileDto editApplicantProfileDto);
-        public Task EditManagerProfile(string token, EditManagerDto editManagerDto);
+        public Task EditProfile(string token, EditProfileDto editProfileDto);
         public Task ResetPassword(string token, ResetPasswordDto resetPasswordDto);
     }
 }

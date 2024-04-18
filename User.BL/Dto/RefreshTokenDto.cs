@@ -1,4 +1,4 @@
-﻿namespace User.BL.Dto.Auth
+﻿namespace User.BL.Dto
 {
     public class RefreshTokenDto
     {

@@ -9,10 +9,7 @@ namespace User.DAL
     IdentityUserRole<Guid>, IdentityUserLogin<Guid>, IdentityRoleClaim<Guid>, IdentityUserToken<Guid>>
     {
         public DbSet<UserEntity> Users { get; set; }
-        public DbSet<Manager> Managers { get; set; }
-        public DbSet<Applicant> Applicants { get; set; }
         public DbSet<TokenEntity> BannedTokens { get; set; }
-
 
         public UserDBContext(DbContextOptions options) : base(options)
         {

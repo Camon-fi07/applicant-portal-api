@@ -1,11 +1,10 @@
-﻿using User.BL.Dto.Profile;
-using Common.Enums;
+﻿using Common.Enums;
 using Microsoft.AspNetCore.Identity;
 using User.BL.Services.IServices;
 using User.DAL.Entities;
 using User.DAL;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
+using User.BL.Dto;
 
 namespace User.BL.Services
 {
@@ -13,12 +12,10 @@ namespace User.BL.Services
     {
         ITokenService _tokenService;
         UserManager<UserEntity> _userManager;
-        RoleManager<Role> _roleManager;
         UserDBContext _userDBContext;
-        public ProfileService(ITokenService tokenService, UserManager<UserEntity> userManager, RoleManager<Role> roleManager, UserDBContext userDBContext) {
+        public ProfileService(ITokenService tokenService, UserManager<UserEntity> userManager, UserDBContext userDBContext) {
             _tokenService = tokenService;   
             _userManager = userManager;
-            _roleManager = roleManager; 
             _userDBContext = userDBContext;
         }
 
@@ -69,28 +66,21 @@ namespace User.BL.Services
             return null;
         }
 
-        public async Task EditApplicantProfile(string token, EditApplicantProfileDto editApplicantProfileDto)
+        public async Task EditProfile(string token, EditProfileDto editProfileDto)
         {
             var user = await _tokenService.GetUserByToken(token);
-            var applicant = await _userDBContext.Applicants.FirstOrDefaultAsync(applicant => applicant.User.Id == user.Id);
 
-            if(applicant == null)
-            {
-                throw new BadHttpRequestException("Пользователь не абитуриент");
-            }
+            if(editProfileDto.Lastname != null) user.Lastname = editProfileDto.Lastname;
+            if (editProfileDto.PhoneNumber != null) user.PhoneNumber = editProfileDto.PhoneNumber;
+            if (editProfileDto.Firstname != null) user.Firstname = editProfileDto.Firstname;
+            if(editProfileDto.Middlename != null) user.Middlename = editProfileDto.Middlename;
+            if(editProfileDto.Gender != null) user.Gender = (Gender)editProfileDto.Gender;
+            if(editProfileDto.BirthDate != null) user.BirthDate = (DateOnly)editProfileDto.BirthDate;
 
-            user.Lastname = editApplicantProfileDto.Lastname;
-            user.PhoneNumber = editApplicantProfileDto.PhoneNumber;
-            user.Firstname = editApplicantProfileDto.Firstname;
-            user.Middlename = editApplicantProfileDto.Middlename;
-            user.Gender = editApplicantProfileDto.Gender;
-            user.BirthDate = editApplicantProfileDto.BirthDate;
-            applicant.Citizenship = editApplicantProfileDto.Citizenship;
-
-            user.Email = editApplicantProfileDto.Email;
-            user.UserName = editApplicantProfileDto.Email;
-            var emailChangeToken = await _userManager.GenerateChangeEmailTokenAsync(user, editApplicantProfileDto.Email);
-            var emailChangeResult = await _userManager.ChangeEmailAsync(user, editApplicantProfileDto.Email, emailChangeToken);
+            user.Email = editProfileDto.Email;
+            user.UserName = editProfileDto.Email;
+            var emailChangeToken = await _userManager.GenerateChangeEmailTokenAsync(user, editProfileDto.Email);
+            var emailChangeResult = await _userManager.ChangeEmailAsync(user, editProfileDto.Email, emailChangeToken);
 
             if (!emailChangeResult.Succeeded)
             {
@@ -99,24 +89,6 @@ namespace User.BL.Services
 
             await _userManager.UpdateAsync(user);
             await _userDBContext.SaveChangesAsync();
-        }
-
-        public async Task EditManagerProfile(string token, EditManagerDto editManagerDto)
-        {
-            var user = await _tokenService.GetUserByToken(token);
-            var manager = await _userDBContext.Managers.FirstOrDefaultAsync(manager => manager.User.Id == user.Id);
-
-            user.Email = editManagerDto.Email;
-            user.UserName = editManagerDto.Email;
-            var emailChangeToken = await _userManager.GenerateChangeEmailTokenAsync(user, editManagerDto.Email);
-            var emailChangeResult = await _userManager.ChangeEmailAsync(user, editManagerDto.Email, emailChangeToken);
-
-            if (!emailChangeResult.Succeeded)
-            {
-                throw new BadHttpRequestException("Произошла ошибка");
-            }
-
-            await _userManager.UpdateAsync(user);
         }
 
         public async Task ResetPassword(string token, ResetPasswordDto resetPasswordDto)

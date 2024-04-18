@@ -1,6 +1,7 @@
 ﻿using Common.Enums;
-using User.BL.Models;
-namespace User.BL.Dto.Auth
+using Common.Models;
+
+namespace Common.Dto
 {
     public class RegisterApplicantDto:UserRegisterModel
     {

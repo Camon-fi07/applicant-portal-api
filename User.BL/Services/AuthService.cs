@@ -1,12 +1,11 @@
 ﻿using User.BL.Services.IServices;
 using User.DAL.Entities;
-using User.BL.Dto.Auth;
-using Common.Enums;
 using Microsoft.AspNetCore.Identity;
 using User.DAL;
 using Microsoft.AspNetCore.Http;
-using User.BL.Models;
-using User.BL.Mappers;
+using Common.Dto;
+using Common.Models;
+using User.BL.Dto;
 
 namespace User.BL.Services
 {
@@ -42,35 +41,6 @@ namespace User.BL.Services
             };
         }
 
-        public async Task<TokenResponseDto> RegisterApplicant(RegisterApplicantDto registerApplicantDto)
-        {
-            var user = await RegisterUser(RegisterMapper.TranslateApplicantRegisterToUserRegister(registerApplicantDto));
-
-            var resultRole = await _userManager.AddToRoleAsync(user, RoleType.Applicant.ToString());
-
-            if (!resultRole.Succeeded) throw new BadHttpRequestException(resultRole.Errors.ToList().ToString());
-
-            var applicant = new Applicant
-            {
-                Id = Guid.NewGuid(),
-                Citizenship = registerApplicantDto.Citizenship,
-                User = user,
-            };
-
-            await _userDBContext.Applicants.AddAsync(applicant);
-            await _userDBContext.SaveChangesAsync();
-
-            var refreshToken = await _tokenService.GenerateRefreshToken(user);
-            user.RefreshToken = refreshToken;
-            await _userManager.UpdateAsync(user);
-
-            return new TokenResponseDto
-            {
-                AccessToken = await _tokenService.GenerateAccessToken(user),
-                RefreshToken = refreshToken
-            };
-        }
-
         public async Task Logout(string token) {
             var user = await _tokenService.GetUserByToken(token);
 
@@ -80,35 +50,7 @@ namespace User.BL.Services
             await _userManager.UpdateAsync(user);
         }
 
-        public async Task<TokenResponseDto> RegisterManager(RegisterManagerDto registerManagerDto)
-        {
-            var user = await RegisterUser(RegisterMapper.TranslateManagerRegisterToUserRegister(registerManagerDto));
-
-            var resultRole = await _userManager.AddToRoleAsync(user, RoleType.Manager.ToString());
-
-            if (!resultRole.Succeeded) throw new BadHttpRequestException(resultRole.Errors.ToList().ToString());
-
-            var manager = new Manager
-            {
-                Id = Guid.NewGuid(),
-                User = user,
-            };
-
-            await _userDBContext.Managers.AddAsync(manager);
-            await _userDBContext.SaveChangesAsync();
-
-            var refreshToken = await _tokenService.GenerateRefreshToken(user);
-            user.RefreshToken = refreshToken;
-            await _userManager.UpdateAsync(user);
-
-            return new TokenResponseDto
-            {
-                AccessToken = await _tokenService.GenerateAccessToken(user),
-                RefreshToken = refreshToken
-            };
-        }
-
-        private async Task<UserEntity> RegisterUser(UserRegisterModel userRegisterModel)
+        public async Task<TokenResponseDto> RegisterUser(UserRegisterWithRoleModel userRegisterModel)
         {
             if (await _userManager.FindByEmailAsync(userRegisterModel.Email) != null)
             {
@@ -133,7 +75,21 @@ namespace User.BL.Services
             if (!result.Succeeded) throw new BadHttpRequestException(result.Errors.ToList().ToString());
             await _userManager.UpdateAsync(user);
 
-            return user;
+            var resultRole = await _userManager.AddToRoleAsync(user, userRegisterModel.Role.ToString());
+
+            if (!resultRole.Succeeded) throw new BadHttpRequestException(resultRole.Errors.ToList().ToString());
+
+            await _userManager.UpdateAsync(user);
+
+            var refreshToken = await _tokenService.GenerateRefreshToken(user);
+            user.RefreshToken = refreshToken;
+            await _userManager.UpdateAsync(user);
+
+            return new TokenResponseDto
+            {
+                AccessToken = await _tokenService.GenerateAccessToken(user),
+                RefreshToken = refreshToken
+            };
         }
     }
 }

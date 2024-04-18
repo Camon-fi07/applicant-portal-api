@@ -1,4 +1,5 @@
-﻿using User.BL.Dto.Auth;
+﻿using Common.Dto;
+using User.BL.Dto;
 using User.DAL.Entities;
 
 namespace User.BL.Services.IServices

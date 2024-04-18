@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace User.BL.Dto.Profile
+namespace Common.RabbitMQ
 {
-    public class ResetPasswordDto
+    public class QueueNames
     {
-        public string Password { get; set; }
+        public const string UserQueue = "userQueue";
     }
 }

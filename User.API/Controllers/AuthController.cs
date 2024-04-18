@@ -1,7 +1,10 @@
-﻿using User.BL.Dto.Auth;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using User.BL.Services.IServices;
+using Common.Dto;
+using Common.RabbitMQ;
+using User.BL.Dto;
+
 
 namespace User.API.Controllers
 {
@@ -11,25 +14,11 @@ namespace User.API.Controllers
     {
         private readonly IAuthService _authService;
         private readonly ITokenService _tokenService;
-        public AuthController(IAuthService authService, ITokenService tokenService) {
+        private readonly IRabbitMqService _rabbitMqService;
+        public AuthController(IAuthService authService, ITokenService tokenService, IRabbitMqService rabbitMqService) {
             _authService = authService;
             _tokenService = tokenService;
-        }
-
-        [HttpPost("register/applicant")]
-        public async Task<ActionResult<TokenResponseDto>> RegisterApplicant([FromBody] RegisterApplicantDto registerApplicantDto)
-        {
-            var token = await _authService.RegisterApplicant(registerApplicantDto);
-
-            return Ok(token);
-        }
-
-        [HttpPost("register/manager")]
-        public async Task<ActionResult<TokenResponseDto>> RegisterManager([FromBody] RegisterManagerDto registerManagerDto)
-        {
-            var token = await _authService.RegisterManager(registerManagerDto);
-
-            return Ok(token);
+            _rabbitMqService = rabbitMqService;
         }
 
         [HttpPost("login")]

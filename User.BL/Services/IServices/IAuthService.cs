@@ -1,12 +1,13 @@
-﻿using User.BL.Dto.Auth;
+﻿using Common.Dto;
+using Common.Models;
+using User.BL.Dto;
 
 namespace User.BL.Services.IServices
 {
     public interface IAuthService
     {
         public Task<TokenResponseDto> Login(LoginDto loginDto);
-        public Task<TokenResponseDto> RegisterApplicant(RegisterApplicantDto registerApplicantDto);
-        public Task<TokenResponseDto> RegisterManager(RegisterManagerDto registerManagerDto);
+        public Task<TokenResponseDto> RegisterUser(UserRegisterWithRoleModel userRegisterModel);
         public Task Logout(string token);
     }
 }

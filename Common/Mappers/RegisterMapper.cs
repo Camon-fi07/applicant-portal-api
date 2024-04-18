@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using User.BL.Dto.Auth;
-using User.BL.Models;
+﻿using Common.Dto;
+using Common.Enums;
+using Common.Models;
 
-namespace User.BL.Mappers
+namespace Common.Mappers
 {
     public static class RegisterMapper
     {
-        public static UserRegisterModel TranslateApplicantRegisterToUserRegister(RegisterApplicantDto registerApplicantDto)
+        public static UserRegisterWithRoleModel TranslateApplicantRegisterToUserRegister(RegisterApplicantDto registerApplicantDto)
         {
-            return new UserRegisterModel()
+            return new UserRegisterWithRoleModel()
             {
                 BirthDate = registerApplicantDto.BirthDate,
                 Email = registerApplicantDto.Email,
@@ -22,12 +18,13 @@ namespace User.BL.Mappers
                 Middlename = registerApplicantDto.Middlename,
                 Password = registerApplicantDto.Password,
                 PhoneNumber = registerApplicantDto.PhoneNumber,
+                Role =  RoleType.Applicant 
             };
         }
 
-        public static UserRegisterModel TranslateManagerRegisterToUserRegister(RegisterManagerDto registerManagerDto)
+        public static UserRegisterWithRoleModel TranslateManagerRegisterToUserRegister(RegisterManagerDto registerManagerDto)
         {
-            return new UserRegisterModel()
+            return new UserRegisterWithRoleModel()
             {
                 BirthDate = registerManagerDto.BirthDate,
                 Email = registerManagerDto.Email,
@@ -37,6 +34,7 @@ namespace User.BL.Mappers
                 Middlename = registerManagerDto.Middlename,
                 Password = registerManagerDto.Password,
                 PhoneNumber = registerManagerDto.PhoneNumber,
+                Role = RoleType.Manager
             };
         }
     }

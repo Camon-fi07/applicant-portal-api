@@ -35,7 +35,6 @@ namespace Common.Extensions
                         new List<string>()
                     }
                 });
-
             });
         }
     }

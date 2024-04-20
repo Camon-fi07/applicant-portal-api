@@ -44,7 +44,6 @@ namespace User.BL.Services
 
         public async Task Logout(string token) {
             var user = await _tokenService.GetUserByToken(token);
-
             await _userDBContext.BannedTokens.AddAsync(new TokenEntity() { Token=token});
             user.RefreshToken = null;
             await _userDBContext.SaveChangesAsync();
@@ -73,13 +72,7 @@ namespace User.BL.Services
 
             var result = await _userManager.CreateAsync(user, userRegisterModel.Password);
 
-            if (!result.Succeeded) throw new BadHttpRequestException(result.Errors.ToList().ToString());
-            await _userManager.UpdateAsync(user);
-
-            var resultRole = await _userManager.AddToRoleAsync(user, RoleType.Applicant.ToString());
-
-            if (!resultRole.Succeeded) throw new BadHttpRequestException(resultRole.Errors.ToList().ToString());
-
+            if (!result.Succeeded) throw new BadHttpRequestException("Произошла ошибка");
             await _userManager.UpdateAsync(user);
 
             var refreshToken = await _tokenService.GenerateRefreshToken(user);

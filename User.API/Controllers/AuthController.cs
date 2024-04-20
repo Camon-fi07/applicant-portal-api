@@ -15,11 +15,9 @@ namespace User.API.Controllers
     {
         private readonly IAuthService _authService;
         private readonly ITokenService _tokenService;
-        private readonly IRabbitMqService _rabbitMqService;
-        public AuthController(IAuthService authService, ITokenService tokenService, IRabbitMqService rabbitMqService) {
+        public AuthController(IAuthService authService, ITokenService tokenService) {
             _authService = authService;
             _tokenService = tokenService;
-            _rabbitMqService = rabbitMqService;
         }
 
         [HttpPost("login")]
@@ -44,6 +42,7 @@ namespace User.API.Controllers
         {
             string token = HttpContext.Request.Headers["Authorization"];
             await _authService.Logout(token);
+
             return Ok();
         }
 
@@ -51,6 +50,7 @@ namespace User.API.Controllers
         public async Task<ActionResult<TokenResponseDto>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
         {
             var token = await _tokenService.RefreshToken(refreshTokenDto);
+
             return Ok(token);
         }
     }

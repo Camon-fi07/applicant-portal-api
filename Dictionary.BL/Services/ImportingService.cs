@@ -18,7 +18,7 @@ namespace Dictionary.BL.Services
     {
         DictionaryDBContext _dictionaryDBContext;
         HttpClient _httpClient;
-        IConfiguration _configuration;
+        IConfiguration _configuration; //IOptions чтобы не кофигать каждый раз
         RemoteDictionaryModel _remoteDictionary;
 
         public ImportingService(DictionaryDBContext dictionaryDBContext, HttpClient httpClient, IConfiguration configuration) {
@@ -37,7 +37,7 @@ namespace Dictionary.BL.Services
             return statuses;
         }
 
-        public async Task ImporDocumentTypes()
+        public async Task ImporDocumentTypes() //асинхронное взаимодействие
         {
             var httpResponse = await _httpClient.GetAsync($"{_remoteDictionary.URL}/document_types");
 

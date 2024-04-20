@@ -23,7 +23,18 @@ namespace User.API.Controllers
         {
             string token = HttpContext.Request.Headers["Authorization"];
             var user = await _profileService.GetProfile(token);
+
             return Ok(user);
+        }
+
+        [HttpPut("")]
+        [Authorize(AuthenticationSchemes = "TokenBlackList")]
+        public async Task<IActionResult> EditProfile(EditProfileDto editProfileDto)
+        {
+            string token = HttpContext.Request.Headers["Authorization"];
+            await _profileService.EditProfile(token, editProfileDto);
+
+            return Ok();
         }
 
         [HttpGet("roles")]
@@ -32,6 +43,7 @@ namespace User.API.Controllers
         {
             string token = HttpContext.Request.Headers["Authorization"];
             var roles = await _profileService.GetUserRoles(token);
+
             return Ok(roles);
         }
 
@@ -41,6 +53,7 @@ namespace User.API.Controllers
         {
             string token = HttpContext.Request.Headers["Authorization"];
             await _profileService.ResetPassword(token, resetPasswordDto);
+
             return Ok();
         }
     }

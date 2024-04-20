@@ -18,12 +18,42 @@ namespace Applicant.BL.Services
             _rabbitMqService = rabbitMqService;
         }
 
-        public Task<TokenResponseDto> EditApplicantProfile(EditApplicantProfileDto editApplicantProfileDto)
+        public Task DeleteEducationDocument()
         {
             throw new NotImplementedException();
         }
 
-        public Task<ApplicantProfileDto> GetApplicantProfile()
+        public Task DeletePassport()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task EditEducationDocument()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task EditPassport()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TokenResponseDto> EditProfile(EditApplicantProfileDto editApplicantProfileDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task GetEducationDocument()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task GetPasport()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ApplicantProfileDto> GetProfile()
         {
             throw new NotImplementedException();
         }

@@ -1,4 +1,5 @@
-﻿using Common.RabbitMQ;
+﻿using Applicant.BL.Services;
+using Applicant.BL.Services.IServices;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace Applicant.BL.Extensions
     {
         public static void ConfigureApplicantServices(this IServiceCollection services)
         {
-            services.AddScoped<IRabbitMqService, RabbitMqService>();
+            services.AddScoped<IApplicantService, ApplicantService>();
         }
     }
 }

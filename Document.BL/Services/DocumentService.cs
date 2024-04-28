@@ -1,4 +1,5 @@
-﻿using Document.BL.Services.IServices;
+﻿using Common.Dto;
+using Document.BL.Services.IServices;
 using Document.DAL;
 using Document.DAL.Entities;
 using Microsoft.AspNetCore.Http;
@@ -26,7 +27,9 @@ namespace Document.BL.Services
                     fileDetails.Data = stream.ToArray();
                 }
 
+                await RemoveFile(id);
                 await _documentDBContext.SaveChangesAsync();
+                await DownloadFile(id);
             }
             catch (Exception)
             {
@@ -34,14 +37,18 @@ namespace Document.BL.Services
             }
         }
 
-        public async Task<byte[]> GetFile(Guid id) {
+        public async Task<FileResponseDto> GetFile(Guid id) {
             var file = await _documentDBContext.FilesDetails.FirstOrDefaultAsync(f => f.Id == id);
             if (file == null) throw new Exception();
 
-            return file.Data;
+            return new FileResponseDto()
+            {
+                Data = file.Data,
+                Name = file.Name
+            };
         }
 
-        public async Task UploadFile(IFormFile file)
+        public async Task<Guid> UploadFile(IFormFile file)
         {
             try
             {
@@ -60,6 +67,8 @@ namespace Document.BL.Services
                 _documentDBContext.FilesDetails.Add(fileDetails);
                 await _documentDBContext.SaveChangesAsync();
                 await DownloadFile(fileDetails.Id);
+
+                return fileDetails.Id;
             }
             catch (Exception)
             {
@@ -77,6 +86,23 @@ namespace Document.BL.Services
                    Directory.GetCurrentDirectory(), "FileDownloaded",
                    file.Name);
                 await CopyStream(content, path);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private async Task RemoveFile(Guid id)
+        {
+            try
+            {
+                var file = await _documentDBContext.FilesDetails.FirstOrDefaultAsync(f => f.Id == id);
+                var path = Path.Combine(
+                   Directory.GetCurrentDirectory(), "FileDownloaded",
+                   file.Name);
+
+                if (File.Exists(path)) File.Delete(path);
             }
             catch (Exception)
             {

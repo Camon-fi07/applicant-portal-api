@@ -1,4 +1,5 @@
-﻿using Document.BL.Services.IServices;
+﻿using Common.Dto;
+using Document.BL.Services.IServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,7 +28,7 @@ namespace Document.API.Controllers
         }
 
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<byte[]>> GetFile(Guid id)
+        public async Task<ActionResult<FileResponseDto>> GetFile(Guid id)
         {
             var file = await _documentService.GetFile(id);
 

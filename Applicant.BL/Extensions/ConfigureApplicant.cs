@@ -1,5 +1,4 @@
 ﻿using Applicant.DAL;
-using Common.RabbitMQ;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

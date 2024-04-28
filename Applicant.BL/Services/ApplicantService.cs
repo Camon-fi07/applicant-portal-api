@@ -4,19 +4,10 @@ using Applicant.DAL.Entities;
 using Common.Dto;
 using Common.Enums;
 using Common.Models;
-using Common.RabbitMQ;
-using Common.RabbitMQ.RoutingKeys;
-
 
 namespace Applicant.BL.Services
 {
-    public class ApplicantService : IApplicantService
-    {
-        RabbitMqService _rabbitMqService;
-
-        public ApplicantService(RabbitMqService rabbitMqService) {
-            _rabbitMqService = rabbitMqService;
-        }
+    public class ApplicantService : IApplicantService {
 
         public Task<TokenResponseDto> EditApplicantProfile(EditApplicantProfileDto editApplicantProfileDto)
         {
@@ -35,8 +26,6 @@ namespace Applicant.BL.Services
                 Id = Guid.NewGuid(),
                 Citizenship = registerApplicantDto.Citizenship,
             };
-
-            _rabbitMqService.SendMessage(TranslateApplicantRegisterToUserRegister(registerApplicantDto), ApplicantRoutingKey.RegisterApplicant, "user");
 
             return new TokenResponseDto()
             {

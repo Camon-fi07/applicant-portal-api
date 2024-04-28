@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using User.BL.Services.IServices;
 using Common.Dto;
-using Common.RabbitMQ;
 using User.BL.Dto;
 using Common.Models;
 

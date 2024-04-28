@@ -1,6 +1,9 @@
-﻿using Document.BL.Services;
+﻿using Common.Dto;
+using Common.Dto.RabbitMQ;
+using Document.BL.Services;
 using Document.BL.Services.IServices;
 using Document.DAL;
+using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +20,22 @@ namespace Document.BL.Extensions
         public static void AddDocumentServices(this IServiceCollection services)
         {
             services.AddScoped<IDocumentService, DocumentService>();
+        }
+
+        public static void AddEasyNetQ(this IServiceCollection services)
+        {
+            var serviceProvider = services.BuildServiceProvider();
+            var documentService = serviceProvider.GetRequiredService<IDocumentService>();
+            var bus = RabbitHutch.CreateBus("host=localhost");
+
+            bus.Rpc.RespondAsync<UploadFileDto, Guid>(async request => await documentService.UploadFile(request.File));
+
+            bus.Rpc.RespondAsync<GetFileDto, FileResponseDto>(async request => await documentService.GetFile(request.Id));
+
+            bus.PubSub.Subscribe<ChangeFileDto>("documentChange", (changeFileDto) =>
+            {
+                documentService.ChangeFile(changeFileDto.File, changeFileDto.FileId);
+            });
         }
     }
 }

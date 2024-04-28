@@ -8,6 +8,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDocumentDB(builder.Configuration);
 builder.Services.AddDocumentServices();
+builder.Services.AddEasyNetQ();
 
 builder.Services.AddSwaggerAuth();
 

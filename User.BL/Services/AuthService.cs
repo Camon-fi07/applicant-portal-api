@@ -25,7 +25,7 @@ namespace User.BL.Services
             _userDBContext = userDBContext;
         }
 
-        public async Task<TokenResponseDto> Login(LoginDto loginDto) { 
+        public async Task<TokenResponseDto> Login(LoginDto loginDto) {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null) throw new BadHttpRequestException("Пользователя с таким email не существует");
             var identity = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
@@ -34,7 +34,7 @@ namespace User.BL.Services
             var refreshToken = await _tokenService.GenerateRefreshToken(user);
             user.RefreshToken = refreshToken;
             await _userManager.UpdateAsync(user);
-
+            
             return new TokenResponseDto
             {
                 AccessToken = await _tokenService.GenerateAccessToken(user),

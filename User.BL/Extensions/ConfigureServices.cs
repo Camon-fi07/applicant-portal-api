@@ -1,5 +1,4 @@
-﻿using Common.RabbitMQ;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using User.BL.Services;
 using User.BL.Services.IServices;
 
@@ -13,7 +12,6 @@ namespace User.BL.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IProfileService, ProfileService>();
             services.AddHostedService<BackgroundTokenService>();
-            services.AddScoped<IRabbitMqService, RabbitMqService>();
         }
     }
 }

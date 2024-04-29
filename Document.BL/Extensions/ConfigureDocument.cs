@@ -28,9 +28,21 @@ namespace Document.BL.Extensions
             var documentService = serviceProvider.GetRequiredService<IDocumentService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
 
-            bus.Rpc.RespondAsync<UploadFileDto, Guid>(async request => await documentService.UploadFile(request.File));
+            bus.Rpc.Respond<UploadSingleFileDto, Guid>(async request => await documentService.UploadFile(request.File), configuration => configuration.WithQueueName("documentUpload"));
 
-            bus.Rpc.RespondAsync<GetFileDto, FileResponseDto>(async request => await documentService.GetFile(request.Id));
+            bus.Rpc.Respond<UploadFilesDto, List<Guid>>(async request => await documentService.UploadFiles(request.File), configuration => configuration.WithQueueName("documentUpload"));
+
+            bus.Rpc.Respond<GetFileDto, FileResponseDto>(async request => await documentService.GetFile(request.Id));
+
+            bus.PubSub.Subscribe<DeleteFilesDto>("documentDelete", (deleteFileDto) =>
+            {
+                documentService.DeleteFiles(deleteFileDto.FilesIds);
+            });
+
+            bus.PubSub.Subscribe<DeleteSingleFileDto>("documentDelete", (deleteFileDto) =>
+            {
+                documentService.DeleteFile(deleteFileDto.FileId);
+            });
 
             bus.PubSub.Subscribe<ChangeFileDto>("documentChange", (changeFileDto) =>
             {

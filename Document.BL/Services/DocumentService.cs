@@ -4,7 +4,6 @@ using Document.DAL;
 using Document.DAL.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
 
 namespace Document.BL.Services
 {
@@ -27,7 +26,7 @@ namespace Document.BL.Services
                     fileDetails.Data = stream.ToArray();
                 }
 
-                await RemoveFile(id);
+                await DeleteFile(id);
                 await _documentDBContext.SaveChangesAsync();
                 await DownloadFile(id);
             }
@@ -49,6 +48,52 @@ namespace Document.BL.Services
         }
 
         public async Task<Guid> UploadFile(IFormFile file)
+        {
+            return await UploadSingleFile(file);
+        }
+
+        public async Task<List<Guid>> UploadFiles(List<IFormFile> files)
+        {
+            var filesIds = new List<Guid>();
+            foreach (var file in files)
+            {
+                filesIds.Add(await UploadSingleFile(file));
+            }
+
+            return filesIds;
+        }
+
+        private async Task DownloadFile(Guid id)
+        {
+            try
+            {
+                var file = await _documentDBContext.FilesDetails.FirstOrDefaultAsync(f => f.Id == id);
+                var content = new MemoryStream(file.Data);
+                var path = Path.Combine(
+                   Directory.GetCurrentDirectory(), "FileDownloaded",
+                   file.Name);
+                await CopyStream(content, path);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task DeleteFile(Guid id)
+        {
+            await DeleteSingleFile(id);
+        }
+
+        public async Task DeleteFiles(List<Guid> ids)
+        {
+            foreach (var id in ids)
+            {
+                await DeleteSingleFile(id);
+            }
+        }
+
+        private async Task<Guid> UploadSingleFile(IFormFile file)
         {
             try
             {
@@ -76,24 +121,7 @@ namespace Document.BL.Services
             }
         }
 
-        private async Task DownloadFile(Guid id)
-        {
-            try
-            {
-                var file = await _documentDBContext.FilesDetails.FirstOrDefaultAsync(f => f.Id == id);
-                var content = new MemoryStream(file.Data);
-                var path = Path.Combine(
-                   Directory.GetCurrentDirectory(), "FileDownloaded",
-                   file.Name);
-                await CopyStream(content, path);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        private async Task RemoveFile(Guid id)
+        private async Task DeleteSingleFile(Guid id)
         {
             try
             {

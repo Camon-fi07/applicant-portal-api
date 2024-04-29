@@ -10,5 +10,6 @@ namespace User.BL.Services.IServices
         public Task<ProfileDto> GetProfile(string token);
         public Task EditProfile(string token, EditProfileDto editProfileDto);
         public Task ResetPassword(string token, ResetPasswordDto resetPasswordDto);
+        public Task AddRole(RoleType roleType, Guid userId);
     }
 }

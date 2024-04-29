@@ -1,83 +1,79 @@
 ﻿using Applicant.BL.Dto;
 using Applicant.BL.Services.IServices;
+using Applicant.DAL;
 using Applicant.DAL.Entities;
 using Common.Dto;
+using Common.Dto.RabbitMQ;
 using Common.Enums;
 using Common.Models;
+using EasyNetQ;
 
 namespace Applicant.BL.Services
 {
     public class ApplicantService : IApplicantService {
 
-        public Task DeleteEducationDocument()
+        private readonly ApplicantDBContext _applicantDBContext;
+        private readonly IBus _bus;
+
+        public ApplicantService(ApplicantDBContext applicantDBContext, IBus bus)
         {
-            throw new NotImplementedException();
+            _applicantDBContext = applicantDBContext;
+            _bus = bus;
         }
 
-        public Task DeletePassport()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task EditEducationDocument()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task EditPassport()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TokenResponseDto> EditProfile(EditApplicantProfileDto editApplicantProfileDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task GetEducationDocument()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task GetPasport()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<ApplicantProfileDto> GetProfile()
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<TokenResponseDto> RegisterApplicant(RegisterApplicantDto registerApplicantDto)
+        public async Task RegisterApplicant(RegisterApplicantDto registerApplicantDto)
         {
             var applicant = new ApplicantEntity()
             {
-                Id = Guid.NewGuid(),
                 Citizenship = registerApplicantDto.Citizenship,
+                Education = registerApplicantDto.Education,
+                Id = Guid.NewGuid(),
+                UserId = registerApplicantDto.UserId,
+                Passport = registerApplicantDto.Passport,
             };
 
-            return new TokenResponseDto()
+            await _applicantDBContext.Applicants.AddAsync(applicant);
+
+            await _bus.PubSub.PublishAsync(new AddRoleDto()
             {
-                AccessToken = "",
-                RefreshToken = ""
-            };
+                Role = RoleType.Applicant,
+                UserId = registerApplicantDto.UserId
+            });
         }
-        private UserRegisterWithRoleModel TranslateApplicantRegisterToUserRegister(RegisterApplicantDto registerApplicantDto)
+
+        Task IApplicantService.EditEducationDocument(EditEducationDocumentDto editEducationDocumentDto)
         {
-            return new UserRegisterWithRoleModel()
-            {
-                BirthDate = registerApplicantDto.BirthDate,
-                Email = registerApplicantDto.Email,
-                Firstname = registerApplicantDto.Firstname,
-                Gender = registerApplicantDto.Gender,
-                Lastname = registerApplicantDto.Lastname,
-                Middlename = registerApplicantDto.Middlename,
-                Password = registerApplicantDto.Password,
-                PhoneNumber = registerApplicantDto.PhoneNumber,
-                Role = RoleType.Applicant
-            };
+            throw new NotImplementedException();
         }
 
+        Task IApplicantService.EditPassport(EditPassportDto editPassportDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<TokenResponseDto> IApplicantService.EditProfile(EditApplicantProfileDto editApplicantProfileDto, Guid userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<EducationDocumentDto> IApplicantService.GetEducationDocument()
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<PassportDto> IApplicantService.GetPasport()
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<ApplicantProfileDto> IApplicantService.GetProfile(Guid userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task IApplicantService.RegisterApplicant(RegisterApplicantDto registerApplicantDto)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

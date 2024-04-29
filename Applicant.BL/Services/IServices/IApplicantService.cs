@@ -10,13 +10,12 @@ namespace Applicant.BL.Services.IServices
 {
     public interface IApplicantService
     {
-        public Task<ApplicantProfileDto> GetProfile();
-        public Task GetPasport();
-        public Task EditPassport();
-        public Task DeletePassport();
-        public Task GetEducationDocument();
-        public Task EditEducationDocument();
-        public Task DeleteEducationDocument();
-        public Task<TokenResponseDto> EditProfile(EditApplicantProfileDto editApplicantProfileDto);
+        public Task RegisterApplicant(RegisterApplicantDto registerApplicantDto);
+        public Task<TokenResponseDto> EditProfile(EditApplicantProfileDto editApplicantProfileDto, Guid userId);
+        public Task<ApplicantProfileDto> GetProfile(Guid userId);
+        public Task<PassportDto> GetPasport();
+        public Task EditPassport(EditPassportDto editPassportDto);
+        public Task<EducationDocumentDto> GetEducationDocument();
+        public Task EditEducationDocument(EditEducationDocumentDto editEducationDocumentDto);
     }
 }

@@ -14,6 +14,6 @@ namespace Applicant.DAL.Entities
         public string BirthPlace { get; set; }
         public DateTime BirthDate { get; set; }
         public string Issued { get; set; }
-        public List<Guid> Files { get; set; }
+        public Guid DocumentId { get; set; }
     }
 }

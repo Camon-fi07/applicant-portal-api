@@ -9,10 +9,6 @@ using User.BL.Models;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
-using Common.Dto.RabbitMQ;
-using Common.Dto;
-using EasyNetQ;
-using User.BL.Services.IServices;
 
 namespace User.BL.Extensions
 {
@@ -52,18 +48,6 @@ namespace User.BL.Extensions
                     },
                 };
             }).AddScheme<AuthenticationSchemeOptions, TokenBlackListHandler>("TokenBlackList", options => { });
-        }
-
-        public static void AddEasyNetQ(this IServiceCollection services)
-        {
-            var serviceProvider = services.BuildServiceProvider();
-            var profileService = serviceProvider.GetRequiredService<IProfileService>();
-            var bus = RabbitHutch.CreateBus("host=localhost");
-
-            bus.PubSub.Subscribe<AddRoleDto>("userAddRole", (addRoleDto) =>
-            {
-                profileService.AddRole(addRoleDto.Role, addRoleDto.UserId);
-            });
         }
     }
 }

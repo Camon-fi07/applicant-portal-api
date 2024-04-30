@@ -28,13 +28,25 @@ namespace Document.BL.Extensions
             var documentService = serviceProvider.GetRequiredService<IDocumentService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
 
-            bus.Rpc.RespondAsync<UploadFileDto, Guid>(async request => await documentService.UploadFile(request.File));
+            bus.Rpc.Respond<UploadSingleFileDto, FileResponseDto>(async request => await documentService.UploadFile(request.File), configuration => configuration.WithQueueName("documentUpload"));
 
-            bus.Rpc.RespondAsync<GetFileDto, FileResponseDto>(async request => await documentService.GetFile(request.Id));
+            bus.Rpc.Respond<UploadFilesDto, List<FileResponseDto>>(async request => await documentService.UploadFiles(request.Files), configuration => configuration.WithQueueName("documentUpload"));
 
-            bus.PubSub.Subscribe<ChangeFileDto>("documentChange", (changeFileDto) =>
+            bus.Rpc.Respond<GetSingleFileDto, FileResponseDto>(async request => await documentService.GetFile(request.Id), configuration => configuration.WithQueueName("documentGet"));
+            bus.Rpc.Respond<GetFilesDto, List<FileResponseDto>>(async request => await documentService.GetFiles(request.Ids), configuration => configuration.WithQueueName("documentGet"));
+
+            bus.Rpc.Respond<ChangeFileDto, FileResponseDto>(async changeFileDto => await documentService.ChangeFile(changeFileDto), configuration => configuration.WithQueueName("documentChange"));
+            bus.Rpc.Respond<List<ChangeFileDto>, List<FileResponseDto>>(async changeFileDto => await documentService.ChangeFiles(changeFileDto), configuration => configuration.WithQueueName("documentChange"));
+
+
+            bus.PubSub.Subscribe<DeleteFilesDto>("documentDelete", async (deleteFileDto) =>
             {
-                documentService.ChangeFile(changeFileDto.File, changeFileDto.FileId);
+                await documentService.DeleteFiles(deleteFileDto.FilesIds);
+            });
+
+            bus.PubSub.Subscribe<DeleteSingleFileDto>("documentDelete", async (deleteFileDto) =>
+            {
+                await documentService.DeleteFile(deleteFileDto.FileId);
             });
         }
     }

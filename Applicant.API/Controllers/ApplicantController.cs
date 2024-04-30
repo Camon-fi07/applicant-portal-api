@@ -16,24 +16,23 @@ namespace Applicant.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<TokenResponseDto>> RegisterApplicant([FromBody] RegisterApplicantDto registerApplicantDto)
+        public async Task<IActionResult> RegisterApplicant([FromBody] RegisterApplicantDto registerApplicantDto)
         {
-            var token = await _applicantService.RegisterApplicant(registerApplicantDto);
-            return Ok(token);
+            await _applicantService.RegisterApplicant(registerApplicantDto);
+            return Ok();
         }
 
-        [HttpPost("profile")]
-
+        [HttpGet("profile")]
         public async Task<ActionResult<ApplicantProfileDto>> GetApplicantProfile()
         {
-            var profile = await _applicantService.GetApplicantProfile();
-            return Ok(profile);
+            //var profile = await _applicantService.GetProfile();
+            return Ok();
         }
 
         [HttpPut("profile")]
         public async Task<IActionResult> EditApplicantProfile([FromBody] EditApplicantProfileDto editApplicantProfileDto)
         {
-            await _applicantService.EditApplicantProfile(editApplicantProfileDto);
+            //await _applicantService.EditApplicantProfile(editApplicantProfileDto);
             return Ok();
         }
     }

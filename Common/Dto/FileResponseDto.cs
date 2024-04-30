@@ -10,5 +10,6 @@ namespace Common.Dto
     {
         public byte[] Data { get; set; }
         public string Name { get; set; }
+        public Guid Id { get; set; }
     }
 }

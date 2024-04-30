@@ -6,6 +6,7 @@ using User.DAL;
 using Microsoft.AspNetCore.Http;
 using User.BL.Dto;
 using Common.Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace User.BL.Services
 {
@@ -38,7 +39,7 @@ namespace User.BL.Services
         {
             var user = await _tokenService.GetUserByToken(token);
 
-            var roles =( await _userManager.GetRolesAsync(user)).Select(role => {
+            var roles = (await _userManager.GetRolesAsync(user)).Select(role => {
                 var roleType = GetRoleType(role);
                 if (roleType is null) throw new UnauthorizedAccessException();
 
@@ -107,6 +108,13 @@ namespace User.BL.Services
             await _userDBContext.BannedTokens.AddAsync(new TokenEntity() { Token = token });
             await _userManager.UpdateAsync(user);
             await _userDBContext.SaveChangesAsync();
+        }
+
+        public async Task AddRole(RoleType role, Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            await _userManager.AddToRoleAsync(user, role.ToString());
         }
     }
 }

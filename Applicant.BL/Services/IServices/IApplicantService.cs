@@ -1,22 +1,15 @@
 ﻿using Applicant.BL.Dto;
-using Common.Dto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Applicant.BL.Services.IServices
 {
     public interface IApplicantService
     {
-        public Task<ApplicantProfileDto> GetProfile();
-        public Task GetPasport();
-        public Task EditPassport();
-        public Task DeletePassport();
-        public Task GetEducationDocument();
-        public Task EditEducationDocument();
-        public Task DeleteEducationDocument();
-        public Task<TokenResponseDto> EditProfile(EditApplicantProfileDto editApplicantProfileDto);
+        public Task RegisterApplicant(RegisterApplicantDto registerApplicantDto);
+        public Task<ApplicantProfileDto> EditProfile(EditApplicantProfileDto editApplicantProfileDto, Guid userId);
+        public Task<ApplicantProfileDto> GetProfile(Guid userId);
+        public Task<PassportDto> GetPassport(Guid userId);
+        public Task<PassportDto> EditPassport(EditPassportDto editPassportDto, Guid userId);
+        public Task<EducationDocumentDto> GetEducationDocument(Guid userId);
+        public Task<EducationDocumentDto> EditEducationDocument(EditEducationDocumentDto editEducationDocumentDto, Guid userId);
     }
 }

@@ -61,11 +61,12 @@ namespace Applicant.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("DocumentId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("EducationDocumentTypeId")
                         .HasColumnType("uuid");
+
+                    b.Property<List<Guid>>("Files")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -89,8 +90,9 @@ namespace Applicant.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("DocumentId")
-                        .HasColumnType("uuid");
+                    b.Property<List<Guid>>("Files")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
 
                     b.Property<string>("Issued")
                         .IsRequired()

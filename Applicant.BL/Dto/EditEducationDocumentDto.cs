@@ -12,6 +12,6 @@ namespace Applicant.BL.Dto
     { 
         public string? Name { get; set; }
         public Guid? EducationDocumentTypeId { get; set; }
-        public List<IFormFile>? Files { get; set; }
+        public List<Guid> Files { get; set; }
     }
 }

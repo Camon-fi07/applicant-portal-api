@@ -1,5 +1,5 @@
 ﻿using Common.Dto;
-using Common.Dto.RabbitMQ;
+using Document.BL.Dto;
 using Document.BL.Services.IServices;
 using Document.DAL;
 using Document.DAL.Entities;
@@ -14,55 +14,18 @@ namespace Document.BL.Services
         public DocumentService(DocumentDBContext documentDBContext) {
             _documentDBContext = documentDBContext;
         }
-        public async Task<FileResponseDto> ChangeFile(ChangeFileDto changeFileDto)
-        {
-            try
-            {
-                var fileDetails = await _documentDBContext.FilesDetails.FirstOrDefaultAsync(f => f.Id == changeFileDto.FileId);
-                fileDetails.Name = changeFileDto.File.FileName;
-
-                using (var stream = new MemoryStream())
-                {
-                    changeFileDto.File.CopyTo(stream);
-                    fileDetails.Data = stream.ToArray();
-                }
-
-                await DeleteFile(changeFileDto.FileId);
-                await _documentDBContext.SaveChangesAsync();
-                await DownloadFile(changeFileDto.FileId);
-
-                return new FileResponseDto()
-                {
-                    Data = fileDetails.Data,
-                    Name = fileDetails.Name,
-                    Id = fileDetails.Id
-                };
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<List<FileResponseDto>> ChangeFiles(List<ChangeFileDto> changeFilesDto)
-        {
-            var files = new List<FileResponseDto>();
-            foreach(var changeFileDto in changeFilesDto)
-            {
-                files.Add(await ChangeFile(changeFileDto));
-            }
-            return files;
-        }
 
         public async Task<FileResponseDto> GetFile(Guid id) {
             var file = await _documentDBContext.FilesDetails.FirstOrDefaultAsync(f => f.Id == id);
             if (file == null) throw new Exception();
 
+            var data = File.ReadAllBytes(file.Path);
+
             return new FileResponseDto()
             {
-                Data = file.Data,
                 Name = file.Name,
-                Id = file.Id
+                Id = file.Id,
+                Data = data
             };
         }
 
@@ -77,32 +40,26 @@ namespace Document.BL.Services
             return files;
         }
 
-        public async Task<FileResponseDto> UploadFile(IFormFile file)
+        public async Task<Guid> UploadFile(UploadFileDto uploadFilesDto)
         {
             try
             {
                 var fileDetails = new FileDetailsEntity()
                 {
                     Id = Guid.NewGuid(),
-                    Name = file.FileName,
+                    Name = uploadFilesDto.File.FileName,
                 };
 
-                using (var stream = new MemoryStream())
-                {
-                    file.CopyTo(stream);
-                    fileDetails.Data = stream.ToArray();
-                }
+                var data = TranslateFileToByte(uploadFilesDto.File);
+                
+                await _documentDBContext.SaveChangesAsync();
+                fileDetails.Path = await SaveFile(data, fileDetails.Name);
 
                 _documentDBContext.FilesDetails.Add(fileDetails);
-                await _documentDBContext.SaveChangesAsync();
-                await DownloadFile(fileDetails.Id);
 
-                return new FileResponseDto()
-                {
-                    Name = fileDetails.Name,
-                    Data = fileDetails.Data,
-                    Id = fileDetails.Id,
-                };
+                _documentDBContext.SaveChangesAsync();
+
+                return fileDetails.Id;
             }
             catch (Exception)
             {
@@ -110,32 +67,15 @@ namespace Document.BL.Services
             }
         }
 
-        public async Task<List<FileResponseDto>> UploadFiles(List<IFormFile> files)
+        public async Task<List<Guid>> UploadFiles(List<UploadFileDto> uploadFilesDto)
         {
-            var filesIds = new List<FileResponseDto>();
-            foreach (var file in files)
+            var filesIds = new List<Guid>();
+            foreach (var file in uploadFilesDto)
             {
                 filesIds.Add(await UploadFile(file));
             }
 
             return filesIds;
-        }
-
-        private async Task DownloadFile(Guid id)
-        {
-            try
-            {
-                var file = await _documentDBContext.FilesDetails.FirstOrDefaultAsync(f => f.Id == id);
-                var content = new MemoryStream(file.Data);
-                var path = Path.Combine(
-                   Directory.GetCurrentDirectory(), "FileDownloaded",
-                   file.Name);
-                await CopyStream(content, path);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
         }
 
         public async Task DeleteFile(Guid id)
@@ -160,6 +100,29 @@ namespace Document.BL.Services
             foreach (var id in ids)
             {
                 await DeleteFile(id);
+            }
+        }
+
+        private byte[] TranslateFileToByte(IFormFile formFile)
+        {
+            using var stream = new MemoryStream();
+            formFile.CopyTo(stream);
+            return stream.ToArray();
+        }
+
+        private async Task<string> SaveFile(byte[] data, string name)
+        {
+            try
+            {
+                var content = new MemoryStream(data);
+                var path = Path.Combine(
+                   Directory.GetCurrentDirectory(), "FileDownloaded", name);
+                await CopyStream(content, path);
+                return path;
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 

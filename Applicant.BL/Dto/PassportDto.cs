@@ -15,6 +15,6 @@ namespace Applicant.BL.Dto
         public string BirthPlace { get; set; }
         public DateTime BirthDate { get; set; }
         public string Issued { get; set; }
-        public List<FileResponseDto> Files { get; set; }
+        public List<Guid> Files { get; set; }
     }
 }

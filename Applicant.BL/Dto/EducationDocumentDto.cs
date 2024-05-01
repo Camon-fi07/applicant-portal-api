@@ -12,6 +12,6 @@ namespace Applicant.BL.Dto
         public Guid Id { get; set; }
         public string Name { get; set; }
         public Guid EducationDocumentTypeId { get; set; }
-        public List<FileResponseDto> Files { get; set; }
+        public List<Guid> Files { get; set; }
     }
 }

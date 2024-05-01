@@ -1,5 +1,4 @@
-﻿using User.BL.Models;
-using User.BL.Services.IServices;
+﻿using User.BL.Services.IServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using User.DAL;
 using Common.Dto;
 using User.BL.Dto;
+using Common.Models;
 
 
 namespace User.BL.Services
@@ -43,8 +43,7 @@ namespace User.BL.Services
         {
             var key = Encoding.ASCII.GetBytes(tokenProperties.secret);
             var claims = new List<Claim> {
-               new Claim(ClaimTypes.Name, user.UserName),
-               new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+               new Claim(ClaimTypes.Name, user.Id.ToString()),
                new Claim(ClaimTypes.Sid, user.Id.ToString()),
             };
             var roles = await _userManager.GetRolesAsync(user);

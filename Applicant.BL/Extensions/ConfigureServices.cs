@@ -1,5 +1,6 @@
 ﻿using Applicant.BL.Services;
 using Applicant.BL.Services.IServices;
+using EasyNetQ;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,8 @@ namespace Applicant.BL.Extensions
     {
         public static void ConfigureApplicantServices(this IServiceCollection services)
         {
+            var bus = RabbitHutch.CreateBus("host=localhost");
+            services.AddSingleton(bus);
             services.AddScoped<IApplicantService, ApplicantService>();
         }
     }

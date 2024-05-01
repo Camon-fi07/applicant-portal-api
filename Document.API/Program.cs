@@ -6,7 +6,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 builder.Services.AddDocumentDB(builder.Configuration);
+builder.Services.AddAuthenticationCustom(builder.Configuration);
+
 builder.Services.AddDocumentServices();
 builder.Services.AddEasyNetQ();
 

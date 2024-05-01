@@ -36,31 +36,17 @@ namespace Applicant.BL.Services
             {
                 if (editEducationDocumentDto.Files.Count < 1) { throw new Exception(); }
 
-                await _bus.PubSub.PublishAsync(new DeleteFilesDto() { FilesIds = applicant.Education.Files });
-                var newFiles = _bus.Rpc.Request<UploadFilesDto, List<FileResponseDto>>(new UploadFilesDto()
-                {
-                    Files = editEducationDocumentDto.Files
-                });
-                educationFiles = newFiles;
-                applicant.Education.Files = newFiles.Select(e => e.Id).ToList();
+                applicant.Education.Files = editEducationDocumentDto.Files;
             }
 
             await _applicantDBContext.SaveChangesAsync();
-
-            if (educationFiles == null)
-            {
-                educationFiles = _bus.Rpc.Request<GetFilesDto, List<FileResponseDto>>(new GetFilesDto()
-                {
-                    Ids = applicant.Education.Files
-                });
-            }
 
             return new EducationDocumentDto()
             {
                EducationDocumentTypeId = applicant.Education.EducationDocumentTypeId,
                Id = applicant.Education.Id,
                Name = applicant.Education.Name,
-               Files = educationFiles
+               Files = applicant.Education.Files
             };
         }
 
@@ -82,23 +68,10 @@ namespace Applicant.BL.Services
             {
                 if(editPassportDto.Files.Count < 1) { throw new Exception(); }
 
-                await _bus.PubSub.PublishAsync(new DeleteFilesDto() { FilesIds = applicant.Passport.Files });
-                var newFiles = _bus.Rpc.Request<UploadFilesDto, List<FileResponseDto>>(new UploadFilesDto() {
-                    Files = editPassportDto.Files 
-                });
-                passportFiles = newFiles;
-                applicant.Passport.Files = newFiles.Select(p => p.Id).ToList();
+                applicant.Passport.Files = editPassportDto.Files;
             }
 
             await _applicantDBContext.SaveChangesAsync();
-
-            if(passportFiles == null)
-            {
-                passportFiles = _bus.Rpc.Request<GetFilesDto, List<FileResponseDto>>(new GetFilesDto()
-                {
-                    Ids = applicant.Passport.Files
-                });
-            }
 
             return new PassportDto()
             {
@@ -108,7 +81,7 @@ namespace Applicant.BL.Services
                 Issued = applicant.Passport.Issued,
                 Number = applicant.Passport.Number,
                 Series = applicant.Passport.Series,
-                Files = passportFiles
+                Files = applicant.Passport.Files
             };
         }
 
@@ -133,7 +106,11 @@ namespace Applicant.BL.Services
                 PhoneNumber = editApplicantProfileDto.PhoneNumber
             };
 
-            var profile = _bus.Rpc.Request<EditProfileDto, ProfileDto>(editProfileDto);
+            var profile = _bus.Rpc.Request<EditUserProfileDto, ProfileDto>(new EditUserProfileDto()
+            {
+                EditProfileDto = editProfileDto,
+                UserId = userId,
+            });
 
             return new ApplicantProfileDto()
             {
@@ -155,14 +132,9 @@ namespace Applicant.BL.Services
 
             if (applicant == null) { throw new Exception(); }
 
-            var educationFiles = _bus.Rpc.Request<GetFilesDto, List<FileResponseDto>>(new GetFilesDto()
-            {
-                Ids = applicant.Education.Files
-            });
-
             return new EducationDocumentDto()
             {
-                Files = educationFiles,
+                Files = applicant.Education.Files,
                 Id = Guid.NewGuid(),
                 EducationDocumentTypeId = applicant.Education.EducationDocumentTypeId,
                 Name = applicant.Education.Name,
@@ -175,16 +147,11 @@ namespace Applicant.BL.Services
 
             if (applicant == null) { throw new Exception(); }
 
-            var passportFiles = _bus.Rpc.Request<GetFilesDto, List<FileResponseDto>>(new GetFilesDto()
-            {
-                Ids = applicant.Passport.Files
-            });
-
             return new PassportDto()
             {
                 BirthDate = applicant.Passport.BirthDate,
                 BirthPlace = applicant.Passport.BirthPlace,
-                Files = passportFiles,
+                Files = applicant.Passport.Files,
                 Id = Guid.NewGuid(),
                 Issued = applicant.Passport.Issued,
                 Number = applicant.Passport.Number,
@@ -216,34 +183,21 @@ namespace Applicant.BL.Services
 
         public async Task RegisterApplicant(RegisterApplicantDto registerApplicantDto)
         {
-            var passportUploadFiles = new UploadFilesDto()
-            {
-                Files = registerApplicantDto.Passport.Files
-            };
-
-            var passportFiles = _bus.Rpc.Request<UploadFilesDto, List<FileResponseDto>>(passportUploadFiles);
 
             var passport = new PassportEntity()
             {
-                BirthDate = registerApplicantDto.Passport.BirthDate,
+                BirthDate = registerApplicantDto.Passport.BirthDate.ToUniversalTime(),
                 BirthPlace = registerApplicantDto.Passport.BirthPlace,
-                Files = passportFiles.Select(f => f.Id).ToList(),
+                Files = registerApplicantDto.Passport.Files,
                 Id = Guid.NewGuid(),
                 Issued = registerApplicantDto.Passport.Issued,
                 Number = registerApplicantDto.Passport.Number,
                 Series = registerApplicantDto.Passport.Series,
             };
 
-            var educationUploadFiles = new UploadFilesDto()
-            {
-                Files = registerApplicantDto.Education.Files
-            };
-
-            var educationFiles = _bus.Rpc.Request<UploadFilesDto, List<FileResponseDto>>(educationUploadFiles);
-
             var education = new EducationEntity()
             {
-                Files = educationFiles.Select(f => f.Id).ToList(),
+                Files = registerApplicantDto.Education.Files,
                 Id = Guid.NewGuid(),
                 EducationDocumentTypeId = registerApplicantDto.Education.EducationDocumentTypeId,
                 Name = registerApplicantDto.Education.Name
@@ -256,9 +210,12 @@ namespace Applicant.BL.Services
                 Id = Guid.NewGuid(),
                 UserId = registerApplicantDto.UserId,
                 Passport = passport,
+                Applications = new List<Guid>() { registerApplicantDto.ApplicationId }
             };
 
             await _applicantDBContext.Applicants.AddAsync(applicant);
+
+            await _applicantDBContext.SaveChangesAsync();
 
             await _bus.PubSub.PublishAsync(new AddRoleDto()
             {

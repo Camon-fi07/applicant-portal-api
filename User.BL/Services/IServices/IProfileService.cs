@@ -6,9 +6,9 @@ namespace User.BL.Services.IServices
 {
     public interface IProfileService
     {
-        public Task<List<RoleType?>> GetUserRoles(string token);
-        public Task<ProfileDto> GetProfile(string token);
-        public Task EditProfile(string token, EditProfileDto editProfileDto);
+        public Task<List<RoleType?>> GetUserRoles(Guid userId);
+        public Task<ProfileDto> GetProfile(Guid userId);
+        public Task<ProfileDto> EditProfile(Guid userId, EditProfileDto editProfileDto);
         public Task ResetPassword(string token, ResetPasswordDto resetPasswordDto);
         public Task AddRole(RoleType roleType, Guid userId);
     }

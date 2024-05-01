@@ -1,5 +1,6 @@
 ﻿using Common.Dto;
 using Common.Dto.RabbitMQ;
+using Document.BL.Dto;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -11,10 +12,8 @@ namespace Document.BL.Services.IServices
 {
     public interface IDocumentService
     {
-        public Task<FileResponseDto> UploadFile(IFormFile file);
-        public Task<List<FileResponseDto>> UploadFiles(List<IFormFile> files);
-        public Task<FileResponseDto> ChangeFile(ChangeFileDto changeFileDto);
-        public Task<List<FileResponseDto>> ChangeFiles(List<ChangeFileDto> changeFilesDto);
+        public Task<Guid> UploadFile(UploadFileDto uploadFileDto);
+        public Task<List<Guid>> UploadFiles(List<UploadFileDto> uploadFilesDto);
         public Task<FileResponseDto> GetFile(Guid id);
         public Task<List<FileResponseDto>> GetFiles(List<Guid> ids);
         public Task DeleteFile(Guid id);

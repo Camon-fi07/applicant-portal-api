@@ -22,24 +22,16 @@ namespace Document.BL.Extensions
             services.AddScoped<IDocumentService, DocumentService>();
         }
 
-        public static void AddEasyNetQ(this IServiceCollection services)
+        public async static void AddEasyNetQ(this IServiceCollection services)
         {
             var serviceProvider = services.BuildServiceProvider();
             var documentService = serviceProvider.GetRequiredService<IDocumentService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
-
-            bus.Rpc.Respond<UploadSingleFileDto, FileResponseDto>(async request => await documentService.UploadFile(request.File), configuration => configuration.WithQueueName("documentUpload"));
-
-            bus.Rpc.Respond<UploadFilesDto, List<FileResponseDto>>(async request => await documentService.UploadFiles(request.Files), configuration => configuration.WithQueueName("documentUpload"));
-
-            bus.Rpc.Respond<GetSingleFileDto, FileResponseDto>(async request => await documentService.GetFile(request.Id), configuration => configuration.WithQueueName("documentGet"));
-            bus.Rpc.Respond<GetFilesDto, List<FileResponseDto>>(async request => await documentService.GetFiles(request.Ids), configuration => configuration.WithQueueName("documentGet"));
-
-            bus.Rpc.Respond<ChangeFileDto, FileResponseDto>(async changeFileDto => await documentService.ChangeFile(changeFileDto), configuration => configuration.WithQueueName("documentChange"));
-            bus.Rpc.Respond<List<ChangeFileDto>, List<FileResponseDto>>(async changeFileDto => await documentService.ChangeFiles(changeFileDto), configuration => configuration.WithQueueName("documentChange"));
-
-
-            bus.PubSub.Subscribe<DeleteFilesDto>("documentDelete", async (deleteFileDto) =>
+                        
+            bus.Rpc.Respond<GetSingleFileDto, FileResponseDto>(async request => await documentService.GetFile(request.Id));
+            bus.Rpc.Respond<GetFilesDto, List<FileResponseDto>>(async request => await documentService.GetFiles(request.Ids));
+                        
+            await bus.PubSub.SubscribeAsync<DeleteFilesDto>("documentDelete", async (deleteFileDto) =>
             {
                 await documentService.DeleteFiles(deleteFileDto.FilesIds);
             });

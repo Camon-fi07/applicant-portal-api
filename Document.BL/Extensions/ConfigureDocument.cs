@@ -22,19 +22,23 @@ namespace Document.BL.Extensions
             services.AddScoped<IDocumentService, DocumentService>();
         }
 
-        public static void AddEasyNetQ(this IServiceCollection services)
+        public async static void AddEasyNetQ(this IServiceCollection services)
         {
             var serviceProvider = services.BuildServiceProvider();
             var documentService = serviceProvider.GetRequiredService<IDocumentService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
-
-            bus.Rpc.RespondAsync<UploadFileDto, Guid>(async request => await documentService.UploadFile(request.File));
-
-            bus.Rpc.RespondAsync<GetFileDto, FileResponseDto>(async request => await documentService.GetFile(request.Id));
-
-            bus.PubSub.Subscribe<ChangeFileDto>("documentChange", (changeFileDto) =>
+                        
+            bus.Rpc.Respond<GetSingleFileDto, FileResponseDto>(async request => await documentService.GetFile(request.Id));
+            bus.Rpc.Respond<GetFilesDto, List<FileResponseDto>>(async request => await documentService.GetFiles(request.Ids));
+                        
+            await bus.PubSub.SubscribeAsync<DeleteFilesDto>("documentDelete", async (deleteFileDto) =>
             {
-                documentService.ChangeFile(changeFileDto.File, changeFileDto.FileId);
+                await documentService.DeleteFiles(deleteFileDto.FilesIds);
+            });
+
+            bus.PubSub.Subscribe<DeleteSingleFileDto>("documentDelete", async (deleteFileDto) =>
+            {
+                await documentService.DeleteFile(deleteFileDto.FileId);
             });
         }
     }

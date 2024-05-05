@@ -1,23 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using User.DAL;
+﻿using Common.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using User.BL.Models;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication;
 
-namespace User.BL.Extensions
+namespace Common.Extensions
 {
     public static class ConfigureAuth
     {
-        public static void AddUserDB(this IServiceCollection services, IConfiguration configuration) {
-            services.AddDbContext<UserDBContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-        }
-
         public static void AddAuthenticationCustom(this IServiceCollection services, IConfiguration configuration)
         {
             TokenProperties tokenProperties = new();
@@ -47,7 +39,7 @@ namespace User.BL.Extensions
                         return Task.CompletedTask;
                     },
                 };
-            }).AddScheme<AuthenticationSchemeOptions, TokenBlackListHandler>("TokenBlackList", options => { });
+            });
         }
     }
 }

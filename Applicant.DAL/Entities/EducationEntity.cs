@@ -11,6 +11,6 @@ namespace Applicant.DAL.Entities
         public Guid Id { get; set; }
         public string Name { get; set; }
         public Guid EducationDocumentTypeId { get; set; }
-        public Guid DocumentId { get; set; }
+        public List<Guid> Files { get; set; }
     }
 }

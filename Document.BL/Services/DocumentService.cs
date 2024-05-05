@@ -1,10 +1,10 @@
 ﻿using Common.Dto;
+using Document.BL.Dto;
 using Document.BL.Services.IServices;
 using Document.DAL;
 using Document.DAL.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
 
 namespace Document.BL.Services
 {
@@ -14,59 +14,50 @@ namespace Document.BL.Services
         public DocumentService(DocumentDBContext documentDBContext) {
             _documentDBContext = documentDBContext;
         }
-        public async Task ChangeFile(IFormFile file, Guid id)
-        {
-            try
-            {
-                var fileDetails = await _documentDBContext.FilesDetails.FirstOrDefaultAsync(f => f.Id == id);
-                fileDetails.Name = file.FileName;
-
-                using (var stream = new MemoryStream())
-                {
-                    file.CopyTo(stream);
-                    fileDetails.Data = stream.ToArray();
-                }
-
-                await RemoveFile(id);
-                await _documentDBContext.SaveChangesAsync();
-                await DownloadFile(id);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
 
         public async Task<FileResponseDto> GetFile(Guid id) {
             var file = await _documentDBContext.FilesDetails.FirstOrDefaultAsync(f => f.Id == id);
             if (file == null) throw new Exception();
 
+            var data = File.ReadAllBytes(file.Path);
+
             return new FileResponseDto()
             {
-                Data = file.Data,
-                Name = file.Name
+                Name = file.Name,
+                Id = file.Id,
+                Data = data
             };
         }
 
-        public async Task<Guid> UploadFile(IFormFile file)
+        public async Task<List<FileResponseDto>> GetFiles(List<Guid> ids)
+        {
+            var files = new List<FileResponseDto>();
+            foreach (var fileId in ids)
+            {
+                files.Add(await GetFile(fileId));
+            }
+
+            return files;
+        }
+
+        public async Task<Guid> UploadFile(UploadFileDto uploadFilesDto)
         {
             try
             {
                 var fileDetails = new FileDetailsEntity()
                 {
                     Id = Guid.NewGuid(),
-                    Name = file.FileName,
+                    Name = uploadFilesDto.File.FileName,
                 };
 
-                using (var stream = new MemoryStream())
-                {
-                    file.CopyTo(stream);
-                    fileDetails.Data = stream.ToArray();
-                }
+                var data = TranslateFileToByte(uploadFilesDto.File);
+                
+                await _documentDBContext.SaveChangesAsync();
+                fileDetails.Path = await SaveFile(data, fileDetails.Name);
 
                 _documentDBContext.FilesDetails.Add(fileDetails);
-                await _documentDBContext.SaveChangesAsync();
-                await DownloadFile(fileDetails.Id);
+
+                _documentDBContext.SaveChangesAsync();
 
                 return fileDetails.Id;
             }
@@ -76,24 +67,18 @@ namespace Document.BL.Services
             }
         }
 
-        private async Task DownloadFile(Guid id)
+        public async Task<List<Guid>> UploadFiles(List<UploadFileDto> uploadFilesDto)
         {
-            try
+            var filesIds = new List<Guid>();
+            foreach (var file in uploadFilesDto)
             {
-                var file = await _documentDBContext.FilesDetails.FirstOrDefaultAsync(f => f.Id == id);
-                var content = new MemoryStream(file.Data);
-                var path = Path.Combine(
-                   Directory.GetCurrentDirectory(), "FileDownloaded",
-                   file.Name);
-                await CopyStream(content, path);
+                filesIds.Add(await UploadFile(file));
             }
-            catch (Exception)
-            {
-                throw;
-            }
+
+            return filesIds;
         }
 
-        private async Task RemoveFile(Guid id)
+        public async Task DeleteFile(Guid id)
         {
             try
             {
@@ -103,6 +88,37 @@ namespace Document.BL.Services
                    file.Name);
 
                 if (File.Exists(path)) File.Delete(path);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task DeleteFiles(List<Guid> ids)
+        {
+            foreach (var id in ids)
+            {
+                await DeleteFile(id);
+            }
+        }
+
+        private byte[] TranslateFileToByte(IFormFile formFile)
+        {
+            using var stream = new MemoryStream();
+            formFile.CopyTo(stream);
+            return stream.ToArray();
+        }
+
+        private async Task<string> SaveFile(byte[] data, string name)
+        {
+            try
+            {
+                var content = new MemoryStream(data);
+                var path = Path.Combine(
+                   Directory.GetCurrentDirectory(), "FileDownloaded", name);
+                await CopyStream(content, path);
+                return path;
             }
             catch (Exception)
             {

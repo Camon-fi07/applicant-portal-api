@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Common.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using User.BL.Models;
 using User.DAL;
 
 namespace User.BL.Services

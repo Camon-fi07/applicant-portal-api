@@ -8,11 +8,8 @@ using System.Threading.Tasks;
 
 namespace Applicant.BL.Dto
 {
-    public class ApplicantProfileDto
+    public class ApplicantProfileDto:ProfileDto
     {
-        public ProfileDto Profile { get; set; }
         public string Citizenship { get; set; }
-        public PassportEntity Passport { get; set; }
-        public EducationEntity Education { get; set; }
     }
 }

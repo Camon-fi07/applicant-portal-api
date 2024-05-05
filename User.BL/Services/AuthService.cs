@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Common.Dto;
 using Common.Models;
 using User.BL.Dto;
-using Common.Enums;
 
 namespace User.BL.Services
 {

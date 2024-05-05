@@ -1,15 +1,11 @@
 ﻿using Common.Dto;
+using Document.BL.Dto;
 using Document.BL.Services.IServices;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Document.API.Controllers
 {   
-    public class Test
-    {
-        public IFormFile file { get; set; }
-    }
-
     [Route("api/[controller]")]
     [ApiController]
     public class DocumentController : ControllerBase
@@ -19,10 +15,18 @@ namespace Document.API.Controllers
            _documentService = documentService;
         }
 
-        [HttpPost("upload")]
-        public async Task<IActionResult> UploadFile(IFormFile formFile)
+        [HttpPost("uploadFile")]
+        public async Task<IActionResult> UploadFile([FromForm] UploadFileDto uploadFileDto)
         {
-            await _documentService.UploadFile(formFile);
+            await _documentService.UploadFile(uploadFileDto);
+
+            return Ok();
+        }
+
+        [HttpPost("uploadFiles")]
+        public async Task<IActionResult> UploadFiles([FromForm] List<UploadFileDto> uploadFilesDto)
+        {
+            await _documentService.UploadFiles(uploadFilesDto);
 
             return Ok();
         }
@@ -35,10 +39,10 @@ namespace Document.API.Controllers
             return Ok(file);
         }
 
-        [HttpPut("change/{id:guid}")]
-        public async Task<IActionResult> ChangeFile(IFormFile formFile, Guid id)
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteFile(Guid id)
         {
-            await _documentService.ChangeFile(formFile, id);
+            await _documentService.DeleteFile(id);
 
             return Ok();
         }

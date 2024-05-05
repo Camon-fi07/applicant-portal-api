@@ -18,37 +18,48 @@ namespace User.API.Controllers
         }
 
         [HttpGet("")]
-        [Authorize(AuthenticationSchemes = "TokenBlackList")]
+        [Authorize]
         public async Task<ActionResult<ProfileDto>> GetProfile()
         {
-            string token = HttpContext.Request.Headers["Authorization"];
-            var user = await _profileService.GetProfile(token);
+            if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
+            {
+                return Unauthorized();
+            }
+
+            var user = await _profileService.GetProfile(userId);
 
             return Ok(user);
         }
 
         [HttpPut("")]
-        [Authorize(AuthenticationSchemes = "TokenBlackList")]
-        public async Task<IActionResult> EditProfile(EditProfileDto editProfileDto)
+        [Authorize]
+        public async Task<ActionResult<ProfileDto>> EditProfile(EditProfileDto editProfileDto)
         {
-            string token = HttpContext.Request.Headers["Authorization"];
-            await _profileService.EditProfile(token, editProfileDto);
+            if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
+            {
+                return Unauthorized();
+            }
+            var profile = await _profileService.EditProfile(userId,editProfileDto);
 
-            return Ok();
+            return Ok(profile);
         }
 
         [HttpGet("roles")]
-        [Authorize(AuthenticationSchemes = "TokenBlackList")]
+        [Authorize]
         public async Task<ActionResult<List<RoleType>>> GetUserRoles()
         {
-            string token = HttpContext.Request.Headers["Authorization"];
-            var roles = await _profileService.GetUserRoles(token);
+            if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
+            {
+                return Unauthorized();
+            }
+
+            var roles = await _profileService.GetUserRoles(userId);
 
             return Ok(roles);
         }
 
         [HttpPost("passwordReset")]
-        [Authorize(AuthenticationSchemes = "TokenBlackList")]
+        [Authorize]
         public async Task<ActionResult<List<RoleType>>> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
         {
             string token = HttpContext.Request.Headers["Authorization"];

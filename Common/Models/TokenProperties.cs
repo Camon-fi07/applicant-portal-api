@@ -1,4 +1,4 @@
-﻿namespace User.BL.Models
+﻿namespace Common.Models
 {
     public class TokenProperties
     {

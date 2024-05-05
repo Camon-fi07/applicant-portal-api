@@ -1,10 +1,15 @@
-﻿using Common.Enums;
+﻿using Applicant.DAL.Entities;
+using Common.Enums;
 using Common.Models;
 
-namespace Common.Dto
+namespace Applicant.BL.Dto
 {
-    public class RegisterApplicantDto:UserRegisterModel
+    public class RegisterApplicantDto
     {
+        public Guid ApplicationId { get; set; }
         public string Citizenship { get; set; }
+        public CreatePassportDto Passport { get; set; }
+        public Guid UserId { get; set; }
+        public CreateEducationDocumentDto Education { get; set; }
     }
 }

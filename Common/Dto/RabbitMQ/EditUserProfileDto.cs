@@ -1,5 +1,4 @@
 ﻿using EasyNetQ;
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +7,9 @@ using System.Threading.Tasks;
 
 namespace Common.Dto.RabbitMQ
 {
-    [Queue("documentChange")]
-    public class ChangeFileDto
+    public class EditUserProfileDto
     {
-        public IFormFile File { get; set; }
-        public Guid FileId { get; set; }
+        public Guid UserId { get; set; }
+        public EditProfileDto EditProfileDto { get; set; }
     }
 }

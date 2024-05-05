@@ -5,7 +5,6 @@ using Common.Dto;
 using User.BL.Dto;
 using Common.Models;
 
-
 namespace User.API.Controllers
 {
     [Route("api/[controller]")]
@@ -35,7 +34,7 @@ namespace User.API.Controllers
             return Ok(token);
         }
 
-        [Authorize(AuthenticationSchemes = "TokenBlackList")]
+        [Authorize]
         [HttpPost("logout")]
         public async Task<ActionResult<TokenResponseDto>> Logout()
         {

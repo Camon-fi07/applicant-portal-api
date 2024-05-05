@@ -15,7 +15,7 @@ namespace Applicant.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterApplicant([FromForm] RegisterApplicantDto registerApplicantDto)
+        public async Task<IActionResult> RegisterApplicant([FromBody] RegisterApplicantDto registerApplicantDto)
         {
             await _applicantService.RegisterApplicant(registerApplicantDto);
             return Ok();

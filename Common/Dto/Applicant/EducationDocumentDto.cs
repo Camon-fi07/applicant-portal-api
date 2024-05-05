@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Common.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Applicant.BL.Dto
+namespace Common.Dto.Applicant
 {
-    public class CreateEducationDocumentDto
+    public class EducationDocumentDto
     {
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public Guid EducationDocumentTypeId { get; set; }
         public List<Guid> Files { get; set; }

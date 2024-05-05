@@ -3,6 +3,7 @@ using Applicant.BL.Services.IServices;
 using Applicant.DAL;
 using Applicant.DAL.Entities;
 using Common.Dto;
+using Common.Dto.Applicant;
 using Common.Dto.RabbitMQ;
 using Common.Enums;
 using EasyNetQ;

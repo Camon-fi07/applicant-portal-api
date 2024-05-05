@@ -1,4 +1,6 @@
-﻿using EasyNetQ;
+﻿using Admission.BL.Services;
+using Admission.BL.Services.IServices;
+using EasyNetQ;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -12,8 +14,9 @@ namespace Admission.BL.Extensions
     {
         public static void ConfigureAdmissionServices(this IServiceCollection services)
         {
-            //var bus = RabbitHutch.CreateBus("host=localhost");
-            //services.AddSingleton(bus); 
+            var bus = RabbitHutch.CreateBus("host=localhost");
+            services.AddSingleton(bus); 
+            services.AddScoped<IApplicationService, ApplicationService>();
         }
     }
 }

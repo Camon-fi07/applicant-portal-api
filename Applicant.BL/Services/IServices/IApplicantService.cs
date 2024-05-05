@@ -1,4 +1,5 @@
 ﻿using Applicant.BL.Dto;
+using Common.Dto.Applicant;
 
 namespace Applicant.BL.Services.IServices
 {

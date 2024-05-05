@@ -1,8 +1,4 @@
-﻿using Applicant.DAL.Entities;
-using Common.Enums;
-using Common.Models;
-
-namespace Applicant.BL.Dto
+﻿namespace Common.Dto.Applicant
 {
     public class RegisterApplicantDto
     {

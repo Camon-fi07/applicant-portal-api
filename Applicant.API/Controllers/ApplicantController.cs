@@ -2,6 +2,7 @@ using Applicant.BL.Dto;
 using Applicant.BL.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Common.Dto.Applicant;
 
 namespace Applicant.API.Controllers
 {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Applicant.BL.Dto
+namespace Common.Dto.Applicant
 {
     public class PassportDto
     {

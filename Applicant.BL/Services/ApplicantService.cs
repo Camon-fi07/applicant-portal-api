@@ -198,14 +198,13 @@ namespace Applicant.BL.Services
                 Id = Guid.NewGuid(),
                 UserId = registerApplicantDto.UserId,
                 Passport = passport,
-                Applications = new List<Guid>() { registerApplicantDto.ApplicationId }
             };
 
             await _applicantDBContext.Applicants.AddAsync(applicant);
 
             await _applicantDBContext.SaveChangesAsync();
 
-            await _bus.PubSub.PublishAsync(new AddRoleDto()
+            await _bus.PubSub.PublishAsync(new ChangeRoleDto()
             {
                 Role = RoleType.Applicant,
                 UserId = registerApplicantDto.UserId

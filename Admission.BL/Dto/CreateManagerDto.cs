@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Common.Dto.RabbitMQ
+namespace Admission.BL.Dto
 {
-    public class AddRoleDto
+    public class CreateManagerDto
     {
-        public RoleType Role { get; set; }
         public Guid UserId { get; set; }
+        public ManagerRole Role { get; set; }
+        public Guid? FacultyId { get; set; }
     }
 }

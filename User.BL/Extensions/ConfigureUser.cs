@@ -23,10 +23,15 @@ namespace User.BL.Extensions
             var profileService = serviceProvider.GetRequiredService<IProfileService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
 
-            bus.PubSub.Subscribe<AddRoleDto>(RabbitMQQueue.ADD_ROLE, (addRoleDto) =>
+            bus.PubSub.Subscribe<ChangeRoleDto>(RabbitMQQueue.ADD_ROLE, (addRoleDto) =>
             {
                 profileService.AddRole(addRoleDto.Role, addRoleDto.UserId);
-            });
+            }, x => x.WithTopic(RabbitMQQueue.ADD_ROLE));
+
+            bus.PubSub.Subscribe<ChangeRoleDto>(RabbitMQQueue.DELETE_ROLE, (addRoleDto) =>
+            {
+                profileService.DeleteRole(addRoleDto.Role, addRoleDto.UserId);
+            }, x => x.WithTopic(RabbitMQQueue.DELETE_ROLE));
 
             bus.Rpc.Respond<Guid, AddUserDto>(async request => { 
                 var profile = await profileService.GetProfile(request);

@@ -2,8 +2,12 @@
 using Admission.BL.Services.IServices;
 using Admission.DAL;
 using Admission.DAL.Entities;
+using Common.Constants;
 using Common.Dto;
+using Common.Dto.Applicant;
+using Common.Dto.RabbitMQ;
 using Common.Enums;
+using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 
 namespace Admission.BL.Services
@@ -11,10 +15,12 @@ namespace Admission.BL.Services
     public class ManagerService : IManagerService
     {
         private readonly AdmissionDBContext _admissionDBContext;
+        private readonly IBus _bus;
 
-        public ManagerService(AdmissionDBContext admissionDBContext)
+        public ManagerService(AdmissionDBContext admissionDBContext, IBus bus)
         {
             _admissionDBContext = admissionDBContext;
+            _bus = bus;
         }
 
         public async Task AddUser(AddUserDto addUser)
@@ -55,9 +61,9 @@ namespace Admission.BL.Services
             await _admissionDBContext.SaveChangesAsync();
         }
 
-        public async Task CreateManager(Guid userId, ManagerRole role)
+        public async Task CreateManager(CreateManagerDto createManagerDto)
         {
-            var user = await _admissionDBContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _admissionDBContext.Users.FirstOrDefaultAsync(u => u.Id == createManagerDto.UserId);
 
             if (user == null)
             {
@@ -66,10 +72,17 @@ namespace Admission.BL.Services
 
             var manager = new ManagerEntity()
             {
-                Role = role,
+                Role = createManagerDto.Role,
                 User = user,
-                Id = userId
+                Id = createManagerDto.UserId,
+                FacultyId = createManagerDto.FacultyId
             };
+
+            await _bus.PubSub.PublishAsync(new ChangeRoleDto()
+            {
+                Role = RoleType.Manager,
+                UserId = createManagerDto.UserId
+            }, RabbitMQQueue.ADD_ROLE);
 
             _admissionDBContext.Managers.Add(manager);
 
@@ -85,9 +98,22 @@ namespace Admission.BL.Services
                 throw new Exception();
             }
 
+            var applications = _admissionDBContext.Applications.Include(a => a.Manager).Where(a => a.Manager.Id == managerId);
+
+            foreach(var application in applications)
+            {
+                application.Manager = null;
+            }
+
             _admissionDBContext.Managers.Remove(manager);
 
             await _admissionDBContext.SaveChangesAsync();
+
+            await _bus.PubSub.PublishAsync(new ChangeRoleDto()
+            {
+                Role = RoleType.Manager,
+                UserId = managerId
+            }, RabbitMQQueue.DELETE_ROLE);
         }
 
         public async Task AddManagerToFaculty(Guid managerId, Guid facultyId)

@@ -14,5 +14,6 @@ namespace User.BL.Services.IServices
         public Task<ApplicantProfileDto> GetApplicantProfile(Guid userId);
         public Task ResetPassword(string token, ResetPasswordDto resetPasswordDto);
         public Task AddRole(RoleType roleType, Guid userId);
+        public Task DeleteRole(RoleType roleType, Guid userId);
     }
 }

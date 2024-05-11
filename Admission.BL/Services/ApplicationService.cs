@@ -7,6 +7,7 @@ using Admission.DAL.Entities;
 using Common.Constants;
 using Common.Dto;
 using Common.Dto.Applicant;
+using Common.Dto.Dictionary;
 using Common.Enums;
 using Common.Models;
 using EasyNetQ;
@@ -45,10 +46,7 @@ namespace Admission.BL.Services
 
         public async Task CreateApplication(CreateApplicationDto createApplication, Guid userId)
         {
-            if(createApplication.Programs.Count > maxProgramsCount || createApplication.Programs.Count < 1)
-            {
-                throw new Exception();
-            }
+            if (!IsProgramsValid(createApplication.Programs)) throw new Exception();
 
             if(createApplication.Passport.Series.ToString().Length != 4)
             {
@@ -59,19 +57,6 @@ namespace Admission.BL.Services
             {
                 throw new Exception();
             }
-
-            var uniquePriorities = new List<int>();
-            createApplication.Programs.ForEach(p =>
-            {
-                if (uniquePriorities.Contains(p.Priority))
-                {
-                    throw new Exception();
-                }
-                else
-                {
-                    uniquePriorities.Add(p.Priority);
-                }
-            });
 
             var user = await _admissionDBContext.Users.FirstOrDefaultAsync(u => u.Id ==  userId);
 
@@ -110,6 +95,8 @@ namespace Admission.BL.Services
 
         public async Task EditPrograms(List<ProgramPriorityDto> programPriorities, Guid applicationId)
         {
+            if (!IsProgramsValid(programPriorities)) throw new Exception();
+
             var application = await _admissionDBContext.Applications.Include(a => a.Programs).FirstOrDefaultAsync(a => a.Id == applicationId);
             if(application == null) { throw new Exception(); }
 
@@ -132,6 +119,29 @@ namespace Admission.BL.Services
             application.Programs = programsEntities;
 
             await _admissionDBContext.SaveChangesAsync();
+        }
+
+        private bool IsProgramsValid(List<ProgramPriorityDto> programPriorities)
+        {
+            if (programPriorities.Count > maxProgramsCount || programPriorities.Count < 1)
+            {
+                return false;
+            }
+
+            var uniquePriorities = new List<ProgramPriorityDto>();
+            foreach (var programPrioritet in programPriorities)
+            {
+                if (!uniquePriorities.Any(p => p.Priority == programPrioritet.Priority))
+                {
+                    uniquePriorities.Add(programPrioritet);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public async Task<ApplicationDto> GetApplication(Guid applicationId)

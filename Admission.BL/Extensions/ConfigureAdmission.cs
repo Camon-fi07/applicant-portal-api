@@ -17,14 +17,14 @@ namespace Admission.BL.Extensions
             services.AddDbContext<AdmissionDBContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
         }
 
-        public static void AddEasyNetQ(this IServiceCollection services)
+        public async static void AddEasyNetQ(this IServiceCollection services)
         {
             var serviceProvider = services.BuildServiceProvider();
             var admissionService = serviceProvider.GetRequiredService<IManagerService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
 
-            bus.PubSub.Subscribe<AddUserDto>(RabbitMQQueue.ADMISSION_ADD_USER, data => admissionService.AddUser(data));
-            bus.PubSub.Subscribe<EditUserDto>(RabbitMQQueue.ADMISSION_EDIT_USER, data => admissionService.EditUser(data));
+            await bus.PubSub.SubscribeAsync<AddUserDto>(RabbitMQQueue.ADMISSION_ADD_USER, data => admissionService.AddUser(data));
+            await bus.PubSub.SubscribeAsync<EditUserDto>(RabbitMQQueue.ADMISSION_EDIT_USER, data => admissionService.EditUser(data));
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Admission.BL.Services.IServices
 {
     public interface IManagerService
     {
-        public Task CreateManager(Guid userId, ManagerRole role);
+        public Task CreateManager(CreateManagerDto createManagerDto);
         public Task DeleteManager(Guid managerId);
         public Task AddUser(AddUserDto addUser);
         public Task EditUser(EditUserDto editUser);

@@ -12,6 +12,8 @@ namespace Common.Constants
         public const string GET_PROFILE = "GET_PROFILE_QUEUE";
         public const string SYNCHRONIZE_PROFILE = "EDIT_PROFILE_QUEUE";
         public const string ADD_ROLE = "ADD_ROLE_QUEUE";
+        public const string DELETE_ROLE = "DELETE_ROLE_QUEUE";
+
 
         public const string ADMISSION_ADD_USER = "ADMISSION_ADD_USER_QUEUE";
         public const string ADMISSION_EDIT_USER = "ADMISSION_EDIT_USER_QUEUE";

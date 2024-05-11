@@ -100,7 +100,6 @@ namespace User.BL.Services
                 }
             }
 
-
             await _bus.PubSub.PublishAsync(new EditProfileDto()
             {
                 Email = editProfileDto.Email,
@@ -111,7 +110,6 @@ namespace User.BL.Services
                 Gender = editProfileDto.Gender,
                 PhoneNumber = editProfileDto.PhoneNumber
             }, RabbitMQQueue.SYNCHRONIZE_PROFILE);
-
 
             await _userManager.UpdateAsync(user);
             await _userDBContext.SaveChangesAsync();
@@ -140,7 +138,18 @@ namespace User.BL.Services
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
+            if (user == null) throw new Exception();
+
             await _userManager.AddToRoleAsync(user, role.ToString());
+        }
+
+        public async Task DeleteRole(RoleType role, Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null) throw new Exception();
+
+            await _userManager.RemoveFromRoleAsync(user, role.ToString());
         }
 
         public async Task<ApplicantProfileDto> EditApplicantProfile(Guid userId, EditApplicantProfileDto editApplicantProfileDto)
@@ -177,7 +186,7 @@ namespace User.BL.Services
 
         public async Task<ApplicantProfileDto> GetApplicantProfile(Guid userId)
         {
-            var applicantData = _bus.Rpc.Request<Guid, ApplicantDataDto>(userId);
+            var applicantData = await _bus.Rpc.RequestAsync<Guid, ApplicantDataDto>(userId);
 
             var profile = await GetProfile(userId);
 

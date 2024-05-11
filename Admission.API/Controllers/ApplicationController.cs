@@ -39,7 +39,7 @@ namespace Admission.API.Controllers
 
         [HttpGet("all")]
         [Authorize]
-        public async Task<ActionResult<ApplicationsPagedListModel>> GetApplications(string? name, Guid? programId, List<Guid>? faculties, ApplicationStatus? status, bool? haveManager, Guid? managerId, ApplicationsSortType? sortType, int page = 1, int size=20)
+        public async Task<ActionResult<ApplicationsPagedListModel>> GetApplications(string? name, Guid? programId, [FromQuery] List<Guid>? faculties, ApplicationStatus? status, bool? haveManager, Guid? managerId, ApplicationsSortType? sortType, int page = 1, int size=20)
         {
             var applications = await _applicationService.GetApplications(page, size, name, programId, faculties, status, haveManager, managerId, sortType);
 
@@ -53,5 +53,30 @@ namespace Admission.API.Controllers
             await _applicationService.EditPrograms(programPriorities, id);
             return Ok();
         }
+
+        [HttpPut("{id:guid}/status")]
+        [Authorize]
+        public async Task<IActionResult> ChangeApplicationStatus(Guid id, [FromBody] ApplicationStatus applicationStatus)
+        {
+            await _applicationService.ChangeApplicationStatus(id, applicationStatus);
+            return Ok();
+        }
+
+        [HttpPut("{applicationId:guid}/take")]
+        [Authorize]
+        public async Task<IActionResult> TakeApplication(Guid applicationId, Guid managerId)
+        {
+            await _applicationService.TakeApplication(managerId, applicationId);
+            return Ok();
+        }
+
+        [HttpPut("{applicationId:guid}/refuse")]
+        [Authorize]
+        public async Task<IActionResult> RefuseApplication(Guid applicationId, Guid managerId)
+        {
+            await _applicationService.Refuse(managerId, applicationId);
+            return Ok();
+        }
+
     }
 }

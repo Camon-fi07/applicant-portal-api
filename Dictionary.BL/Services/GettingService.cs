@@ -1,4 +1,5 @@
 ﻿using Common.Models;
+using Common.Dto.Dictionary;
 using Dictionary.BL.Dto;
 using Dictionary.BL.Mappers;
 using Dictionary.BL.Models;
@@ -6,7 +7,6 @@ using Dictionary.BL.Services.IServices;
 using Dictionary.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 
 namespace Dictionary.BL.Services
 {
@@ -25,6 +25,14 @@ namespace Dictionary.BL.Services
             if (educationLevelId != null) documentTypes = documentTypes.Where(d => d.EducationLevel.Id == educationLevelId).ToList();
             if(name != null) documentTypes = documentTypes.Where(d => d.Name.ToLower().StartsWith(name.ToLower())).ToList();
             return documentTypes.Select(d => EducationDocumentTypeMapper.TranslateDocumentEntityToDto(d)).ToList();
+        }
+
+        public async Task<EducationDocumentTypeDto> GetDocumentType(Guid id)
+        {
+            var documentType = await _dictionaryDBContext.EducationDocumentTypes.Include(d => d.EducationLevel).Include(d => d.NextEducationLevels).FirstOrDefaultAsync(e => e.Id == id);
+            if (documentType == null) throw new Exception();
+
+            return EducationDocumentTypeMapper.TranslateDocumentEntityToDto(documentType);
         }
 
         public async Task<List<EducationLevelDto>> GetEducationLevels(string? name)

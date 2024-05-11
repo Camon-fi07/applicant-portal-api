@@ -1,7 +1,7 @@
-using Applicant.BL.Dto;
 using Applicant.BL.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Common.Dto.Applicant;
 
 namespace Applicant.API.Controllers
 {
@@ -23,26 +23,26 @@ namespace Applicant.API.Controllers
 
         [Authorize]
         [HttpGet("profile")]
-        public async Task<ActionResult<ApplicantProfileDto>> GetApplicantProfile()
+        public async Task<ActionResult<ApplicantDataDto>> GetApplicantProfile()
         {
             if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
             {
                 return Unauthorized();
             }
 
-            var profile = await _applicantService.GetProfile(userId);
+            var profile = await _applicantService.GetApplicantData(userId);
             return Ok(profile);
         }
 
         [HttpPut("profile")]
-        public async Task<ActionResult<ApplicantProfileDto>> EditApplicantProfile([FromBody] EditApplicantProfileDto editApplicantProfileDto)
+        public async Task<ActionResult<ApplicantDataDto>> EditApplicantProfile([FromBody] EditApplicantDataDto editApplicantDataDto)
         {
             if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
             {
                 return Unauthorized();
             }
 
-            var profile = await _applicantService.EditProfile(editApplicantProfileDto, userId);
+            var profile = await _applicantService.EditApplicantData(editApplicantDataDto, userId);
             return Ok(profile);
         }
 

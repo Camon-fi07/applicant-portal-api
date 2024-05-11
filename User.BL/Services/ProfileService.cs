@@ -6,6 +6,10 @@ using User.DAL;
 using Microsoft.AspNetCore.Http;
 using User.BL.Dto;
 using Common.Dto;
+using Common.Constants;
+using EasyNetQ;
+using Common.Dto.Applicant;
+using Common.Dto.RabbitMQ;
 
 namespace User.BL.Services
 {
@@ -14,10 +18,12 @@ namespace User.BL.Services
         ITokenService _tokenService;
         UserManager<UserEntity> _userManager;
         UserDBContext _userDBContext;
-        public ProfileService(ITokenService tokenService, UserManager<UserEntity> userManager, UserDBContext userDBContext) {
+        IBus _bus;
+        public ProfileService(ITokenService tokenService, UserManager<UserEntity> userManager, UserDBContext userDBContext, IBus bus) {
             _tokenService = tokenService;   
             _userManager = userManager;
             _userDBContext = userDBContext;
+            _bus = bus;
         }
 
         public async Task<List<RoleType?>> GetUserRoles(Guid userId)
@@ -94,6 +100,17 @@ namespace User.BL.Services
                 }
             }
 
+            await _bus.PubSub.PublishAsync(new EditProfileDto()
+            {
+                Email = editProfileDto.Email,
+                Firstname = editProfileDto.Firstname,
+                Lastname = editProfileDto.Lastname,
+                Middlename = editProfileDto.Middlename,
+                BirthDate = editProfileDto.BirthDate,
+                Gender = editProfileDto.Gender,
+                PhoneNumber = editProfileDto.PhoneNumber
+            }, RabbitMQQueue.SYNCHRONIZE_PROFILE);
+
             await _userManager.UpdateAsync(user);
             await _userDBContext.SaveChangesAsync();
 
@@ -121,7 +138,72 @@ namespace User.BL.Services
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
+            if (user == null) throw new Exception();
+
             await _userManager.AddToRoleAsync(user, role.ToString());
+        }
+
+        public async Task DeleteRole(RoleType role, Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null) throw new Exception();
+
+            await _userManager.RemoveFromRoleAsync(user, role.ToString());
+        }
+
+        public async Task<ApplicantProfileDto> EditApplicantProfile(Guid userId, EditApplicantProfileDto editApplicantProfileDto)
+        {
+            var applicantData = _bus.Rpc.Request<EditApplicantDataRabbitDto, ApplicantDataDto>(new EditApplicantDataRabbitDto()
+            {
+                UserId = userId,
+                EditApplicantDataDto = new EditApplicantDataDto()
+                {
+                    Citizenship = editApplicantProfileDto.Citizenship,
+                    EducationDocument = editApplicantProfileDto.EducationDocument,
+                    Passport = editApplicantProfileDto.Passport,
+
+                }
+            });
+
+            var profile = await EditProfile(userId, editApplicantProfileDto);
+
+            return new ApplicantProfileDto()
+            {
+                Email = profile.Email,
+                Passport = applicantData.Passport,
+                BirthDate = profile.BirthDate,
+                Citizenship = applicantData.Citizenship,
+                EducationDocument = applicantData.EducationDocument,
+                FirstName = profile.FirstName,
+                Gender = profile.Gender,
+                LastName = profile.LastName,
+                MiddleName = profile.MiddleName,
+                PhoneNumber = profile.PhoneNumber,
+                Roles = profile.Roles
+            };
+        }
+
+        public async Task<ApplicantProfileDto> GetApplicantProfile(Guid userId)
+        {
+            var applicantData = await _bus.Rpc.RequestAsync<Guid, ApplicantDataDto>(userId);
+
+            var profile = await GetProfile(userId);
+
+            return new ApplicantProfileDto()
+            {
+                Email = profile.Email,
+                Passport = applicantData.Passport,
+                BirthDate = profile.BirthDate,
+                Citizenship = applicantData.Citizenship,
+                EducationDocument = applicantData.EducationDocument,
+                FirstName = profile.FirstName,
+                Gender = profile.Gender,
+                LastName = profile.LastName,
+                MiddleName = profile.MiddleName,
+                PhoneNumber = profile.PhoneNumber,
+                Roles = profile.Roles
+            };
         }
     }
 }

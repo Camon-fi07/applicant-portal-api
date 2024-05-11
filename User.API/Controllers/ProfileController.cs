@@ -1,4 +1,5 @@
 ﻿using Common.Dto;
+using Common.Dto.Applicant;
 using Common.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,6 +41,33 @@ namespace User.API.Controllers
                 return Unauthorized();
             }
             var profile = await _profileService.EditProfile(userId,editProfileDto);
+
+            return Ok(profile);
+        }
+
+        [HttpGet("applicant")]
+        [Authorize]
+        public async Task<ActionResult<ApplicantProfileDto>> GetApplicantProfile()
+        {
+            if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
+            {
+                return Unauthorized();
+            }
+
+            var user = await _profileService.GetApplicantProfile(userId);
+
+            return Ok(user);
+        }
+
+        [HttpPut("applicant")]
+        [Authorize]
+        public async Task<ActionResult<ApplicantProfileDto>> EditApplicantProfile(EditApplicantProfileDto editApplicantProfileDto)
+        {
+            if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
+            {
+                return Unauthorized();
+            }
+            var profile = await _profileService.EditApplicantProfile(userId, editApplicantProfileDto);
 
             return Ok(profile);
         }

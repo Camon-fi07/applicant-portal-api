@@ -2,9 +2,11 @@ using Applicant.BL.Extensions;
 using Common.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddApplicantDB(builder.Configuration);
 builder.Services.ConfigureApplicantServices();
 builder.Services.AddAuthenticationCustom(builder.Configuration);
+builder.Services.AddEasyNetQ();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

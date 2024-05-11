@@ -24,7 +24,7 @@ namespace Document.BL.Extensions
 
         public async static void AddEasyNetQ(this IServiceCollection services)
         {
-            var serviceProvider = services.BuildServiceProvider();
+/*            var serviceProvider = services.BuildServiceProvider();
             var documentService = serviceProvider.GetRequiredService<IDocumentService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
                         
@@ -39,7 +39,7 @@ namespace Document.BL.Extensions
             bus.PubSub.Subscribe<DeleteSingleFileDto>("documentDelete", async (deleteFileDto) =>
             {
                 await documentService.DeleteFile(deleteFileDto.FileId);
-            });
+            });*/
         }
     }
 }

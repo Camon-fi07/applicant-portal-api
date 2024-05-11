@@ -13,6 +13,5 @@ namespace Applicant.DAL.Entities
         public string Citizenship { get; set; }
         public PassportEntity? Passport { get; set; }
         public EducationEntity? Education { get; set; }
-        public List<Guid> Applications { get; set; }
     }
 }

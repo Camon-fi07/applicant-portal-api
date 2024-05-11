@@ -17,6 +17,7 @@ namespace Admission.BL.Extensions
             var bus = RabbitHutch.CreateBus("host=localhost");
             services.AddSingleton(bus); 
             services.AddScoped<IApplicationService, ApplicationService>();
+            services.AddScoped<IManagerService, ManagerService>();
         }
     }
 }

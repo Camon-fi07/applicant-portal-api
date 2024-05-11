@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Common.Dto;
 using Common.Models;
 using User.BL.Dto;
+using EasyNetQ;
+using Common.Constants;
 
 namespace User.BL.Services
 {
@@ -15,13 +17,15 @@ namespace User.BL.Services
         private readonly SignInManager<UserEntity> _signInManager;
         private readonly ITokenService _tokenService;
         private readonly UserDBContext _userDBContext;
+        private readonly IBus _bus;
 
-        public AuthService(UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager, ITokenService tokenService, UserDBContext userDBContext)
+        public AuthService(UserManager<UserEntity> userManager, SignInManager<UserEntity> signInManager, ITokenService tokenService, UserDBContext userDBContext, IBus bus)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _tokenService = tokenService;
             _userDBContext = userDBContext;
+            _bus = bus;
         }
 
         public async Task<TokenResponseDto> Login(LoginDto loginDto) {
@@ -73,6 +77,15 @@ namespace User.BL.Services
 
             if (!result.Succeeded) throw new BadHttpRequestException("Произошла ошибка");
             await _userManager.UpdateAsync(user);
+
+            await _bus.PubSub.PublishAsync(new AddUserDto()
+            {
+                Email = user.Email,
+                Firstname = user.Firstname,
+                Id = user.Id,
+                Lastname = user.Lastname,
+                Middlename = user.Middlename
+            });
 
             var refreshToken = await _tokenService.GenerateRefreshToken(user);
             user.RefreshToken = refreshToken;

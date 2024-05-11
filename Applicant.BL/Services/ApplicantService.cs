@@ -1,7 +1,7 @@
-﻿using Applicant.BL.Dto;
-using Applicant.BL.Services.IServices;
+﻿using Applicant.BL.Services.IServices;
 using Applicant.DAL;
 using Applicant.DAL.Entities;
+using Common.Constants;
 using Common.Dto;
 using Common.Dto.Applicant;
 using Common.Dto.RabbitMQ;
@@ -86,44 +86,24 @@ namespace Applicant.BL.Services
             };
         }
 
-        public async Task<ApplicantProfileDto> EditProfile(EditApplicantProfileDto editApplicantProfileDto, Guid userId)
+        public async Task<ApplicantDataDto> EditApplicantData(EditApplicantDataDto editApplicantDataDto, Guid userId)
         {
             var applicant = await _applicantDBContext.Applicants.FirstOrDefaultAsync(a => a.UserId == userId);
 
             if (applicant == null) { throw new Exception(); }
 
-            if(editApplicantProfileDto.Citizenship != null) applicant.Citizenship = editApplicantProfileDto.Citizenship;
+            if(editApplicantDataDto.Citizenship != null) applicant.Citizenship = editApplicantDataDto.Citizenship;
 
             await _applicantDBContext.SaveChangesAsync();
 
-            var editProfileDto = new EditProfileDto()
-            {
-                BirthDate = editApplicantProfileDto.BirthDate,
-                Email = editApplicantProfileDto.Email,
-                Firstname = editApplicantProfileDto.Firstname,
-                Gender = editApplicantProfileDto.Gender,
-                Lastname = editApplicantProfileDto.Lastname,
-                Middlename = editApplicantProfileDto.Middlename,
-                PhoneNumber = editApplicantProfileDto.PhoneNumber
-            };
+            var passport = await EditPassport(editApplicantDataDto.Passport, userId);
+            var educationDOcument = await EditEducationDocument(editApplicantDataDto.EducationDocument, userId);
 
-            var profile = _bus.Rpc.Request<EditUserProfileDto, ProfileDto>(new EditUserProfileDto()
+            return new ApplicantDataDto()
             {
-                EditProfileDto = editProfileDto,
-                UserId = userId,
-            });
-
-            return new ApplicantProfileDto()
-            {
-                BirthDate = profile.BirthDate,
                 Citizenship = applicant.Citizenship,
-                Email = profile.Email,
-                FirstName = profile.FirstName,
-                Gender = profile.Gender,
-                LastName = profile.LastName,
-                MiddleName = profile.MiddleName,
-                PhoneNumber = profile.PhoneNumber,
-                Roles = profile.Roles
+                EducationDocument = educationDOcument,
+                Passport = passport
             };
         }
 
@@ -160,25 +140,32 @@ namespace Applicant.BL.Services
             };
         }
 
-        public async Task<ApplicantProfileDto> GetProfile(Guid userId)
+        public async Task<ApplicantDataDto> GetApplicantData(Guid userId)
         {
             var applicant = await _applicantDBContext.Applicants.FirstOrDefaultAsync(a => a.UserId == userId);
 
             if(applicant == null) { throw new Exception(); }
 
-            var user = _bus.Rpc.Request<Guid, ProfileDto>(applicant.UserId);
-
-            return new ApplicantProfileDto()
+            return new ApplicantDataDto()
             {
-                BirthDate = user.BirthDate,
                 Citizenship = applicant.Citizenship,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                Gender = user.Gender,
-                LastName = user.LastName,
-                MiddleName = user.MiddleName,
-                PhoneNumber = user.PhoneNumber,
-                Roles = user.Roles,
+                Passport = new PassportDto()
+                {
+                    BirthDate = applicant.Passport.BirthDate,
+                    BirthPlace = applicant.Passport.BirthPlace,
+                    Id = applicant.Passport.Id,
+                    Issued = applicant.Passport.Issued,
+                    Number = applicant.Passport.Number,
+                    Series = applicant.Passport.Series,
+                    Files = applicant.Passport.Files
+                },
+                EducationDocument = new EducationDocumentDto()
+                {
+                    EducationDocumentTypeId = applicant.Education.EducationDocumentTypeId,
+                    Id = applicant.Education.Id,
+                    Name = applicant.Education.Name,
+                    Files = applicant.Education.Files
+                }
             };
         }
 

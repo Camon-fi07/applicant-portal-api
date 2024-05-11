@@ -7,6 +7,7 @@ using EasyNetQ;
 using User.BL.Services.IServices;
 using User.BL.Services;
 using Common.Dto;
+using Common.Constants;
 
 namespace User.BL.Extensions
 {
@@ -22,17 +23,30 @@ namespace User.BL.Extensions
             var profileService = serviceProvider.GetRequiredService<IProfileService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
 
-            bus.PubSub.Subscribe<AddRoleDto>("userAddRole", (addRoleDto) =>
+            bus.PubSub.Subscribe<AddRoleDto>(RabbitMQQueue.ADD_ROLE, (addRoleDto) =>
             {
                 profileService.AddRole(addRoleDto.Role, addRoleDto.UserId);
             });
 
-            bus.Rpc.Respond<Guid, ProfileDto>(async request => await profileService.GetProfile(request));
-            bus.Rpc.Respond<EditUserProfileDto, ProfileDto>(async request => await profileService.EditProfile(request.UserId, request.EditProfileDto));
+            bus.Rpc.Respond<Guid, AddUserDto>(async request => { 
+                var profile = await profileService.GetProfile(request);
+
+                return new AddUserDto()
+                {
+                    Email = profile.Email,
+                    Id = request,
+                    Firstname = profile.FirstName,
+                    Lastname = profile.LastName,
+                    Middlename = profile.MiddleName
+                };
+            }, x => x.WithQueueName(RabbitMQQueue.ADD_USER));
+            bus.Rpc.Respond<Guid, ProfileDto>(async request => await profileService.GetProfile(request), x=> x.WithQueueName(RabbitMQQueue.GET_PROFILE));
         }
 
         public static void AddUserServices(this IServiceCollection services)
         {
+            var bus = RabbitHutch.CreateBus("host=localhost");
+            services.AddSingleton(bus);
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IProfileService, ProfileService>();

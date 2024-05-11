@@ -1,4 +1,9 @@
-﻿using Admission.DAL;
+﻿using Admission.BL.Dto;
+using Admission.BL.Services.IServices;
+using Admission.DAL;
+using Common.Constants;
+using Common.Dto;
+using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +15,16 @@ namespace Admission.BL.Extensions
         public static void AddAdmissionDB(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<AdmissionDBContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        }
+
+        public static void AddEasyNetQ(this IServiceCollection services)
+        {
+            var serviceProvider = services.BuildServiceProvider();
+            var admissionService = serviceProvider.GetRequiredService<IManagerService>();
+            var bus = RabbitHutch.CreateBus("host=localhost");
+
+            bus.PubSub.Subscribe<AddUserDto>(RabbitMQQueue.ADMISSION_ADD_USER, data => admissionService.AddUser(data));
+            bus.PubSub.Subscribe<EditUserDto>(RabbitMQQueue.ADMISSION_EDIT_USER, data => admissionService.EditUser(data));
         }
     }
 }

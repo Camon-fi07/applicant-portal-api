@@ -28,6 +28,15 @@ namespace Admission.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("EditTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ManagerId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
@@ -36,16 +45,17 @@ namespace Admission.DAL.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ManagerId");
+
+                    b.HasIndex("UserId");
+
                     b.ToTable("Applications");
                 });
 
             modelBuilder.Entity("Admission.DAL.Entities.ManagerEntity", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ApplicationId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("FacultyId")
@@ -54,9 +64,12 @@ namespace Admission.DAL.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
-                    b.HasKey("UserId");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
-                    b.HasIndex("ApplicationId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Managers");
                 });
@@ -86,13 +99,59 @@ namespace Admission.DAL.Migrations
                     b.ToTable("ProgramPriorities");
                 });
 
+            modelBuilder.Entity("Admission.DAL.Entities.UserEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Firstname")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Lastname")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Middlename")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.ApplicationEntity", b =>
+                {
+                    b.HasOne("Admission.DAL.Entities.ManagerEntity", "Manager")
+                        .WithMany()
+                        .HasForeignKey("ManagerId");
+
+                    b.HasOne("Admission.DAL.Entities.UserEntity", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Manager");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Admission.DAL.Entities.ManagerEntity", b =>
                 {
-                    b.HasOne("Admission.DAL.Entities.ApplicationEntity", "Application")
+                    b.HasOne("Admission.DAL.Entities.UserEntity", "User")
                         .WithMany()
-                        .HasForeignKey("ApplicationId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Application");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Admission.DAL.Entities.ProgramPriorityEntity", b =>

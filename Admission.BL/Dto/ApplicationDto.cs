@@ -13,9 +13,8 @@ namespace Admission.BL.Dto
     {
         public List<ProgramPriorityDto> ProgramPriorities { get; set; }
         public Guid ApplicationId { get; set; }
-        public ApplicantProfileDto User { get; set; }
-        public PassportDto Passport { get; set; }
-        public EducationDocumentDto Education { get; set; }
+        public ApplicantDataDto Applicant { get; set; }
+        public UserDto User { get; set; }
         public ApplicationStatus Status { get; set; }
     }
 }

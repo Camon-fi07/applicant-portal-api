@@ -23,5 +23,7 @@ namespace Common.Constants
         public const string GET_EDUCATION_DOCUMENT = "GET_EDUCATION_DOCUMENT_QUEUE";
         public const string GET_APPLICANT_DATA = "GET_APPLICANT_DATA_QUEUE";
         public const string EDIT_APPLICANT_DATA = "EDIT_APPLICANT_DATA_QUEUE";
+
+        public const string NOTIFICATION_SEND_EMAIL = "NOTIFICATION_SEND_EMAIL_QUEUE";
     }
 }

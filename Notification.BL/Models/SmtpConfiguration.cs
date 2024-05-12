@@ -8,7 +8,7 @@ namespace Notification.BL.Models
 {
     public class SmtpConfiguration
     {
-        public required string Host { get; set; }
-        public required int Port { get; set; }
+        public string Host { get; set; }
+        public int Port { get; set; }
     }
 }

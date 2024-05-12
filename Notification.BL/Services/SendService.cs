@@ -14,11 +14,8 @@ namespace Notification.BL.Services
 
         public SendService(IConfiguration configuration) {
             senderEmail = configuration.GetSection("SenderEmail").Value ?? "";
+            smtpConfiguration = new SmtpConfiguration();
             configuration.GetSection("SmtpClient").Bind(smtpConfiguration);
-            if(smtpConfiguration == null)
-            {
-                smtpConfiguration = new SmtpConfiguration() { Host = "localhost", Port = 1025 };
-            }
         }
 
         public async Task SendEmail(EmailMessageDto emailMessageDto)

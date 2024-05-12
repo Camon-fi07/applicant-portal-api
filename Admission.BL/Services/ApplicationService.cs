@@ -256,6 +256,13 @@ namespace Admission.BL.Services
                 Email = application.User.Email,
                 Subject = "Заявление на поступления"
             });
+
+            await _bus.PubSub.PublishAsync(new EmailMessageDto()
+            {
+                Body = $"Вы были назначены менеджером {application.User.Lastname} {application.User.Firstname} {application.User.Middlename}",
+                Email = manager.User.Email,
+                Subject = "Заявление на поступления"
+            });
         }
 
         private List<ApplicationEntity> SortApplicationDate(ApplicationsSortType sortType, List<ApplicationEntity> applications)

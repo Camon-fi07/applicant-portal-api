@@ -35,11 +35,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Document.BL", "Document.BL\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Document.API", "Document.API\Document.API.csproj", "{4BA2CB31-9715-4D2A-B6B7-17FC518D4383}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Admission.DAL", "Admission.DAL\Admission.DAL.csproj", "{1658230E-C01B-48CF-9700-8C2BD6F9FE38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Admission.DAL", "Admission.DAL\Admission.DAL.csproj", "{1658230E-C01B-48CF-9700-8C2BD6F9FE38}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Admission.BL", "Admission.BL\Admission.BL.csproj", "{390A6D08-8F6B-4029-A680-76B056B19757}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Admission.BL", "Admission.BL\Admission.BL.csproj", "{390A6D08-8F6B-4029-A680-76B056B19757}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Admission.API", "Admission.API\Admission.API.csproj", "{1E6798F3-D2D4-4CB8-A3E7-FDCC328FFC3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Admission.API", "Admission.API\Admission.API.csproj", "{1E6798F3-D2D4-4CB8-A3E7-FDCC328FFC3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.BL", "Notification.BL\Notification.BL.csproj", "{A19ADB3E-3320-40CA-81FF-BB5D048F6139}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.API", "Notification.API\Notification.API.csproj", "{B8C2F896-C414-42F8-831F-DB42126C9CB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,6 +115,14 @@ Global
 		{1E6798F3-D2D4-4CB8-A3E7-FDCC328FFC3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E6798F3-D2D4-4CB8-A3E7-FDCC328FFC3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E6798F3-D2D4-4CB8-A3E7-FDCC328FFC3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A19ADB3E-3320-40CA-81FF-BB5D048F6139}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A19ADB3E-3320-40CA-81FF-BB5D048F6139}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A19ADB3E-3320-40CA-81FF-BB5D048F6139}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A19ADB3E-3320-40CA-81FF-BB5D048F6139}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8C2F896-C414-42F8-831F-DB42126C9CB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8C2F896-C414-42F8-831F-DB42126C9CB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8C2F896-C414-42F8-831F-DB42126C9CB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8C2F896-C414-42F8-831F-DB42126C9CB9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

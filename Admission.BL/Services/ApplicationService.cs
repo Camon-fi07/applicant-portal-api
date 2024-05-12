@@ -13,6 +13,7 @@ using Common.Models;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Admission.BL.Services
 {
@@ -35,13 +36,20 @@ namespace Admission.BL.Services
 
         public async Task ChangeApplicationStatus(Guid applicationId, ApplicationStatus status)
         {
-            var application = await _admissionDBContext.Applications.Include(a => a.Programs).FirstOrDefaultAsync(a => a.Id == applicationId);
+            var application = await _admissionDBContext.Applications.Include(a => a.Programs).Include(a => a.User).FirstOrDefaultAsync(a => a.Id == applicationId);
 
             if (application == null) { throw new Exception(); }
 
             application.Status = status;
 
             await _admissionDBContext.SaveChangesAsync();
+
+            await _bus.PubSub.PublishAsync(new EmailMessageDto()
+            {
+                Body = $"Статус вашего поступления был изменён на {status}",
+                Email = application.User.Email,
+                Subject = "Статус поступления"
+            });
         }
 
         public async Task CreateApplication(CreateApplicationDto createApplication, Guid userId)
@@ -86,6 +94,13 @@ namespace Admission.BL.Services
                 Education = createApplication.Education,
                 Passport = createApplication.Passport,
                 UserId = userId
+            });
+
+            await _bus.PubSub.PublishAsync(new EmailMessageDto()
+            {
+                Body = $"Ваше заявление было успешно обработано",
+                Email = user.Email,
+                Subject = "Поступления"
             });
 
             await _admissionDBContext.Applications.AddAsync(applicationEntity);
@@ -225,15 +240,22 @@ namespace Admission.BL.Services
 
         public async Task TakeApplication(Guid managerId, Guid applicationId)
         {
-            var manager = await _admissionDBContext.Managers.FirstOrDefaultAsync(m => m.Id == managerId);
+            var manager = await _admissionDBContext.Managers.Include(m => m.User).FirstOrDefaultAsync(m => m.Id == managerId);
             if(manager == null) { throw new Exception(); }
 
-            var application = await _admissionDBContext.Applications.Include(a => a.Programs).FirstOrDefaultAsync(a => a.Id == applicationId);
+            var application = await _admissionDBContext.Applications.Include(m => m.User).Include(a => a.Programs).FirstOrDefaultAsync(a => a.Id == applicationId);
             if (application == null) { throw new Exception(); }
 
             application.Manager = manager;
 
             await _admissionDBContext.SaveChangesAsync();
+
+            await _bus.PubSub.PublishAsync(new EmailMessageDto()
+            {
+                Body = $"Ваше заявление обрабатывается менеджером {manager.User.Lastname} {manager.User.Firstname} {manager.User.Middlename}",
+                Email = application.User.Email,
+                Subject = "Заявление на поступления"
+            });
         }
 
         private List<ApplicationEntity> SortApplicationDate(ApplicationsSortType sortType, List<ApplicationEntity> applications)

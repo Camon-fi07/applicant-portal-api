@@ -8,6 +8,7 @@ using User.BL.Services.IServices;
 using User.BL.Services;
 using Common.Dto;
 using Common.Constants;
+using Common.Dto.User;
 
 namespace User.BL.Extensions
 {
@@ -21,6 +22,7 @@ namespace User.BL.Extensions
         {
             var serviceProvider = services.BuildServiceProvider();
             var profileService = serviceProvider.GetRequiredService<IProfileService>();
+            var authService = serviceProvider.GetRequiredService<IAuthService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
 
             bus.PubSub.Subscribe<ChangeRoleDto>(RabbitMQQueue.ADD_ROLE, (addRoleDto) =>
@@ -46,6 +48,8 @@ namespace User.BL.Extensions
                 };
             }, x => x.WithQueueName(RabbitMQQueue.ADD_USER));
             bus.Rpc.Respond<Guid, ProfileDto>(async request => await profileService.GetProfile(request), x=> x.WithQueueName(RabbitMQQueue.GET_PROFILE));
+
+            bus.Rpc.Respond<LoginDto, TokenResponseDto>(async request => await authService.Login(request), x => x.WithQueueName(RabbitMQQueue.LOGIN));
         }
 
         public static void AddUserServices(this IServiceCollection services)

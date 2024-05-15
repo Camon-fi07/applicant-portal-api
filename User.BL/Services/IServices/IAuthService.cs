@@ -1,4 +1,5 @@
 ﻿using Common.Dto;
+using Common.Dto.User;
 using Common.Models;
 using User.BL.Dto;
 

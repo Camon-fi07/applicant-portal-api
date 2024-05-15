@@ -8,6 +8,7 @@ using Common.Models;
 using User.BL.Dto;
 using EasyNetQ;
 using Common.Constants;
+using Common.Dto.User;
 
 namespace User.BL.Services
 {

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using User.BL.Services.IServices;
 using Common.Dto;
 using User.BL.Dto;
+using Common.Dto.User;
 using Common.Models;
 
 namespace User.API.Controllers

@@ -12,7 +12,7 @@ namespace User.BL.Services.IServices
         public Task<ProfileDto> EditProfile(Guid userId, EditProfileDto editProfileDto);
         public Task<ApplicantProfileDto> EditApplicantProfile(Guid userId, EditApplicantProfileDto editApplicantProfileDto);
         public Task<ApplicantProfileDto> GetApplicantProfile(Guid userId);
-        public Task ResetPassword(string token, ResetPasswordDto resetPasswordDto);
+        public Task ResetPassword(Guid userId, ResetPasswordDto resetPasswordDto);
         public Task AddRole(RoleType roleType, Guid userId);
         public Task DeleteRole(RoleType roleType, Guid userId);
     }

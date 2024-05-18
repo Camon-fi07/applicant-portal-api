@@ -90,8 +90,12 @@ namespace User.API.Controllers
         [Authorize]
         public async Task<ActionResult<List<RoleType>>> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
         {
-            string token = HttpContext.Request.Headers["Authorization"];
-            await _profileService.ResetPassword(token, resetPasswordDto);
+            if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
+            {
+                return Unauthorized();
+            }
+
+            await _profileService.ResetPassword(userId, resetPasswordDto);
 
             return Ok();
         }

@@ -117,9 +117,11 @@ namespace User.BL.Services
             return await GetProfile(userId);
         }
 
-        public async Task ResetPassword(string token, ResetPasswordDto resetPasswordDto)
+        public async Task ResetPassword(Guid userId, ResetPasswordDto resetPasswordDto)
         {
-            var user = await _tokenService.GetUserByToken(token);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null) throw new Exception();
             var passwordResetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, passwordResetToken, resetPasswordDto.Password);
 
@@ -128,8 +130,6 @@ namespace User.BL.Services
                 throw new BadHttpRequestException("Произошла ошибка");
             }
 
-            user.RefreshToken = null;
-            await _userDBContext.BannedTokens.AddAsync(new TokenEntity() { Token = token });
             await _userManager.UpdateAsync(user);
             await _userDBContext.SaveChangesAsync();
         }

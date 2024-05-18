@@ -10,10 +10,11 @@ using System.Security.Claims;
 
 namespace AdminPanel.Controllers
 {
-    public class AccountController : Controller
+    public class AuthController : Controller
     {
         private readonly IAdminPanelAccountService _adminPanelAccountService;
-        public AccountController(IAdminPanelAccountService adminPanelAccountService) { 
+
+        public AuthController(IAdminPanelAccountService adminPanelAccountService) { 
             _adminPanelAccountService = adminPanelAccountService;
         }
 
@@ -30,14 +31,6 @@ namespace AdminPanel.Controllers
             Response.Cookies.Append("accessToken", tokens.AccessToken, new CookieOptions { HttpOnly = true });
             Response.Cookies.Append("refreshToken", tokens.RefreshToken, new CookieOptions { HttpOnly = true });
 
-            return View();
-        }
-
-        [HttpGet]
-        [Authorize]
-        public IActionResult Profile()
-        {
-            Console.WriteLine(User.Identity.Name);
             return View();
         }
     }

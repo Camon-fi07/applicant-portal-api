@@ -14,6 +14,7 @@ namespace Common.Constants
         public const string ADD_ROLE = "ADD_ROLE_QUEUE";
         public const string DELETE_ROLE = "DELETE_ROLE_QUEUE";
         public const string LOGIN = "LOGIN_QUEUE";
+        public const string EDIT_PROFILE = "EDIT_PROFILE_QUEUE";
 
 
         public const string ADMISSION_ADD_USER = "ADMISSION_ADD_USER_QUEUE";

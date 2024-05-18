@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Common.Dto.RabbitMQ
 {
-    public class EditUserProfileDto
+    public class EditRabbitProfileDto
     {
         public Guid UserId { get; set; }
         public EditProfileDto EditProfileDto { get; set; }

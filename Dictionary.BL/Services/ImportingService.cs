@@ -1,10 +1,11 @@
-﻿using Dictionary.BL.Dto;
+﻿using Common.Dto.Dictionary;
+using Common.Enums;
+using Dictionary.BL.Dto;
 using Dictionary.BL.Mappers;
 using Dictionary.BL.Models;
 using Dictionary.BL.Services.IServices;
 using Dictionary.DAL;
 using Dictionary.DAL.Entities;
-using Dictionary.DAL.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -29,12 +30,6 @@ namespace Dictionary.BL.Services
             _configuration.GetSection("RemoteDictionary").Bind(_remoteDictionary);
             string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_remoteDictionary.Login}:{_remoteDictionary.Password}"));
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
-        }
-
-        public async Task<List<ImportingStatusEntity>> GetImportingStatuses()
-        {
-            var statuses = await _dictionaryDBContext.ImportingStatuses.ToListAsync();
-            return statuses;
         }
 
         public async Task ImporDocumentTypes() //TODO асинхронное взаимодействие

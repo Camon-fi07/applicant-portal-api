@@ -1,4 +1,5 @@
-﻿using Dictionary.BL.Services.IServices;
+﻿using Common.Dto;
+using Dictionary.BL.Services.IServices;
 using Dictionary.DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,14 +43,6 @@ namespace Dictionary.API.Controllers
             await _importingService.ImportPrograms();
 
             return Ok();
-        }
-
-        [HttpGet("importing_statuses")]
-        public async Task<ActionResult<ImportingStatusEntity>> GetImportingStatuses()
-        {
-            var statuses = await _importingService.GetImportingStatuses();
-
-            return Ok(statuses);
         }
     }
 }

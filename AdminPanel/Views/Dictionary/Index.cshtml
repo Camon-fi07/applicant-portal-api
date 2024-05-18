@@ -1,0 +1,78 @@
+﻿@model DictionaryViewModel;
+
+@{
+    ViewData["Title"] = "Авторизация";
+    Layout = "_Layout";
+}
+
+<div>
+    <button onclick="importFaculties()">Импортировать Факультеты</button>
+    <button onclick="importFaculties">Импортировать Программы</button>
+    <button onclick="importEducationLevels()">Импортировать уровни образования</button>
+    <button onclick="importEducationDocuments()">Импортировать Документы об образовании</button>
+
+    <ul>
+        @foreach (var status in Model.ImportingStatuses)
+        {
+            <li>
+                <p>@status.CreateTime</p>
+                <p>@status.GuideType</p>
+                <p>@status.StatusCode</p>
+                <p>@status.Description</p>
+            </li>
+        }
+    </ul> 
+</div>
+<script>
+    function importPrograms() {
+        $.ajax({
+            url: '/Dictionary/ImportPrograms',
+            type: 'POST',
+            success: function (response) {
+                console.log(response);
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function importFaculties() {
+        $.ajax({
+            url: '/Dictionary/ImportFaculties',
+            type: 'POST',
+            success: function (response) {
+                console.log(response);
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function importEducationLevels() {
+        $.ajax({
+            url: '/Dictionary/ImportEducationLevels',
+            type: 'POST',
+            success: function (response) {
+                console.log(response);
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function importEducationDocuments() {
+        $.ajax({
+            url: '/Dictionary/ImportEducationDocuments',
+            type: 'POST',
+            success: function (response) {
+                console.log(response);
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            }
+        });
+    }
+</script>

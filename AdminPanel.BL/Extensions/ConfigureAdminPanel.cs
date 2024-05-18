@@ -15,6 +15,7 @@ namespace AdminPanel.BL.Extensions
         {
             services.AddScoped<IAdminPanelAccountService, AdminPanelAccountService>();
             services.AddScoped<IAdminPanelProfileService, AdminPanelProfileService>();
+            services.AddScoped<IAdminPanelDictionaryService, AdminPanelDictionaryService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
             services.AddSingleton(bus);
         }

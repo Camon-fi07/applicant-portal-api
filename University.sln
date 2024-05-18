@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Notification.API", "Notific
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel", "AdminPanel\AdminPanel.csproj", "{5055827B-8F0B-4D28-8C56-4D87FEB1B9AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminPanel.BL", "AdminPanel.BL\AdminPanel.BL.csproj", "{82CF9203-35B0-4FA8-96C9-E75D44D1DF77}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminPanel.BL", "AdminPanel.BL\AdminPanel.BL.csproj", "{82CF9203-35B0-4FA8-96C9-E75D44D1DF77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

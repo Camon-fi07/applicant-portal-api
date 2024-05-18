@@ -1,4 +1,5 @@
-﻿using Dictionary.BL.Dto;
+﻿using Common.Dto.Dictionary;
+using Dictionary.BL.Dto;
 using Dictionary.DAL.Entities;
 using System;
 using System.Collections.Generic;

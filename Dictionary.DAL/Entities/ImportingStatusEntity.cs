@@ -1,4 +1,4 @@
-﻿using Dictionary.DAL.Enums;
+﻿using Common.Enums;
 
 namespace Dictionary.DAL.Entities
 {

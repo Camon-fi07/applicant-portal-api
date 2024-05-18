@@ -1,4 +1,6 @@
-﻿using Dictionary.BL.Dto;
+﻿using Common.Dto;
+using Common.Dto.Dictionary;
+using Dictionary.BL.Dto;
 using Dictionary.BL.Models;
 using Dictionary.BL.Services.IServices;
 using Microsoft.AspNetCore.Http;
@@ -46,6 +48,15 @@ namespace Dictionary.API.Controllers
             var programs = await _gettingService.GetPrograms(page, size, facultyId, educationLevelId, educationForm, language, name, code);
 
             return Ok(programs);
+        }
+
+
+        [HttpGet("importing_statuses")]
+        public async Task<ActionResult<ImportingStatusDto>> GetImportingStatuses()
+        {
+            var statuses = await _gettingService.GetImportingStatuses();
+
+            return Ok(statuses);
         }
     }
 }

@@ -7,6 +7,8 @@ using Dictionary.BL.Services.IServices;
 using Dictionary.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Dictionary.DAL.Entities;
+using Common.Dto;
 
 namespace Dictionary.BL.Services
 {
@@ -17,6 +19,19 @@ namespace Dictionary.BL.Services
         public GettingService(DictionaryDBContext dictionaryDBContext, HttpClient httpClient, IConfiguration configuration)
         {
             _dictionaryDBContext = dictionaryDBContext;
+        }
+
+        public async Task<List<ImportingStatusDto>> GetImportingStatuses()
+        {
+            var statuses = await _dictionaryDBContext.ImportingStatuses.ToListAsync();
+            return statuses.Select(s => new ImportingStatusDto()
+            {
+                CreateTime = s.CreateTime,
+                Description = s.Description,
+                GuideType = s.GuideType,
+                Id = s.Id,
+                StatusCode = s.StatusCode
+            }).ToList();
         }
 
         public async Task<List<EducationDocumentTypeDto>> GetDocumentTypes(string? name, int? educationLevelId)

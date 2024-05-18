@@ -8,6 +8,5 @@ namespace Dictionary.BL.Services.IServices
         public Task ImporDocumentTypes();
         public Task ImportFaculties();
         public Task ImportPrograms();
-        public Task<List<ImportingStatusEntity>> GetImportingStatuses();
     }
 }

@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 
 namespace Common.Interfaces
 {
-    public interface IAdminPanelAccountService
+    public interface IAdminPanelAuthService
     {
         Task<TokenResponseDto> Login(LoginDto loginDto);
+        Task Logout();
+
     }
 }

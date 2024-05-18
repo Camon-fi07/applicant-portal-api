@@ -65,13 +65,7 @@
         $.ajax({
             url: '/Profile/EditProfile',
             type: 'PUT',
-            data: formData,
-            success: function (response) {
-                console.log(response);
-            },
-            error: function (xhr, status, error) {
-                console.log(error);
-            }
+            data: formData
         });
     } 
 </script>

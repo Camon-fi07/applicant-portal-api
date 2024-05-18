@@ -19,10 +19,10 @@ using System.Security.Principal;
 
 namespace AdminPanel.BL.Services
 {
-    public class AdminPanelAccountService : IAdminPanelAccountService
+    public class AdminPanelAuthService : IAdminPanelAuthService
     {
         private readonly IBus _bus;
-        public AdminPanelAccountService(IBus bus) { 
+        public AdminPanelAuthService(IBus bus) { 
             _bus = bus;
         }
 
@@ -31,6 +31,11 @@ namespace AdminPanel.BL.Services
             var tokens = await _bus.Rpc.RequestAsync<LoginDto, TokenResponseDto>(loginDto, x => x.WithQueueName(RabbitMQQueue.LOGIN));
             
             return tokens;
+        }
+
+        public async Task Logout()
+        {
+            var result = await _bus.Rpc.RequestAsync<Empty, Empty>(new Empty());
         }
     }
 }

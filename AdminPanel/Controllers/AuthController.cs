@@ -12,9 +12,9 @@ namespace AdminPanel.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly IAdminPanelAccountService _adminPanelAccountService;
+        private readonly IAdminPanelAuthService _adminPanelAccountService;
 
-        public AuthController(IAdminPanelAccountService adminPanelAccountService) { 
+        public AuthController(IAdminPanelAuthService adminPanelAccountService) { 
             _adminPanelAccountService = adminPanelAccountService;
         }
 
@@ -30,6 +30,14 @@ namespace AdminPanel.Controllers
             var tokens = await _adminPanelAccountService.Login(loginDto);
             Response.Cookies.Append("accessToken", tokens.AccessToken, new CookieOptions { HttpOnly = true });
             Response.Cookies.Append("refreshToken", tokens.RefreshToken, new CookieOptions { HttpOnly = true });
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await _adminPanelAccountService.Logout();
 
             return View();
         }

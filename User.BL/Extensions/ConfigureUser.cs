@@ -49,9 +49,13 @@ namespace User.BL.Extensions
             }, x => x.WithQueueName(RabbitMQQueue.ADD_USER));
             bus.Rpc.Respond<Guid, ProfileDto>(async request => await profileService.GetProfile(request), x=> x.WithQueueName(RabbitMQQueue.GET_PROFILE));
 
-            bus.Rpc.Respond<LoginDto, TokenResponseDto>(async request => await authService.Login(request), x => x.WithQueueName(RabbitMQQueue.LOGIN));
+            //bus.Rpc.Respond<LoginDto, TokenResponseDto>(async request => await authService.Login(request), x => x.WithQueueName(RabbitMQQueue.LOGIN));
 
             bus.Rpc.Respond<EditRabbitProfileDto, ProfileDto>(async request => await profileService.EditProfile(request.UserId, request.EditProfileDto), x => x.WithQueueName(RabbitMQQueue.EDIT_PROFILE));
+            /*bus.Rpc.Respond<Empty, Empty>(async (_) =>
+            {
+                await authService.Logout();
+            })*/
         }
 
         public static void AddUserServices(this IServiceCollection services)

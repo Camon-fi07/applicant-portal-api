@@ -38,18 +38,13 @@ namespace User.BL.Services
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<UserDBContext>();
-                    var bannedTokens = dbContext.BannedTokens;
-                    foreach (var token in bannedTokens)
+                    var refrehTokens = dbContext.RefreshTokens;
+                    foreach (var token in refrehTokens)
                     {
-                        try
+                        if(token.ExpiredTime < DateTime.UtcNow)
                         {
-                            _tokenHandler.ValidateToken(token.Token, _tokenValidationParameters, out _);
+                            dbContext.RefreshTokens.Remove(token);
                         }
-                        catch
-                        {
-                            dbContext.BannedTokens.Remove(token);
-                        }
-
                     }
                     await dbContext.SaveChangesAsync();
                 }

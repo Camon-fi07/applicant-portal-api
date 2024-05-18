@@ -22,7 +22,7 @@ namespace User.API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<TokenResponseDto>> Login([FromBody] LoginDto loginDto)
         {
-            var token = await _authService.Login(loginDto);
+            var token = await _authService.Login(loginDto, HttpContext.Request.Headers.UserAgent.ToString());
 
             return Ok(token);
         }
@@ -30,7 +30,7 @@ namespace User.API.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<TokenResponseDto>> RegisterApplicant([FromBody] UserRegisterModel userRegisterModel)
         {
-            var token = await _authService.RegisterUser(userRegisterModel);
+            var token = await _authService.RegisterUser(userRegisterModel, HttpContext.Request.Headers.UserAgent.ToString());
 
             return Ok(token);
         }
@@ -39,8 +39,12 @@ namespace User.API.Controllers
         [HttpPost("logout")]
         public async Task<ActionResult<TokenResponseDto>> Logout()
         {
-            string token = HttpContext.Request.Headers["Authorization"];
-            await _authService.Logout(token);
+            if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
+            {
+                return Unauthorized();
+            }
+
+            await _authService.Logout(userId, HttpContext.Request.Headers.UserAgent.ToString());
 
             return Ok();
         }
@@ -48,7 +52,8 @@ namespace User.API.Controllers
         [HttpPost("refresh")]
         public async Task<ActionResult<TokenResponseDto>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
         {
-            var token = await _tokenService.RefreshToken(refreshTokenDto);
+
+            var token = await _tokenService.RefreshToken(refreshTokenDto, HttpContext.Request.Headers.UserAgent.ToString());
 
             return Ok(token);
         }

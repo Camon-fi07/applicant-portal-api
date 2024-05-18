@@ -8,7 +8,7 @@ namespace User.BL.Services.IServices
     {
         public Task<string> GenerateAccessToken(UserEntity user);
         public Task<string> GenerateRefreshToken(UserEntity user);
-        public Task<TokenResponseDto> RefreshToken(RefreshTokenDto refreshTokenDto);
-        public Task<UserEntity> GetUserByToken(string token);
+        public Task<TokenResponseDto> RefreshToken(RefreshTokenDto refreshTokenDto, string userAgent);
+        public DateTime GetTokenExpired(string token);
     }
 }

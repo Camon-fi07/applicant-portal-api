@@ -28,51 +28,27 @@
         $.ajax({
             url: '/Dictionary/ImportPrograms',
             type: 'POST',
-            success: function (response) {
-                console.log(response);
-            },
-            error: function (xhr, status, error) {
-                console.log(error);
-            }
         });
     }
 
     function importFaculties() {
         $.ajax({
             url: '/Dictionary/ImportFaculties',
-            type: 'POST',
-            success: function (response) {
-                console.log(response);
-            },
-            error: function (xhr, status, error) {
-                console.log(error);
-            }
+            type: 'POST'
         });
     }
 
     function importEducationLevels() {
         $.ajax({
             url: '/Dictionary/ImportEducationLevels',
-            type: 'POST',
-            success: function (response) {
-                console.log(response);
-            },
-            error: function (xhr, status, error) {
-                console.log(error);
-            }
+            type: 'POST'
         });
     }
 
     function importEducationDocuments() {
         $.ajax({
             url: '/Dictionary/ImportEducationDocuments',
-            type: 'POST',
-            success: function (response) {
-                console.log(response);
-            },
-            error: function (xhr, status, error) {
-                console.log(error);
-            }
+            type: 'POST'
         });
     }
 </script>

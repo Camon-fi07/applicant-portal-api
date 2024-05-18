@@ -8,8 +8,7 @@ namespace User.DAL
     public class UserDBContext : IdentityDbContext<UserEntity, Role, Guid, IdentityUserClaim<Guid>,
     IdentityUserRole<Guid>, IdentityUserLogin<Guid>, IdentityRoleClaim<Guid>, IdentityUserToken<Guid>>
     {
-        public DbSet<UserEntity> Users { get; set; }
-        public DbSet<TokenEntity> BannedTokens { get; set; }
+        public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
 
         public UserDBContext(DbContextOptions options) : base(options)
         {

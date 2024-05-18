@@ -9,6 +9,7 @@ using User.BL.Dto;
 using EasyNetQ;
 using Common.Constants;
 using Common.Dto.User;
+using Microsoft.EntityFrameworkCore;
 
 namespace User.BL.Services
 {
@@ -29,15 +30,38 @@ namespace User.BL.Services
             _bus = bus;
         }
 
-        public async Task<TokenResponseDto> Login(LoginDto loginDto) {
+        public async Task<TokenResponseDto> Login(LoginDto loginDto, string userAgent) {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            
             if (user == null) throw new BadHttpRequestException("Пользователя с таким email не существует");
+            var refreshTokens = _userDBContext.RefreshTokens.Include(rt => rt.User);
+
             var identity = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
             if (!identity.Succeeded) throw new BadHttpRequestException("Неверный email или пароль");
             var refreshToken = await _tokenService.GenerateRefreshToken(user);
-            user.RefreshToken = refreshToken;
+            
+            var oldRefresh = await refreshTokens.FirstOrDefaultAsync(rt => rt.UserAgent == userAgent && rt.User.Id == user.Id);
+
+            if(oldRefresh != null && !oldRefresh.isRevoked)
+            {
+                oldRefresh.RefreshToken = refreshToken;
+            }
+            else
+            {
+                _userDBContext.RefreshTokens.Add(new RefreshTokenEntity()
+                {
+                    Id = Guid.NewGuid(),
+                    isRevoked = false,
+                    RefreshToken = refreshToken,
+                    User = user,
+                    UserAgent = userAgent,
+                    ExpiredTime = _tokenService.GetTokenExpired(refreshToken),
+                });
+            }
+
             await _userManager.UpdateAsync(user);
+            await _userDBContext.SaveChangesAsync();
             
             return new TokenResponseDto
             {
@@ -46,15 +70,19 @@ namespace User.BL.Services
             };
         }
 
-        public async Task Logout(string token) {
-            var user = await _tokenService.GetUserByToken(token);
-            await _userDBContext.BannedTokens.AddAsync(new TokenEntity() { Token=token});
-            user.RefreshToken = null;
+        public async Task Logout(Guid userId, string userAgent) {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null) { throw new Exception(); }
+
+            var refreshToken = user.RefreshTokens.FirstOrDefault(rt => rt.UserAgent == userAgent);
+            if (refreshToken == null) throw new UnauthorizedAccessException("Пользователь не имеет сессии на данном устройстве");
+
+            refreshToken.isRevoked = true;
+
             await _userDBContext.SaveChangesAsync();
-            await _userManager.UpdateAsync(user);
         }
 
-        public async Task<TokenResponseDto> RegisterUser(UserRegisterModel userRegisterModel)
+        public async Task<TokenResponseDto> RegisterUser(UserRegisterModel userRegisterModel, string userAgent)
         {
             if (await _userManager.FindByEmailAsync(userRegisterModel.Email) != null)
             {
@@ -89,8 +117,19 @@ namespace User.BL.Services
             });
 
             var refreshToken = await _tokenService.GenerateRefreshToken(user);
-            user.RefreshToken = refreshToken;
+
+            _userDBContext.RefreshTokens.Add(new RefreshTokenEntity()
+            {
+                Id = Guid.NewGuid(),
+                isRevoked = false,
+                RefreshToken = refreshToken,
+                User = user,
+                UserAgent = userAgent,
+                ExpiredTime = _tokenService.GetTokenExpired(refreshToken),
+            });
+
             await _userManager.UpdateAsync(user);
+            await _userDBContext.SaveChangesAsync();
 
             return new TokenResponseDto
             {

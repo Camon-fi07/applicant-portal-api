@@ -13,7 +13,7 @@ namespace AdminPanel.BL.Extensions
     {
         public static void AddServices(this IServiceCollection services)
         {
-            services.AddScoped<IAdminPanelAccountService, AdminPanelAccountService>();
+            services.AddScoped<IAdminPanelAuthService, AdminPanelAuthService>();
             services.AddScoped<IAdminPanelProfileService, AdminPanelProfileService>();
             services.AddScoped<IAdminPanelDictionaryService, AdminPanelDictionaryService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
@@ -23,7 +23,7 @@ namespace AdminPanel.BL.Extensions
         public static void AddEasyNetQ(this IServiceCollection services)
         {
             var serviceProvider = services.BuildServiceProvider();
-            var adminPanelAccountService = serviceProvider.GetRequiredService<IAdminPanelAccountService>();
+            var adminPanelAccountService = serviceProvider.GetRequiredService<IAdminPanelAuthService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
         }
     }

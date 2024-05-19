@@ -10,7 +10,6 @@ namespace User.BL.Extensions
 {
     public static class ConfigureIdentity
     {
-
         public static void ConfigureIdentityDependencies(this IServiceCollection services) { 
             services.AddIdentity<UserEntity, Role>()
                 .AddEntityFrameworkStores<UserDBContext>()

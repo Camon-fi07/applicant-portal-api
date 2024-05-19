@@ -11,8 +11,8 @@ namespace Common.Interfaces
 {
     public interface IAdminPanelAuthService
     {
-        Task<TokenResponseDto> Login(LoginDto loginDto);
-        Task Logout();
+        Task<TokenResponseDto> Login(LoginDto loginDto, string userAgent);
+        Task Logout(Guid userId, string userAgent);
 
     }
 }

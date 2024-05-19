@@ -19,17 +19,13 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1 justify-content-end">
-                        @{
-                            var accessToken = Context.Request.Cookies["accessToken"];
-                            var isAuthenticated = !string.IsNullOrEmpty(accessToken);
-                        }
-                        @if (isAuthenticated)
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Profile" asp-action="EditProfile">Редактировать профиль</a>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link" asp-controller="Auth" asp-action="Logout">Выйти</button>
+                                <button class="nav-link" onclick="logout()">Выйти</button>
                             </li>
                         }
                         else
@@ -62,7 +58,10 @@
         function logout() {
             $.ajax({
                 url: '/Auth/Logout',
-                type: 'POST'
+                type: 'POST',
+                success: function () {
+                    window.location.href = "/Home/Index"
+                }
             });
         }
     </script>

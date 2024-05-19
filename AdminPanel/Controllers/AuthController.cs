@@ -12,10 +12,10 @@ namespace AdminPanel.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly IAdminPanelAuthService _adminPanelAccountService;
+        private readonly IAdminPanelAuthService _adminPanelAuthService;
 
-        public AuthController(IAdminPanelAuthService adminPanelAccountService) { 
-            _adminPanelAccountService = adminPanelAccountService;
+        public AuthController(IAdminPanelAuthService adminPanelAuthService) {
+            _adminPanelAuthService = adminPanelAuthService;
         }
 
         [HttpGet]
@@ -27,19 +27,28 @@ namespace AdminPanel.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            var tokens = await _adminPanelAccountService.Login(loginDto);
+            var tokens = await _adminPanelAuthService.Login(loginDto, HttpContext.Request.Headers.UserAgent.ToString());
             Response.Cookies.Append("accessToken", tokens.AccessToken, new CookieOptions { HttpOnly = true });
             Response.Cookies.Append("refreshToken", tokens.RefreshToken, new CookieOptions { HttpOnly = true });
 
-            return View();
+            return RedirectToAction("Index", "Home");
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
-            await _adminPanelAccountService.Logout();
+            if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
+            {
+                return Unauthorized();
+            }
 
-            return View();
+            Response.Cookies.Delete("accessToken");
+            Response.Cookies.Delete("refreshToken");
+
+            await _adminPanelAuthService.Logout(userId, HttpContext.Request.Headers.UserAgent.ToString());
+
+            return Ok();
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using Common.Dto;
-using Common.Dto.Applicant;
+﻿using Common.Dto.Applicant;
+using Common.Dto.User;
 using Common.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,0 +1,31 @@
+﻿@model ApplicationListViewModel
+
+@{
+    ViewData["Title"] = "Заявки на поступление";
+    Layout = "_Layout";
+}
+
+<div>
+    <div></div>
+    <ul>
+        @foreach (var application in Model.ApplicationsPagedListModel.Applications)
+        {
+            <li>
+                <p>@application.Status</p>
+                <div>
+                    <p>@application.User.Email</p>
+                    <p>
+                        <span>@application.User.Lastname</span>
+                        <span>@application.User.Firstname</span>
+                        <span>@application.User.Middlename</span>
+                    </p>
+                    <ul>
+                        @foreach(var program in application.ProgramPriorities){
+                            <li>@program.</li>
+                        }
+                    </ul>
+                </div>
+            </li>
+        }
+    </ul>
+</div>

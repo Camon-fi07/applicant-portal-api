@@ -1,6 +1,6 @@
 ﻿using Common.Constants;
-using Common.Dto;
 using Common.Dto.RabbitMQ;
+using Common.Dto.User;
 using Common.Interfaces;
 using EasyNetQ;
 using System;

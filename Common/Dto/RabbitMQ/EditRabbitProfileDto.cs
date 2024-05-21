@@ -1,4 +1,5 @@
-﻿using EasyNetQ;
+﻿using Common.Dto.User;
+using EasyNetQ;
 using System;
 using System.Collections.Generic;
 using System.Linq;

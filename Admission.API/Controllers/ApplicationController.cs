@@ -1,8 +1,7 @@
-﻿using Admission.BL.Dto;
-using Admission.BL.Enums;
-using Admission.BL.Models;
-using Admission.BL.Services.IServices;
+﻿using Admission.BL.Services.IServices;
+using Common.Dto.Application;
 using Common.Enums;
+using Common.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -48,7 +47,7 @@ namespace Admission.API.Controllers
 
         [HttpPut("{id:guid}/programs")]
         [Authorize]
-        public async Task<IActionResult> EditPrograms(Guid id, [FromBody] List<ProgramPriorityDto> programPriorities)
+        public async Task<IActionResult> EditPrograms(Guid id, [FromBody] List<CreateProgramPriorityDto> programPriorities)
         {
             await _applicationService.EditPrograms(programPriorities, id);
             return Ok();

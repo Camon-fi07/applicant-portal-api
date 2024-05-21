@@ -29,10 +29,6 @@ namespace Applicant.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<List<Guid>>("Applications")
-                        .IsRequired()
-                        .HasColumnType("uuid[]");
-
                     b.Property<string>("Citizenship")
                         .IsRequired()
                         .HasColumnType("text");
@@ -41,9 +37,6 @@ namespace Applicant.DAL.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("PassportId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");

@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Admission.BL.Enums
+namespace Common.Enums
 {
     [JsonConverter((typeof(JsonStringEnumConverter)))]
     public enum ApplicationsSortType

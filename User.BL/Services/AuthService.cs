@@ -3,11 +3,8 @@ using User.DAL.Entities;
 using Microsoft.AspNetCore.Identity;
 using User.DAL;
 using Microsoft.AspNetCore.Http;
-using Common.Dto;
 using Common.Models;
-using User.BL.Dto;
 using EasyNetQ;
-using Common.Constants;
 using Common.Dto.User;
 using Microsoft.EntityFrameworkCore;
 
@@ -106,15 +103,6 @@ namespace User.BL.Services
 
             if (!result.Succeeded) throw new BadHttpRequestException("Произошла ошибка");
             await _userManager.UpdateAsync(user);
-
-            await _bus.PubSub.PublishAsync(new AddUserDto()
-            {
-                Email = user.Email,
-                Firstname = user.Firstname,
-                Id = user.Id,
-                Lastname = user.Lastname,
-                Middlename = user.Middlename
-            });
 
             var refreshToken = await _tokenService.GenerateRefreshToken(user);
 

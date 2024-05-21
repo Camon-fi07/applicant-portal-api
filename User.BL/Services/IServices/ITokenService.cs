@@ -1,4 +1,4 @@
-﻿using Common.Dto;
+﻿using Common.Dto.User;
 using User.BL.Dto;
 using User.DAL.Entities;
 

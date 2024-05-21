@@ -4,6 +4,7 @@ using Applicant.DAL.Entities;
 using Common.Constants;
 using Common.Dto;
 using Common.Dto.Applicant;
+using Common.Dto.Manager;
 using Common.Dto.RabbitMQ;
 using Common.Enums;
 using EasyNetQ;
@@ -24,11 +25,10 @@ namespace Applicant.BL.Services
 
         public async Task<EducationDocumentDto> EditEducationDocument(EditEducationDocumentDto editEducationDocumentDto, Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).FirstOrDefaultAsync(a => a.UserId == userId);
+            var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).FirstOrDefaultAsync(a => a.Id == userId);
 
             if (applicant == null) { throw new Exception(); }
 
-            if (editEducationDocumentDto.EducationDocumentTypeId != null) applicant.Education.EducationDocumentTypeId = (Guid)editEducationDocumentDto.EducationDocumentTypeId;
             if(editEducationDocumentDto.Name != null) applicant.Education.Name = editEducationDocumentDto.Name;
 
             List<FileResponseDto>? educationFiles = null;
@@ -53,7 +53,7 @@ namespace Applicant.BL.Services
 
         public async Task<PassportDto> EditPassport(EditPassportDto editPassportDto, Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.Include(a => a.Passport).FirstOrDefaultAsync(a => a.UserId == userId);
+            var applicant = await _applicantDBContext.Applicants.Include(a => a.Passport).FirstOrDefaultAsync(a => a.Id == userId);
 
             if (applicant == null) { throw new Exception(); }
 
@@ -88,7 +88,7 @@ namespace Applicant.BL.Services
 
         public async Task<ApplicantDataDto> EditApplicantData(EditApplicantDataDto editApplicantDataDto, Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.FirstOrDefaultAsync(a => a.UserId == userId);
+            var applicant = await _applicantDBContext.Applicants.FirstOrDefaultAsync(a => a.Id == userId);
 
             if (applicant == null) { throw new Exception(); }
 
@@ -109,7 +109,7 @@ namespace Applicant.BL.Services
 
         public async Task<EducationDocumentDto> GetEducationDocument(Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).FirstOrDefaultAsync(a => a.UserId == userId);
+            var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).FirstOrDefaultAsync(a => a.Id == userId);
 
             if (applicant == null) { throw new Exception(); }
 
@@ -124,7 +124,7 @@ namespace Applicant.BL.Services
 
         public async Task<PassportDto> GetPassport(Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.Include(a => a.Passport).FirstOrDefaultAsync(a => a.UserId == userId);
+            var applicant = await _applicantDBContext.Applicants.Include(a => a.Passport).FirstOrDefaultAsync(a => a.Id == userId);
 
             if (applicant == null) { throw new Exception(); }
 
@@ -142,7 +142,7 @@ namespace Applicant.BL.Services
 
         public async Task<ApplicantDataDto> GetApplicantData(Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.FirstOrDefaultAsync(a => a.UserId == userId);
+            var applicant = await _applicantDBContext.Applicants.FirstOrDefaultAsync(a => a.Id == userId);
 
             if(applicant == null) { throw new Exception(); }
 
@@ -195,10 +195,9 @@ namespace Applicant.BL.Services
             {
                 Citizenship = registerApplicantDto.Citizenship,
                 Education = education,
-                Id = Guid.NewGuid(),
-                UserId = registerApplicantDto.UserId,
+                Id = registerApplicantDto.UserId,
                 Passport = passport,
-            };
+            };            
 
             await _applicantDBContext.Applicants.AddAsync(applicant);
 
@@ -208,7 +207,7 @@ namespace Applicant.BL.Services
             {
                 Role = RoleType.Applicant,
                 UserId = registerApplicantDto.UserId
-            });
+            }, RabbitMQQueue.ADD_ROLE);
         }
     }
 }

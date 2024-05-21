@@ -5,22 +5,20 @@ using User.DAL.Entities;
 using User.DAL;
 using Microsoft.AspNetCore.Http;
 using User.BL.Dto;
-using Common.Dto;
 using Common.Constants;
 using EasyNetQ;
 using Common.Dto.Applicant;
 using Common.Dto.RabbitMQ;
+using Common.Dto.User;
 
 namespace User.BL.Services
 {
     public class ProfileService:IProfileService
     {
-        ITokenService _tokenService;
         UserManager<UserEntity> _userManager;
         UserDBContext _userDBContext;
         IBus _bus;
-        public ProfileService(ITokenService tokenService, UserManager<UserEntity> userManager, UserDBContext userDBContext, IBus bus) {
-            _tokenService = tokenService;   
+        public ProfileService(UserManager<UserEntity> userManager, UserDBContext userDBContext, IBus bus) {
             _userManager = userManager;
             _userDBContext = userDBContext;
             _bus = bus;
@@ -39,6 +37,21 @@ namespace User.BL.Services
             });
 
             return roles.ToList();
+        }
+
+        public async Task<AddUserDto> GetShortProfile(Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null) { throw new Exception(); }
+
+            return new AddUserDto()
+            {
+                Email = user.Email,
+                Id = user.Id,
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
+                Middlename = user.Middlename,
+            };
         }
 
         public async Task<ProfileDto> GetProfile(Guid userId)
@@ -62,7 +75,6 @@ namespace User.BL.Services
                 LastName = user.Lastname,
                 MiddleName = user.Middlename,
                 PhoneNumber = user.PhoneNumber,
-                Roles = roles.ToList()
             };
         }
 
@@ -180,7 +192,6 @@ namespace User.BL.Services
                 LastName = profile.LastName,
                 MiddleName = profile.MiddleName,
                 PhoneNumber = profile.PhoneNumber,
-                Roles = profile.Roles
             };
         }
 
@@ -202,7 +213,6 @@ namespace User.BL.Services
                 LastName = profile.LastName,
                 MiddleName = profile.MiddleName,
                 PhoneNumber = profile.PhoneNumber,
-                Roles = profile.Roles
             };
         }
     }

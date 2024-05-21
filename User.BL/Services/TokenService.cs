@@ -7,10 +7,10 @@ using System.Text;
 using User.DAL.Entities;
 using Microsoft.AspNetCore.Identity;
 using User.DAL;
-using Common.Dto;
 using User.BL.Dto;
 using Common.Models;
 using Microsoft.EntityFrameworkCore;
+using Common.Dto.User;
 
 
 namespace User.BL.Services

@@ -1,10 +1,8 @@
-﻿using Admission.BL.Dto;
-using Admission.BL.Services.IServices;
+﻿using Admission.BL.Services.IServices;
 using Admission.DAL;
 using Admission.DAL.Entities;
 using Common.Constants;
-using Common.Dto;
-using Common.Dto.Applicant;
+using Common.Dto.Manager;
 using Common.Dto.RabbitMQ;
 using Common.Enums;
 using EasyNetQ;
@@ -15,67 +13,29 @@ namespace Admission.BL.Services
     public class ManagerService : IManagerService
     {
         private readonly AdmissionDBContext _admissionDBContext;
+        private readonly IExternalService _externalService;
         private readonly IBus _bus;
 
-        public ManagerService(AdmissionDBContext admissionDBContext, IBus bus)
+        public ManagerService(AdmissionDBContext admissionDBContext, IBus bus, IExternalService externalService)
         {
             _admissionDBContext = admissionDBContext;
             _bus = bus;
-        }
-
-        public async Task AddUser(AddUserDto addUser)
-        {
-            var user = await _admissionDBContext.Users.FirstOrDefaultAsync(u => u.Id == addUser.Id);
-
-            if(user != null)
-            {
-                throw new Exception();
-            }
-
-            _admissionDBContext.Users.Add(new UserEntity()
-            {
-                Firstname = addUser.Firstname,
-                Id = addUser.Id,
-                Lastname = addUser.Lastname,
-                Middlename = addUser.Middlename,
-                Email = addUser.Email
-            });
-
-            await _admissionDBContext.SaveChangesAsync();
-        }
-
-        public async Task EditUser(EditUserDto editUser)
-        {
-            var user = await _admissionDBContext.Users.FirstOrDefaultAsync(u => u.Id == editUser.Id);
-
-            if (user == null)
-            {
-                throw new Exception();
-            }
-
-            if (editUser.Firstname != null) user.Firstname = editUser.Firstname;
-            if (editUser.Lastname != null) user.Lastname = editUser.Lastname;
-            if (editUser.Middlename != null) user.Middlename = editUser.Middlename;
-            if (editUser.Email != null) user.Email = editUser.Email;
-
-            await _admissionDBContext.SaveChangesAsync();
+            _externalService = externalService;
         }
 
         public async Task CreateManager(CreateManagerDto createManagerDto)
         {
-            var user = await _admissionDBContext.Users.FirstOrDefaultAsync(u => u.Id == createManagerDto.UserId);
+            var user = await _externalService.GetUser(createManagerDto.UserId);
 
-            if (user == null)
-            {
-                throw new Exception();
-            }
+            FacultyCacheEntity? faculty = null;
+            if (createManagerDto.FacultyId != null) faculty = await _externalService.GetFaculty((Guid)createManagerDto.FacultyId);
 
             var manager = new ManagerEntity()
             {
                 Role = createManagerDto.Role,
                 User = user,
                 Id = createManagerDto.UserId,
-                FacultyId = createManagerDto.FacultyId
+                Faculty = faculty
             };
 
             await _bus.PubSub.PublishAsync(new ChangeRoleDto()
@@ -91,21 +51,18 @@ namespace Admission.BL.Services
 
         public async Task DeleteManager(Guid managerId)
         {
-            var manager = await _admissionDBContext.Managers.FirstOrDefaultAsync(m => m.Id == managerId);
+            var manager = await _admissionDBContext.Managers.Include(m => m.User).FirstOrDefaultAsync(m => m.Id == managerId);
 
             if (manager == null)
             {
                 throw new Exception();
             }
 
-            var applications = _admissionDBContext.Applications.Include(a => a.Manager).Where(a => a.Manager.Id == managerId);
-
-            foreach(var application in applications)
-            {
-                application.Manager = null;
-            }
-
             _admissionDBContext.Managers.Remove(manager);
+
+            var hasUserApplications = _admissionDBContext.Applications.Include(a => a.User).Any(a => a.User.Id == managerId);
+
+            if (!hasUserApplications) _admissionDBContext.Users.Remove(manager.User);
 
             await _admissionDBContext.SaveChangesAsync();
 
@@ -125,7 +82,9 @@ namespace Admission.BL.Services
                 throw new Exception();
             }
 
-            manager.FacultyId = facultyId;
+            var faculty = await _externalService.GetFaculty(facultyId);
+
+            manager.Faculty = faculty;
 
             await _admissionDBContext.SaveChangesAsync();
         }
@@ -139,7 +98,7 @@ namespace Admission.BL.Services
                 throw new Exception();
             }
 
-            manager.FacultyId = null;
+            manager.Faculty = null;
 
             await _admissionDBContext.SaveChangesAsync();
         }

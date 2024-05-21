@@ -1,8 +1,5 @@
-﻿using Admission.BL.Dto;
-using Admission.BL.Services.IServices;
+﻿using Admission.BL.Services.IServices;
 using Admission.DAL;
-using Common.Constants;
-using Common.Dto;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -22,9 +19,6 @@ namespace Admission.BL.Extensions
             var serviceProvider = services.BuildServiceProvider();
             var admissionService = serviceProvider.GetRequiredService<IManagerService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
-
-            await bus.PubSub.SubscribeAsync<AddUserDto>(RabbitMQQueue.ADMISSION_ADD_USER, data => admissionService.AddUser(data));
-            await bus.PubSub.SubscribeAsync<EditUserDto>(RabbitMQQueue.ADMISSION_EDIT_USER, data => admissionService.EditUser(data));
         }
     }
 }

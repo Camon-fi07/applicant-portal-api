@@ -35,23 +35,14 @@ namespace User.BL.Extensions
                 profileService.DeleteRole(addRoleDto.Role, addRoleDto.UserId);
             }, x => x.WithTopic(RabbitMQQueue.DELETE_ROLE));
 
-            bus.Rpc.Respond<Guid, AddUserDto>(async request => { 
-                var profile = await profileService.GetProfile(request);
+            bus.Rpc.Respond<Guid, AddUserDto>(async request => await profileService.GetShortProfile(request), x => x.WithQueueName(RabbitMQQueue.ADD_USER));
 
-                return new AddUserDto()
-                {
-                    Email = profile.Email,
-                    Id = request,
-                    Firstname = profile.FirstName,
-                    Lastname = profile.LastName,
-                    Middlename = profile.MiddleName
-                };
-            }, x => x.WithQueueName(RabbitMQQueue.ADD_USER));
             bus.Rpc.Respond<Guid, ProfileDto>(async request => await profileService.GetProfile(request), x=> x.WithQueueName(RabbitMQQueue.GET_PROFILE));
 
             bus.Rpc.Respond<LoginRabbitDto, TokenResponseDto>(async request => await authService.Login(request.LoginDto, request.UserAgent), x => x.WithQueueName(RabbitMQQueue.LOGIN));
 
             bus.Rpc.Respond<EditRabbitProfileDto, ProfileDto>(async request => await profileService.EditProfile(request.UserId, request.EditProfileDto), x => x.WithQueueName(RabbitMQQueue.EDIT_PROFILE));
+
             bus.Rpc.Respond<LogoutRabbitDto, Empty>(async (request) =>
             {
                 await authService.Logout(request.UserId, request.UserAgent);

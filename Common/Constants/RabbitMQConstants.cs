@@ -17,7 +17,6 @@ namespace Common.Constants
         public const string LOGOUT = "LOGOUT_QUEUE";
         public const string EDIT_PROFILE = "EDIT_PROFILE_QUEUE";
 
-
         public const string ADMISSION_ADD_USER = "ADMISSION_ADD_USER_QUEUE";
         public const string ADMISSION_EDIT_USER = "ADMISSION_EDIT_USER_QUEUE";
 
@@ -34,5 +33,8 @@ namespace Common.Constants
         public const string IMPORT_FACULTIES = "IMPORT_FACULTIES_QUEUE";
         public const string IMPORT_EDUCATION_DOCUMENTS = "IMPORT_EDUCATION_DOCUMENTS_QUEUE";
         public const string IMPORT_EDUCATION_LEVELS = "IMPORT_EDUCATION_LEVELS_QUEUE";
+        public const string ADD_PROGRAM = "ADD_PROGRAM_QUEUE";
+        public const string ADD_EDUCATION_DOCUMENT_TYPE = "ADD_EDUCATION_DOCUMENT_TYPE_QUEUE";
+        public const string ADD_FACULTY = "ADD_FACULTY_QUEUE";
     }
 }

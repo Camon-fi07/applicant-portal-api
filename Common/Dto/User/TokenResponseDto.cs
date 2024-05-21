@@ -1,4 +1,4 @@
-﻿namespace Common.Dto
+﻿namespace Common.Dto.User
 {
     public class TokenResponseDto
     {

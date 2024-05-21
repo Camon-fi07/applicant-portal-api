@@ -1,6 +1,6 @@
 ﻿using Common.Enums;
 
-namespace Common.Dto
+namespace Common.Dto.User
 {
     public class ProfileDto
     {
@@ -11,6 +11,5 @@ namespace Common.Dto
         public string MiddleName { get; set; }
         public Gender Gender { get; set; }
         public DateOnly BirthDate { get; set; }
-        public List<RoleType?> Roles { get; set; }
     }
 }

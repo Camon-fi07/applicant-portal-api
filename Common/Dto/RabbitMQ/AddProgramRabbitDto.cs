@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Common.Dto.RabbitMQ
+{
+    public class AddProgramRabbitDto
+    {
+        public Guid Id { get; set; }
+        public required string Name { get; set; }
+        public string? Code { get; set; }
+        public required AddEducationLevelRabbitDto EducationLevel { get; set; }
+        public required AddFacultyRabbitDto Faculty { get; set; }
+    }
+}

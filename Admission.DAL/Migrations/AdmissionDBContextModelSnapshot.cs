@@ -17,89 +17,12 @@ namespace Admission.DAL.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "8.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Admission.DAL.Entities.ApplicationEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("EditTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("ManagerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ManagerId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Applications");
-                });
-
-            modelBuilder.Entity("Admission.DAL.Entities.ManagerEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("FacultyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Managers");
-                });
-
-            modelBuilder.Entity("Admission.DAL.Entities.ProgramPriorityEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ApplicationEntityId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("FacultyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Priority")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("ProgramId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationEntityId");
-
-                    b.ToTable("ProgramPriorities");
-                });
-
-            modelBuilder.Entity("Admission.DAL.Entities.UserEntity", b =>
+            modelBuilder.Entity("Admission.BL.Models.UserCacheEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -128,42 +51,275 @@ namespace Admission.DAL.Migrations
 
             modelBuilder.Entity("Admission.DAL.Entities.ApplicationEntity", b =>
                 {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ApplicantEducationDocumentTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("EditTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ManagerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicantEducationDocumentTypeId");
+
+                    b.HasIndex("ManagerId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Applications");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.EducationDocumentTypeCacheEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("EducationLevelId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EducationLevelId");
+
+                    b.ToTable("EducationDocumentTypes");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.EducationLevelCacheEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("EducationDocumentTypeCacheEntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EducationDocumentTypeCacheEntityId");
+
+                    b.ToTable("EducationLevels");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.FacultyCacheEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Faculties");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.ManagerEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("FacultyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FacultyId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Managers");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.ProgramCacheEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<int>("EducationLevelId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("FacultyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EducationLevelId");
+
+                    b.HasIndex("FacultyId");
+
+                    b.ToTable("Programs");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.ProgramPriorityEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ProgramId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId");
+
+                    b.HasIndex("ProgramId");
+
+                    b.ToTable("ProgramPriorities");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.ApplicationEntity", b =>
+                {
+                    b.HasOne("Admission.DAL.Entities.EducationDocumentTypeCacheEntity", "ApplicantEducationDocumentType")
+                        .WithMany()
+                        .HasForeignKey("ApplicantEducationDocumentTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Admission.DAL.Entities.ManagerEntity", "Manager")
                         .WithMany()
                         .HasForeignKey("ManagerId");
 
-                    b.HasOne("Admission.DAL.Entities.UserEntity", "User")
+                    b.HasOne("Admission.BL.Models.UserCacheEntity", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ApplicantEducationDocumentType");
 
                     b.Navigation("Manager");
 
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Admission.DAL.Entities.EducationDocumentTypeCacheEntity", b =>
+                {
+                    b.HasOne("Admission.DAL.Entities.EducationLevelCacheEntity", "EducationLevel")
+                        .WithMany()
+                        .HasForeignKey("EducationLevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EducationLevel");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.EducationLevelCacheEntity", b =>
+                {
+                    b.HasOne("Admission.DAL.Entities.EducationDocumentTypeCacheEntity", null)
+                        .WithMany("NextEducationLevels")
+                        .HasForeignKey("EducationDocumentTypeCacheEntityId");
+                });
+
             modelBuilder.Entity("Admission.DAL.Entities.ManagerEntity", b =>
                 {
-                    b.HasOne("Admission.DAL.Entities.UserEntity", "User")
+                    b.HasOne("Admission.DAL.Entities.FacultyCacheEntity", "Faculty")
+                        .WithMany()
+                        .HasForeignKey("FacultyId");
+
+                    b.HasOne("Admission.BL.Models.UserCacheEntity", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Faculty");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.ProgramCacheEntity", b =>
+                {
+                    b.HasOne("Admission.DAL.Entities.EducationLevelCacheEntity", "EducationLevel")
+                        .WithMany()
+                        .HasForeignKey("EducationLevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Admission.DAL.Entities.FacultyCacheEntity", "Faculty")
+                        .WithMany()
+                        .HasForeignKey("FacultyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EducationLevel");
+
+                    b.Navigation("Faculty");
                 });
 
             modelBuilder.Entity("Admission.DAL.Entities.ProgramPriorityEntity", b =>
                 {
-                    b.HasOne("Admission.DAL.Entities.ApplicationEntity", null)
+                    b.HasOne("Admission.DAL.Entities.ApplicationEntity", "Application")
                         .WithMany("Programs")
-                        .HasForeignKey("ApplicationEntityId");
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Admission.DAL.Entities.ProgramCacheEntity", "Program")
+                        .WithMany()
+                        .HasForeignKey("ProgramId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Application");
+
+                    b.Navigation("Program");
                 });
 
             modelBuilder.Entity("Admission.DAL.Entities.ApplicationEntity", b =>
                 {
                     b.Navigation("Programs");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.EducationDocumentTypeCacheEntity", b =>
+                {
+                    b.Navigation("NextEducationLevels");
                 });
 #pragma warning restore 612, 618
         }

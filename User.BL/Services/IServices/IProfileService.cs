@@ -1,7 +1,7 @@
 ﻿using Common.Enums;
-using Common.Dto;
 using User.BL.Dto;
 using Common.Dto.Applicant;
+using Common.Dto.User;
 
 namespace User.BL.Services.IServices
 {
@@ -9,6 +9,7 @@ namespace User.BL.Services.IServices
     {
         public Task<List<RoleType?>> GetUserRoles(Guid userId);
         public Task<ProfileDto> GetProfile(Guid userId);
+        public Task<AddUserDto> GetShortProfile(Guid userId);
         public Task<ProfileDto> EditProfile(Guid userId, EditProfileDto editProfileDto);
         public Task<ApplicantProfileDto> EditApplicantProfile(Guid userId, EditApplicantProfileDto editApplicantProfileDto);
         public Task<ApplicantProfileDto> GetApplicantProfile(Guid userId);

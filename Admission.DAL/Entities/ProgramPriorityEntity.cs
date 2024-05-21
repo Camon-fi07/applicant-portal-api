@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Admission.DAL.Entities
+﻿namespace Admission.DAL.Entities
 {
     public class ProgramPriorityEntity
     {
-        public Guid Id { get; set; }
-        public Guid ProgramId { get; set; }
-        public Guid FacultyId { get; set; }
-        public int Priority { get; set; }
+        public ApplicationEntity Application { get; set; }
+        public required Guid Id { get; set; }
+        public required Guid ProgramId { get; set; }
+        public required ProgramCacheEntity Program { get; set; }
+        public required int Priority { get; set; }
     }
 }

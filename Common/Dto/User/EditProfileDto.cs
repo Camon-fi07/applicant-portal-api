@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Common.Dto
+namespace Common.Dto.User
 {
     public class EditProfileDto
     {

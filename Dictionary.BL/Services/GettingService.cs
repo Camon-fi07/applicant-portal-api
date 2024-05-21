@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Dictionary.DAL.Entities;
 using Common.Dto;
+using System.Xml.Linq;
 
 namespace Dictionary.BL.Services
 {
@@ -108,6 +109,41 @@ namespace Dictionary.BL.Services
             };
 
 
+        }
+        public async Task<EducationProgramDto> GetProgram(Guid id)
+        {
+            var program = await _dictionaryDBContext.EducationPrograms.Include(p => p.Faculty).Include(p => p.EducationLevel).FirstOrDefaultAsync(p => p.Id == id);
+
+            return new EducationProgramDto()
+            {
+                Code = program.Code,
+                CreateTime = program.CreateTime.ToUniversalTime(),
+                EducationForm = program.EducationForm,
+                EducationLevel = EducationLevelMapper.TranslateLevelEntityToDto(program.EducationLevel),
+                Faculty = new EducationFacultyDto()
+                {
+                    CreateTime = program.Faculty.CreateTime.ToUniversalTime(),
+                    Id = program.Faculty.Id,
+                    Name = program.Faculty.Name
+                },
+                Id = program.Id,
+                Language = program.Language,
+                Name = program.Name,
+            };
+        }
+
+        public async Task<EducationFacultyDto> GetFaculty(Guid id)
+        {
+            var faculty = await _dictionaryDBContext.Faculties.FirstOrDefaultAsync(f => f.Id == id);
+
+            if (faculty == null) throw new Exception();
+
+            return new EducationFacultyDto()
+            {
+                CreateTime = faculty.CreateTime.ToUniversalTime(),
+                Id = faculty.Id,
+                Name = faculty.Name
+            };
         }
     }
 }

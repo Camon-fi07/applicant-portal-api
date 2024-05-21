@@ -1,8 +1,6 @@
-﻿using Admission.BL.Dto;
-using Admission.BL.Services;
-using Admission.BL.Services.IServices;
+﻿using Admission.BL.Services.IServices;
+using Common.Dto.Manager;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Admission.API.Controllers

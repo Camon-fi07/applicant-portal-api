@@ -49,6 +49,16 @@ namespace Admission.BL.Services
 
         public async Task CreateApplication(CreateApplicationDto createApplication, Guid userId)
         {
+            if (createApplication.Passport.Series.ToString().Length != 4)
+            {
+                throw new Exception();
+            }
+
+            if (createApplication.Passport.Number.ToString().Length != 6)
+            {
+                throw new Exception();
+            }
+
             var educationDocumentType = await _externalService.GetEducationDocument(createApplication.Education.EducationDocumentTypeId);
 
             var programs = new List<ProgramPriorityEntity>();
@@ -66,16 +76,6 @@ namespace Admission.BL.Services
 
             var isProgramsValid = IsProgramsValid(programs, educationDocumentType);
             if (!isProgramsValid) throw new Exception();
-
-            if(createApplication.Passport.Series.ToString().Length != 4)
-            {
-                throw new Exception();
-            }
-
-            if (createApplication.Passport.Number.ToString().Length != 6)
-            {
-                throw new Exception();
-            }
 
             var user = await _externalService.GetUser(userId);
 
@@ -97,7 +97,8 @@ namespace Admission.BL.Services
                 Citizenship = createApplication.Citizenship,
                 Education = createApplication.Education,
                 Passport = createApplication.Passport,
-                UserId = userId
+                UserId = userId,
+                Email = user.Email
             });
 
             await _bus.PubSub.PublishAsync(new EmailMessageDto()
@@ -167,11 +168,12 @@ namespace Admission.BL.Services
 
             foreach (var programPrioritet in programPriorities)
             {
+                var isPriorityValid = programPrioritet.Priority > 0 && programPrioritet.Priority <= maxProgramsCount;
                 var isPriorityUnique = uniquePriorities.All(p => p.Priority != programPrioritet.Priority);
                 var isNextLevel = educationDocumentType.NextEducationLevels != null && educationDocumentType.NextEducationLevels.Any(l => l.Id == programPrioritet.Program.EducationLevel.Id);
                 var isCurrentLevel = educationDocumentType.EducationLevel.Id == programPrioritet.Program.EducationLevel.Id;
 
-                if (isPriorityUnique && (isNextLevel || isCurrentLevel))
+                if (isPriorityValid && isPriorityUnique && (isNextLevel || isCurrentLevel))
                 {
                     uniquePriorities.Add(programPrioritet);
                 }

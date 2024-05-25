@@ -1,5 +1,4 @@
-﻿using Admission.BL.Models;
-using Common.Enums;
+﻿using Common.Enums;
 
 namespace Admission.DAL.Entities
 {

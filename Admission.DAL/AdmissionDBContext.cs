@@ -1,5 +1,4 @@
-﻿using Admission.BL.Models;
-using Admission.DAL.Entities;
+﻿using Admission.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Admission.DAL

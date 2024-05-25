@@ -1,6 +1,4 @@
-﻿using Admission.BL.Models;
-using Admission.DAL.Entities;
-using Common.Dto.User;
+﻿using Admission.DAL.Entities;
 
 namespace Admission.BL.Services.IServices
 {

@@ -25,6 +25,10 @@ namespace Applicant.DAL
         {
             modelBuilder.Entity<EducationLevelCacheEntity>().HasKey(l => l.Id);
             modelBuilder.Entity<EducationLevelCacheEntity>().Property(l => l.Id).ValueGeneratedNever();
+
+            modelBuilder.Entity<EducationLevelCacheEntity>()
+               .HasMany(l => l.CurrentEducationLevelDocumentTypes)
+               .WithOne(d => d.EducationLevel);
         }
     }
 }

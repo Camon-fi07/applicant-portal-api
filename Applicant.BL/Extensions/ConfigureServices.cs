@@ -18,6 +18,7 @@ namespace Applicant.BL.Extensions
             services.AddSingleton(bus);
             services.AddScoped<IExternalService, ExternalService>();
             services.AddScoped<IApplicantService, ApplicantService>();
+            services.AddScoped<ISynchronizationService, SynchronizationService>();
         }
     }
 }

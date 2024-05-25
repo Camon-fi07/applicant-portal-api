@@ -1,4 +1,5 @@
-﻿using Common.Enums;
+﻿using Common.Dto.User;
+using Common.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +15,6 @@ namespace Admission.BL.Services.IServices
         public Task SychronizeEducationDocumentTypes();
         public Task SychronizeEducationLevels();
         public Task SychronizeFaculties();
+        public Task SychronizeUser(AddUserDto addUser);
     }
 }

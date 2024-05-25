@@ -7,6 +7,7 @@ using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using Common.Dto;
 using Common.Constants;
+using Common.Dto.User;
 
 namespace Admission.BL.Services
 {
@@ -341,6 +342,19 @@ namespace Admission.BL.Services
             }
 
             return true;
+        }
+
+        public async Task SychronizeUser(AddUserDto addUser)
+        {
+            var user = await _admissionDBContext.Users.FirstOrDefaultAsync(u => u.Id == addUser.Id);
+            if (user == null) return;
+
+            user.Firstname = addUser.Firstname;
+            user.Lastname = addUser.Lastname;
+            user.Middlename = addUser.Middlename;
+            user.Email = addUser.Email;
+
+            await _admissionDBContext.SaveChangesAsync();
         }
     }
 }

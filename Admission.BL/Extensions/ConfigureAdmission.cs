@@ -4,6 +4,7 @@ using Common.Constants;
 using Common.Dto;
 using Common.Dto.Application;
 using Common.Dto.RabbitMQ;
+using Common.Dto.User;
 using Common.Enums;
 using Common.Models;
 using EasyNetQ;
@@ -31,6 +32,7 @@ namespace Admission.BL.Extensions
             var bus = RabbitHutch.CreateBus("host=localhost");
 
             bus.PubSub.Subscribe<GuideType>(RabbitMQQueue.REFRESH_GUIDE, async (type) => await synchronizationService.SychronizeGuides(type), x => x.WithQueueName(RabbitMQQueue.REFRESH_GUIDE));
+            bus.PubSub.Subscribe<AddUserDto>(RabbitMQQueue.SYNCHRONIZE_PROFILE, async (data) => { await synchronizationService.SychronizeUser(data); }, x => x.WithTopic(RabbitMQQueue.SYNCHRONIZE_PROFILE));
             bus.Rpc.Respond<ApplicationFilterModel, ApplicationsPagedListModel>(async (f) => await applicationService.GetApplications(f.Page, f.Size, f.Name, f.ProgramId, f.Faculties, f.Status, f.HaveManager, f.ManagerId, f.SortType),
             x => x.WithQueueName(RabbitMQQueue.GET_APPLICATIONS));
 

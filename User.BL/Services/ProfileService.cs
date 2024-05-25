@@ -112,15 +112,13 @@ namespace User.BL.Services
                 }
             }
 
-            await _bus.PubSub.PublishAsync(new EditProfileDto()
+            await _bus.PubSub.PublishAsync(new AddUserDto()
             {
-                Email = editProfileDto.Email,
-                Firstname = editProfileDto.Firstname,
-                Lastname = editProfileDto.Lastname,
-                Middlename = editProfileDto.Middlename,
-                BirthDate = editProfileDto.BirthDate,
-                Gender = editProfileDto.Gender,
-                PhoneNumber = editProfileDto.PhoneNumber
+                Id = user.Id,
+                Email = user.Email,
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
+                Middlename = user.Middlename,
             }, RabbitMQQueue.SYNCHRONIZE_PROFILE);
 
             await _userManager.UpdateAsync(user);

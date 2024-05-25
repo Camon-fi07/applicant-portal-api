@@ -33,10 +33,14 @@ namespace Applicant.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("EducationId")
+                    b.Property<Guid>("EducationId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("PassportId")
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PassportId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -48,13 +52,33 @@ namespace Applicant.DAL.Migrations
                     b.ToTable("Applicants");
                 });
 
+            modelBuilder.Entity("Applicant.DAL.Entities.EducationDocumentTypeCacheEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("EducationLevelId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EducationLevelId");
+
+                    b.ToTable("EducationDocumentTypes");
+                });
+
             modelBuilder.Entity("Applicant.DAL.Entities.EducationEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("EducationDocumentTypeId")
+                    b.Property<Guid>("EducationDocumentId")
                         .HasColumnType("uuid");
 
                     b.Property<List<Guid>>("Files")
@@ -67,7 +91,23 @@ namespace Applicant.DAL.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EducationDocumentId");
+
                     b.ToTable("Educations");
+                });
+
+            modelBuilder.Entity("Applicant.DAL.Entities.EducationLevelCacheEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EducationLevels");
                 });
 
             modelBuilder.Entity("Applicant.DAL.Entities.PassportEntity", b =>
@@ -75,9 +115,6 @@ namespace Applicant.DAL.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<DateTime>("BirthDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("BirthPlace")
                         .IsRequired()
@@ -106,15 +143,46 @@ namespace Applicant.DAL.Migrations
                 {
                     b.HasOne("Applicant.DAL.Entities.EducationEntity", "Education")
                         .WithMany()
-                        .HasForeignKey("EducationId");
+                        .HasForeignKey("EducationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Applicant.DAL.Entities.PassportEntity", "Passport")
                         .WithMany()
-                        .HasForeignKey("PassportId");
+                        .HasForeignKey("PassportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Education");
 
                     b.Navigation("Passport");
+                });
+
+            modelBuilder.Entity("Applicant.DAL.Entities.EducationDocumentTypeCacheEntity", b =>
+                {
+                    b.HasOne("Applicant.DAL.Entities.EducationLevelCacheEntity", "EducationLevel")
+                        .WithMany("CurrentEducationLevelDocumentTypes")
+                        .HasForeignKey("EducationLevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EducationLevel");
+                });
+
+            modelBuilder.Entity("Applicant.DAL.Entities.EducationEntity", b =>
+                {
+                    b.HasOne("Applicant.DAL.Entities.EducationDocumentTypeCacheEntity", "EducationDocument")
+                        .WithMany()
+                        .HasForeignKey("EducationDocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EducationDocument");
+                });
+
+            modelBuilder.Entity("Applicant.DAL.Entities.EducationLevelCacheEntity", b =>
+                {
+                    b.Navigation("CurrentEducationLevelDocumentTypes");
                 });
 #pragma warning restore 612, 618
         }

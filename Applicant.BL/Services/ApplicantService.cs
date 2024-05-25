@@ -203,6 +203,7 @@ namespace Applicant.BL.Services
                 Education = education,
                 Id = registerApplicantDto.UserId,
                 Passport = passport,
+                Email = registerApplicantDto.Email
             };            
 
             await _applicantDBContext.Applicants.AddAsync(applicant);

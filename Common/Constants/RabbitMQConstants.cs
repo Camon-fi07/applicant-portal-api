@@ -48,6 +48,11 @@ namespace Common.Constants
 
         public const string GET_APPLICATIONS = "GET_APPLICATIONS_QUEUE";
         public const string GET_APPLICATION = "GET_APPLICATION_QUEUE";
+        public const string EDIT_PROGRAMS_PRIORITY = "EDIT_PROGRAMS_PRIORITY_QUEUE";
+        public const string CHANGE_APPLICATION_STATUS = "CHANGE_APPLICATION_STATUS_QUEUE";
+
+        public const string SET_MANAGER = "SET_MANAGER_QUEUE";
+        public const string RETURN_APPLICATION = "RETURN_APPLICATION_QUEUE";
 
         public const string REFRESH_GUIDE = "REFRESH_GUIDE_QUEUE";
     }

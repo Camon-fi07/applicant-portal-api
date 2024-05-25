@@ -114,14 +114,33 @@ namespace Admission.BL.Services
 
         public async Task EditPrograms(List<CreateProgramPriorityDto> programPriorities, Guid applicationId)
         {
-            var application = await _admissionDBContext.Applications.Include(a => a.Programs).Include(a => a.ApplicantEducationDocumentType).FirstOrDefaultAsync(a => a.Id == applicationId);
+            var application = await _admissionDBContext.Applications.
+                Include(a => a.Programs).ThenInclude(p => p.Program).ThenInclude(p => p.EducationLevel).
+                Include(a => a.ApplicantEducationDocumentType).ThenInclude(d => d.EducationLevel).
+                Include(a => a.ApplicantEducationDocumentType).ThenInclude(d => d.NextEducationLevels).
+                FirstOrDefaultAsync(a => a.Id == applicationId);
+
             if(application == null) { throw new Exception(); }
 
-            var programs = new List<ProgramPriorityEntity>();
+            foreach(var originProgram in application.Programs) {
+                var newProgram = programPriorities.FirstOrDefault(p => p.ProgramId == originProgram.ProgramId);
+                if (newProgram == null)
+                {
+                    _admissionDBContext.ProgramPriorities.Remove(originProgram);
+                }
+                else
+                {
+                    originProgram.Priority = newProgram.Priority;
+                }
+            }
+
             foreach (var programPrioritet in programPriorities)
             {
+                var oldProgram = application.Programs.FirstOrDefault(p => p.ProgramId == programPrioritet.ProgramId);
+                if (oldProgram != null) continue;
+
                 var programCacheEntity = await _externalService.GetProgram(programPrioritet.ProgramId);
-                programs.Add(new ProgramPriorityEntity()
+                application.Programs.Add(new ProgramPriorityEntity()
                 {
                     Id = Guid.NewGuid(),
                     Priority = programPrioritet.Priority,
@@ -130,12 +149,9 @@ namespace Admission.BL.Services
                 });
             }
 
-            var isProgramsValid = IsProgramsValid(programs, application.ApplicantEducationDocumentType);
-            if (!isProgramsValid) throw new Exception();
+            var isProgramsValid = IsProgramsValid(application.Programs, application.ApplicantEducationDocumentType);
+            if(!isProgramsValid) throw new Exception();
 
-            await _admissionDBContext.SaveChangesAsync();
-
-            application.Programs = programs;
             application.EditTime = DateTime.UtcNow;
 
             await _admissionDBContext.SaveChangesAsync();
@@ -225,7 +241,10 @@ namespace Admission.BL.Services
 
         public async Task<ApplicationsPagedListModel> GetApplications(int page, int size, string? name, Guid? programId, List<Guid>? faculties, ApplicationStatus? status, bool? haveManager, Guid? managerId, ApplicationsSortType? sortType)
         {
-            var applications = _admissionDBContext.Applications.Include(a => a.Programs).ThenInclude(p => p.Program).ThenInclude(p => p.Faculty).Include(a => a.User).Include(a => a.Manager).ThenInclude(m => m.User).ToList();
+            var applications = _admissionDBContext.Applications.
+                Include(a => a.Programs).ThenInclude(p => p.Program).ThenInclude(p => p.Faculty).
+                Include(p => p.Programs).ThenInclude(p => p.Program).ThenInclude(p => p.EducationLevel).
+                Include(a => a.User).Include(a => a.Manager).ThenInclude(m => m.User).ToList();
 
             if (programId != null) applications = applications.Where(a => a.Programs.Any(p => p.ProgramId == programId)).ToList();
             if (faculties != null && faculties.Count > 0) applications = applications.Where(a => a.Programs.Any((p) => faculties.Contains(p.Program.Faculty.Id))).ToList();
@@ -293,11 +312,8 @@ namespace Admission.BL.Services
             };
         }
 
-        public async Task Refuse(Guid managerId, Guid applicationId)
+        public async Task ReturnApplication(Guid applicationId)
         {
-            var manager = await _admissionDBContext.Managers.FirstOrDefaultAsync(m => m.Id == managerId);
-            if (manager == null) { throw new Exception(); }
-
             var application = await _admissionDBContext.Applications.Include(a => a.Programs).FirstOrDefaultAsync(a => a.Id == applicationId);
             if (application == null) { throw new Exception(); }
 

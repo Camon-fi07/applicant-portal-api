@@ -1,5 +1,7 @@
 ﻿using Common.Constants;
+using Common.Dto;
 using Common.Dto.Application;
+using Common.Dto.RabbitMQ;
 using Common.Enums;
 using Common.Interfaces;
 using Common.Models;
@@ -14,14 +16,23 @@ namespace AdminPanel.BL.Services
             _bus = bus;
         }
 
-        public Task ChangeApplicationStatus(Guid applicationId, ApplicationStatus status)
+        public async Task ChangeApplicationStatus(Guid applicationId, ApplicationStatus status)
         {
-            throw new NotImplementedException();
+            ChangeStatusDto changeStatus = new ChangeStatusDto()
+            {
+                ApplicationId = applicationId,
+                Status = status
+            };
+            await _bus.Rpc.RequestAsync<ChangeStatusDto, Empty>(changeStatus, x => x.WithQueueName(RabbitMQQueue.CHANGE_APPLICATION_STATUS));
         }
 
-        public Task EditPrograms(List<CreateProgramPriorityDto> programPriorities, Guid applicationId)
+        public async Task EditPrograms(List<CreateProgramPriorityDto> programPriorities, Guid applicationId)
         {
-            throw new NotImplementedException();
+            EditProgramPriorityDto editProgramPriorityDto = new EditProgramPriorityDto() { 
+                ApplicationId = applicationId,
+                Programs = programPriorities
+            };
+            await _bus.Rpc.RequestAsync<EditProgramPriorityDto, Empty>(editProgramPriorityDto, x => x.WithQueueName(RabbitMQQueue.EDIT_PROGRAMS_PRIORITY));
         }
 
         public async Task<ApplicationDto> GetApplication(Guid applicationId)
@@ -42,14 +53,21 @@ namespace AdminPanel.BL.Services
             return await _bus.Rpc.RequestAsync<ManagerQueryModel, List<UserDto>>(managerQuery, x => x.WithQueueName(RabbitMQQueue.GET_MANAGERS));
         }
 
-        public Task Refuse(Guid managerId, Guid applicationId)
+        public async Task ReturnApplication(Guid applicationId)
         {
-            throw new NotImplementedException();
+            await _bus.Rpc.RequestAsync<Guid, Empty>(applicationId, x => x.WithQueueName(RabbitMQQueue.RETURN_APPLICATION));
         }
 
-        public Task TakeApplication(Guid managerId, Guid applicationId)
+        public async Task SetManager(Guid managerId, Guid applicationId)
         {
-            throw new NotImplementedException();
+            SetManagerApplicationDto setManagerApplication = new SetManagerApplicationDto()
+            {
+                ApplicationId = applicationId,
+                ManagerId = managerId
+            };
+
+            await _bus.Rpc.RequestAsync<SetManagerApplicationDto, Empty>(setManagerApplication, x => x.WithQueueName(RabbitMQQueue.SET_MANAGER));
+
         }
     }
 }

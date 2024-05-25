@@ -10,8 +10,8 @@ namespace Common.Interfaces
         public Task<ApplicationDto> GetApplication(Guid applicationId);
         public Task<ApplicationsPagedListModel> GetApplications(ApplicationFilterModel filterModel);
         public Task ChangeApplicationStatus(Guid applicationId, ApplicationStatus status);
-        public Task TakeApplication(Guid managerId, Guid applicationId);
-        public Task Refuse(Guid managerId, Guid applicationId);
+        public Task SetManager(Guid managerId, Guid applicationId);
+        public Task ReturnApplication(Guid applicationId);
         public Task<List<UserDto>> GetManagers(ManagerQueryModel managerQuery);
     }
 }

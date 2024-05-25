@@ -1,4 +1,5 @@
-﻿@using Common.Enums;
+﻿@using Common.Dto.Application
+@using Common.Enums;
 
 @model ApplicationViewModel;
 
@@ -8,35 +9,179 @@
 }
 
 <div>
-    <p>@Model.Application.Status</p>
+    <p>Статус поступления: @Model.Application.Status</p>
+
+    <div class="mb-2">
+        <select onchange="selectStatus(event)" id="Status" name="Status" class="form-select">
+            <option selected=@(Model.Application.Status == ApplicationStatus.Created) value="@ApplicationStatus.Created" id="Created">Создана</option>
+            <option selected=@(Model.Application.Status == ApplicationStatus.Pending) value="@ApplicationStatus.Pending" id="Pending">На рассмотрении</option>
+            <option selected=@(Model.Application.Status == ApplicationStatus.Confirmed) value="@ApplicationStatus.Confirmed" id="Confirmed">Одобрена</option>
+            <option selected=@(Model.Application.Status == ApplicationStatus.Rejected) value="@ApplicationStatus.Rejected" id="Rejected">Отклонена</option>
+            <option selected=@(Model.Application.Status == ApplicationStatus.Closed) value="@ApplicationStatus.Closed" id="Closed">Закрыта</option>
+        </select>
+        <button onclick="changeStatus('@Model.Application.ApplicationId')">Изменить статус</button>
+    </div>
+
     <p>Время создания: @Model.Application.CreateTime</p>
     <p>Время последнего редактирования: @Model.Application.EditTime</p>
-    <p>
-        <span>@Model.Application.User.Email</span>
-        <span>@Model.Application.User.Lastname</span>
-        <span>@Model.Application.User.Firstname</span>
-        <span>@Model.Application.User.Middlename</span>
-    </p>
-    @if (Model.Application.Manager != null)
-    {
-        <span>@Model.Application.Manager.Email</span>
-        <span>@Model.Application.Manager.Lastname</span>
-        <span>@Model.Application.Manager.Firstname</span>
-        <span>@Model.Application.Manager.Middlename</span>
-    }
-    else{
-        <span>Менеджер не назначен</span>
-    }
+    <div class="mb-2">
+        <h3>Абитуриент: </h3>
+        <p>Почта: @Model.Application.User.Email</p>
+        <p>Фамилия: @Model.Application.User.Lastname</p>
+        <p>Имя: @Model.Application.User.Firstname</p>
+        <p>Отчество: @Model.Application.User.Middlename</p>
+    </div>
+    <div class="mb-2">
+        <h3>Менеджер: </h3>
+        @if (Model.Application.Manager != null)
+        {
+            <p>Почта: @Model.Application.Manager.Email</p>
+            <p>Фамилия: @Model.Application.Manager.Lastname</p>
+            <p>Имя: @Model.Application.Manager.Firstname</p>
+            <p>Отчество: @Model.Application.Manager.Middlename</p>
+        }
+        else
+        {
+            <span>Менеджер не назначен</span>
+        }
+    </di>
+        <div class="mb-2">
+        @if (Model.Application.Manager != null)
+        {
+            <button class="mb-2" onclick="returnApplication('@Model.Application.ApplicationId')">Вернуть заявку в общий пулл</button>
+        }
+            <select onchange="selectManager(event)" class="form-control w-100 border p-1" name="ManagerId" id="ManagerId">
+            @if (Model.AvailableManagers != null)
+            {
+                <option selected value="@null">-</option>
+                @foreach (var manager in Model.AvailableManagers)
+                {
+                    <option value="@manager.Id">@manager.Email</option>
+                }
+            }
+        </select>
+            <button class="mb-2" onclick="setManager('@Model.Application.ApplicationId')">Назначить менеджера</button>
+    </div>
+    
     <ul>
         @foreach (var program in Model.Application.ProgramPriorities)
         {
             <li>
-                <span>Приоритет: @program.Priority</span>
+                <select class="form-select" onchange="updatePriority(event, '@program.ProgramId')">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <option selected=@(program.Priority == i) value="@i">@i</option>
+                }
+                </select>
                 <span>@program.ProgramName</span>
                 <span>@program.ProgramCode</span>
                 <span>@program.FacultyName</span>
                 <span>@program.EducationLevelName</span>
+                <button type="button" onclick="deleteProgram('@Model.Application.ApplicationId', '@program.ProgramId')">Удалить программу</button>
             </li>
         }
     </ul>
+    <button type="button" onclick="editProgramPriority('@Model.Application.ApplicationId')">Сохранить приоритеты</button>
 </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    const newPriorities = @Html.Raw(Json.Serialize(Model.Application.ProgramPriorities.Select(p => new CreateProgramPriorityDto() { Priority = p.Priority, ProgramId = p.ProgramId })));
+    let newStatus = @Html.Raw(Json.Serialize(Model.Application.Status));
+    let newManager = @Html.Raw(Json.Serialize(Model.Application.Manager?.Id));
+
+    function deleteProgram(applicationId, programId) {
+        $.ajax({
+            url: `/Application/EditPrograms/${applicationId}`,
+            type: 'PUT',
+            data: JSON.stringify(newPriorities.filter(p => p.programId != programId)),
+            contentType: "application/json",
+            success: function () {
+                location.reload();
+            },
+            error: function (e) {
+                alert(e.responseText)
+            }
+        });
+    }
+
+    function updatePriority(event, programId) {
+        console.log(event.target.value, programId, newPriorities);
+        const newPriority = parseInt(event.target.value);
+
+        const existingPriority = newPriorities.find(p => p.programId === programId);
+        if (existingPriority) {
+            existingPriority.priority = newPriority;
+        } else {
+            newPriorities.push({ programId: programId, priority: newPriority });
+        }
+    }
+
+    function selectStatus(event){
+        newStatus = String(event.target.value)
+    }
+
+    function selectManager(event) {
+        newManager = String(event.target.value)
+    }
+
+    function editProgramPriority(id) {
+        $.ajax({
+            url: `/Application/EditPrograms/${id}`,
+            contentType: "application/json",
+            type: 'PUT',
+            data: JSON.stringify(newPriorities),
+            success: function () {
+                location.reload();
+            },
+            error: function (e) {
+                alert(e.responseText)
+            }
+        });
+    }
+
+    function changeStatus(id) {
+        $.ajax({
+            url: `/Application/ChangeStatus/${id}`,
+            contentType: "application/json",
+            type: 'PUT',
+            data: JSON.stringify(newStatus),
+            success: function () {
+                location.reload();
+            },
+            error: function (e) {
+                alert(e.responseText)
+            }
+        });
+    }
+
+    function setManager(applicationId) {
+        $.ajax({
+            url: `/Application/${applicationId}/SetManager/${newManager}`,
+            contentType: "application/json",
+            type: 'PUT',
+            data: JSON.stringify({}),
+            success: function () {
+                location.reload();
+            },
+            error: function (e) {
+                alert(e.responseText)
+            }
+        });
+    }
+
+    function returnApplication(applicationId) {
+        $.ajax({
+                url: `/Application/ReturnApplication/${applicationId}`,
+            contentType: "application/json",
+            type: 'PUT',
+            data: JSON.stringify({}),
+            success: function () {
+                location.reload();
+            },
+            error: function (e) {
+                alert(e.responseText)
+            }
+        });
+    }
+</script>

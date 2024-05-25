@@ -71,9 +71,9 @@ namespace Admission.API.Controllers
 
         [HttpPut("{applicationId:guid}/refuse")]
         [Authorize]
-        public async Task<IActionResult> RefuseApplication(Guid applicationId, Guid managerId)
+        public async Task<IActionResult> RefuseApplication(Guid applicationId)
         {
-            await _applicationService.Refuse(managerId, applicationId);
+            await _applicationService.ReturnApplication(applicationId);
             return Ok();
         }
 

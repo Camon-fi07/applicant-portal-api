@@ -1,13 +1,16 @@
 ﻿using Admission.BL.Services.IServices;
 using Admission.DAL;
 using Common.Constants;
+using Common.Dto;
 using Common.Dto.Application;
+using Common.Dto.RabbitMQ;
 using Common.Enums;
 using Common.Models;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Admission.BL.Extensions
 {
@@ -33,6 +36,32 @@ namespace Admission.BL.Extensions
 
             bus.Rpc.Respond<ManagerQueryModel, List<UserDto>>((query) => managerService.GetManagers(query.Email), x => x.WithQueueName(RabbitMQQueue.GET_MANAGERS));
             bus.Rpc.Respond<Guid, ApplicationDto>(async id => await applicationService.GetApplication(id), x => x.WithQueueName(RabbitMQQueue.GET_APPLICATION));
+            bus.Rpc.Respond<EditProgramPriorityDto, Empty>(async data =>
+            {
+                await applicationService.EditPrograms(data.Programs, data.ApplicationId);
+                return new Empty();
+            }, x =>  x.WithQueueName(RabbitMQQueue.EDIT_PROGRAMS_PRIORITY));
+
+            bus.Rpc.Respond<ChangeStatusDto, Empty>(async data =>
+            {
+                await applicationService.ChangeApplicationStatus(data.ApplicationId, data.Status);
+
+                return new Empty();
+            }, x => x.WithQueueName(RabbitMQQueue.CHANGE_APPLICATION_STATUS));
+
+            bus.Rpc.Respond<Guid, Empty>(async id =>
+            {
+                await applicationService.ReturnApplication(id);
+
+                return new Empty();
+            }, x => x.WithQueueName(RabbitMQQueue.RETURN_APPLICATION));
+
+            bus.Rpc.Respond<SetManagerApplicationDto, Empty>(async data =>
+            {
+                await applicationService.TakeApplication(data.ManagerId, data.ApplicationId);
+
+                return new Empty();
+            }, x => x.WithQueueName(RabbitMQQueue.SET_MANAGER));
         }
     }
 }

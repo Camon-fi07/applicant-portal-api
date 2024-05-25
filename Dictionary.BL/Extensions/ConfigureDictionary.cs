@@ -1,8 +1,7 @@
 ﻿using Common.Constants;
 using Common.Dto;
-using Common.Dto.Applicant;
 using Common.Dto.RabbitMQ;
-using Dictionary.BL.Dto;
+using Dictionary.BL.Mappers;
 using Dictionary.BL.Services.IServices;
 using Dictionary.DAL;
 using EasyNetQ;
@@ -28,67 +27,22 @@ namespace Dictionary.BL.Extensions
 
             bus.Rpc.Respond<Empty, List<ImportingStatusDto>>(async (_) => await gettingService.GetImportingStatuses(), x => x.WithQueueName(RabbitMQQueue.GET_IMPORTING_STATUSES));
 
-            bus.Rpc.Respond<Guid, AddProgramRabbitDto>(async (id) => {
-                var programDto = await gettingService.GetProgram(id);
+            bus.Rpc.Respond<Guid, AddProgramDto>(async (id) => ProgramMapper.TranslateProgramDtoToAddDto(await gettingService.GetCertainProgram(id)),
+                x => x.WithQueueName(RabbitMQQueue.ADD_PROGRAM));
 
-                var addEducationLevel = new AddEducationLevelRabbitDto()
-                {
-                    Id = programDto.EducationLevel.Id,
-                    Name = programDto.EducationLevel.Name,
-                };
+            bus.Rpc.Respond<Guid, AddFacultyDto>(async (id) => FacultyMapper.TranslateFacultyDtoToAddDto(await gettingService.GetCertainFaculty(id)),
+                x => x.WithQueueName(RabbitMQQueue.ADD_FACULTY));
 
-                var addFaculty = new AddFacultyRabbitDto()
-                {
-                    Id = programDto.Faculty.Id,
-                    Name = programDto.Faculty.Name,
-                };
+            bus.Rpc.Respond<Guid, AddEducationDocumentTypeDto>(async (id) => EducationDocumentTypeMapper.TranslateDocumnetDtoToAddDto(await gettingService.GetCertainDocumentType(id)),
+                x => x.WithQueueName(RabbitMQQueue.ADD_EDUCATION_DOCUMENT_TYPE));
 
-                return new AddProgramRabbitDto()
-                {
-                    Code = programDto.Code,
-                    EducationLevel = addEducationLevel,
-                    Name = programDto.Name,
-                    Id = programDto.Id,
-                    Faculty = addFaculty
-                };
+            bus.Rpc.Respond<List<Guid>, List<AddProgramDto>>(async (ids) => await gettingService.SychronizePrograms(ids), x => x.WithQueueName(RabbitMQQueue.ADD_PROGRAM));
 
-            }, x => x.WithQueueName(RabbitMQQueue.ADD_PROGRAM));
+            bus.Rpc.Respond<List<Guid>, List<AddFacultyDto>>(async (ids) => await gettingService.SynchronizeFaculties(ids), x => x.WithQueueName(RabbitMQQueue.ADD_FACULTY));
 
-            bus.Rpc.Respond<Guid, AddFacultyRabbitDto>(async (id) => {
-                var faculty = await gettingService.GetFaculty(id);
+            bus.Rpc.Respond<List<int>, List<AddEducationLevelDto>>(async (ids) => await gettingService.SychronizeEducationLevels(ids), x => x.WithQueueName(RabbitMQQueue.ADD_EDUCATION));
 
-                return new AddFacultyRabbitDto()
-                {
-                    Id = faculty.Id,
-                    Name = faculty.Name,
-                };
-
-            }, x => x.WithQueueName(RabbitMQQueue.ADD_FACULTY));
-
-            bus.Rpc.Respond<Guid, AddEducationDocumentTypeRabbitDto>(async (id) => {
-                var educationDocument = await gettingService.GetDocumentType(id);
-
-                var educationLevel = new AddEducationLevelRabbitDto()
-                {
-                    Id = educationDocument.EducationLevel.Id,
-                    Name = educationDocument.EducationLevel.Name,
-                };
-
-                var nextEducationsLevels = educationDocument.NextEducationLevels?.Select(e => new AddEducationLevelRabbitDto()
-                {
-                    Id = e.Id,
-                    Name = e.Name,
-                }).ToList();
-
-                return new AddEducationDocumentTypeRabbitDto()
-                {
-                    EducationLevel = educationLevel,
-                    Id = educationDocument.Id,
-                    Name = educationDocument.Name,
-                    NextEducationLevels = nextEducationsLevels
-                };
-
-            }, x => x.WithQueueName(RabbitMQQueue.ADD_EDUCATION_DOCUMENT_TYPE));
+            bus.Rpc.Respond<List<Guid>, List<AddEducationDocumentTypeDto>>(async (ids) => await gettingService.SychronizeDocumentTypes(ids), x => x.WithQueueName(RabbitMQQueue.ADD_FACULTY));
 
             bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_PROGRAMS, async (_) => await importingService.ImportPrograms(), x => x.WithTopic(RabbitMQQueue.IMPORT_PROGRAMS));
             bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_FACULTIES, async (_) => await importingService.ImportFaculties(), x => x.WithTopic(RabbitMQQueue.IMPORT_FACULTIES));

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Common.Dto.RabbitMQ
 {
-    public class AddEducationLevelRabbitDto
+    public class AddEducationLevelDto
     { 
         public int Id { get; set; }
         public required string Name { get; set; }

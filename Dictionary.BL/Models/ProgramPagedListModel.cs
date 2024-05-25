@@ -1,5 +1,5 @@
-﻿using Common.Models;
-using Dictionary.BL.Dto;
+﻿using Common.Dto.Dictionary;
+using Common.Models;
 
 namespace Dictionary.BL.Models
 {

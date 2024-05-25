@@ -5,8 +5,7 @@ using Common.Dto.User;
 namespace Admission.BL.Services.IServices
 {
     public interface IExternalService
-    {
-        public Task<ProfileDto> GetFullProfile(Guid managerId);
+    { 
         public Task<UserCacheEntity> GetUser(Guid userId);
         public Task ImportUser(Guid userId);
         public Task<ProgramCacheEntity> GetProgram(Guid programId);

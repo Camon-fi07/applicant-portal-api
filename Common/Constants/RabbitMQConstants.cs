@@ -36,5 +36,8 @@ namespace Common.Constants
         public const string ADD_PROGRAM = "ADD_PROGRAM_QUEUE";
         public const string ADD_EDUCATION_DOCUMENT_TYPE = "ADD_EDUCATION_DOCUMENT_TYPE_QUEUE";
         public const string ADD_FACULTY = "ADD_FACULTY_QUEUE";
+        public const string ADD_EDUCATION = "ADD_EDUCATION_QUEUE";
+
+        public const string REFRESH_GUIDE = "REFRESH_GUIDE_QUEUE";
     }
 }

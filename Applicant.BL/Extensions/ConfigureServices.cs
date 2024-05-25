@@ -16,6 +16,7 @@ namespace Applicant.BL.Extensions
         {
             var bus = RabbitHutch.CreateBus("host=localhost");
             services.AddSingleton(bus);
+            services.AddScoped<IExternalService, ExternalService>();
             services.AddScoped<IApplicantService, ApplicantService>();
         }
     }

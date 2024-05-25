@@ -170,7 +170,7 @@ namespace Admission.BL.Services
 
         public async Task<ApplicationDto> GetApplication(Guid applicationId)
         {
-            var application = await _admissionDBContext.Applications.Include(a => a.Programs).Include(a => a.User).Include(a => a.Manager).ThenInclude(m => m.User).FirstOrDefaultAsync(a => a.Id == applicationId);
+            var application = await _admissionDBContext.Applications.Include(a => a.Programs).ThenInclude(p => p.Program).ThenInclude(p => p.Faculty).Include(a => a.User).Include(a => a.Manager).ThenInclude(m => m.User).FirstOrDefaultAsync(a => a.Id == applicationId);
             if (application == null) { throw new Exception(); }
 
             var programPriorities = new List<ProgramPriorityDto>();

@@ -1,6 +1,4 @@
-﻿using Common.Dto.Dictionary;
-
-namespace Dictionary.BL.Dto
+﻿namespace Common.Dto.Dictionary
 {
     public class EducationProgramDto
     {

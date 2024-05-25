@@ -1,4 +1,4 @@
-﻿namespace Dictionary.BL.Dto
+﻿namespace Common.Dto.Dictionary 
 {
     public class EducationFacultyDto
     {

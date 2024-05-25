@@ -3,9 +3,12 @@ using Admission.BL.Services.IServices;
 using Admission.DAL;
 using Admission.DAL.Entities;
 using Common.Constants;
+using Common.Dto;
 using Common.Dto.RabbitMQ;
 using Common.Dto.User;
+using Common.Enums;
 using EasyNetQ;
+using Microsoft.AspNet.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Admission.BL.Services
@@ -36,7 +39,7 @@ namespace Admission.BL.Services
 
         public async Task ImportProgram(Guid programId)
         {
-            var externalProgram = await _bus.Rpc.RequestAsync<Guid, AddProgramRabbitDto>(programId, x => x.WithQueueName(RabbitMQQueue.ADD_PROGRAM));
+            var externalProgram = await _bus.Rpc.RequestAsync<Guid, AddProgramDto>(programId, x => x.WithQueueName(RabbitMQQueue.ADD_PROGRAM));
 
             if (externalProgram == null) throw new Exception();
 
@@ -84,9 +87,9 @@ namespace Admission.BL.Services
                 await ImportUser(userId);
                 user = await _admissionDBContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
-                if(user == null) throw new Exception();
+                if (user == null) throw new Exception();
             }
-            
+
             return user;
         }
 
@@ -126,7 +129,7 @@ namespace Admission.BL.Services
 
         public async Task ImportEducationDocument(Guid documentId)
         {
-            var externalDocumentType = await _bus.Rpc.RequestAsync<Guid, AddEducationDocumentTypeRabbitDto>(documentId, x => x.WithQueueName(RabbitMQQueue.ADD_EDUCATION_DOCUMENT_TYPE));
+            var externalDocumentType = await _bus.Rpc.RequestAsync<Guid, AddEducationDocumentTypeDto>(documentId, x => x.WithQueueName(RabbitMQQueue.ADD_EDUCATION_DOCUMENT_TYPE));
 
             if (externalDocumentType == null) throw new Exception();
 
@@ -137,13 +140,13 @@ namespace Admission.BL.Services
                 educationLevel = new EducationLevelCacheEntity()
                 {
                     Name = externalDocumentType.EducationLevel.Name,
-                    Id = externalDocumentType.EducationLevel.Id
+                    Id = externalDocumentType.EducationLevel.Id,
                 };
             }
 
             List<EducationLevelCacheEntity>? nextEducationLevels = null;
 
-            if(externalDocumentType.NextEducationLevels != null)
+            if (externalDocumentType.NextEducationLevels != null)
             {
                 nextEducationLevels = new List<EducationLevelCacheEntity>();
                 foreach (var el in externalDocumentType.NextEducationLevels)
@@ -160,7 +163,7 @@ namespace Admission.BL.Services
                     }
                 }
             }
-            
+
             var documentType = new EducationDocumentTypeCacheEntity()
             {
                 Name = externalDocumentType.Name,
@@ -171,11 +174,6 @@ namespace Admission.BL.Services
 
             _admissionDBContext.EducationDocumentTypes.Add(documentType);
             await _admissionDBContext.SaveChangesAsync();
-        }
-
-        public async Task<ProfileDto> GetFullProfile(Guid managerId)
-        {
-            return await _bus.Rpc.RequestAsync<Guid, ProfileDto>(managerId, x => x.WithQueueName(RabbitMQQueue.GET_PROFILE));
         }
 
         public async Task<FacultyCacheEntity> GetFaculty(Guid facultyId)
@@ -194,7 +192,7 @@ namespace Admission.BL.Services
 
         public async Task ImportFaculty(Guid facultyId)
         {
-            var externalFaculty = await _bus.Rpc.RequestAsync<Guid, AddFacultyRabbitDto>(facultyId, x => x.WithQueueName(RabbitMQQueue.ADD_FACULTY));
+            var externalFaculty = await _bus.Rpc.RequestAsync<Guid, AddFacultyDto>(facultyId, x => x.WithQueueName(RabbitMQQueue.ADD_FACULTY));
 
             if (externalFaculty == null) throw new Exception();
 
@@ -207,5 +205,5 @@ namespace Admission.BL.Services
             _admissionDBContext.Faculties.Add(faculty);
             await _admissionDBContext.SaveChangesAsync();
         }
-    }
+    }  
 }

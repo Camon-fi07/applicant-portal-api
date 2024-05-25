@@ -7,7 +7,7 @@ namespace Admission.DAL.Entities
     {
         public Guid Id { get; set; }
         public required UserCacheEntity User { get; set; }
-        public required EducationDocumentTypeCacheEntity ApplicantEducationDocumentType { get; set; }
+        public required EducationDocumentTypeCacheEntity? ApplicantEducationDocumentType { get; set; }
         public required List<ProgramPriorityEntity> Programs { get; set; }
         public ApplicationStatus Status { get; set; }
         public DateTime CreateTime { get; set; }

@@ -55,7 +55,7 @@ namespace Admission.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ApplicantEducationDocumentTypeId")
+                    b.Property<Guid?>("ApplicantEducationDocumentTypeId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreateTime")
@@ -90,7 +90,7 @@ namespace Admission.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("EducationLevelId")
+                    b.Property<int?>("EducationLevelId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
@@ -109,16 +109,11 @@ namespace Admission.DAL.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("EducationDocumentTypeCacheEntityId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EducationDocumentTypeCacheEntityId");
 
                     b.ToTable("EducationLevels");
                 });
@@ -214,13 +209,26 @@ namespace Admission.DAL.Migrations
                     b.ToTable("ProgramPriorities");
                 });
 
+            modelBuilder.Entity("EducationDocumentTypeCacheEntityEducationLevelCacheEntity", b =>
+                {
+                    b.Property<int>("NextEducationLevelsId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PreviousEducationLevelDocumentTypesId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("NextEducationLevelsId", "PreviousEducationLevelDocumentTypesId");
+
+                    b.HasIndex("PreviousEducationLevelDocumentTypesId");
+
+                    b.ToTable("LevelDocumentType", (string)null);
+                });
+
             modelBuilder.Entity("Admission.DAL.Entities.ApplicationEntity", b =>
                 {
                     b.HasOne("Admission.DAL.Entities.EducationDocumentTypeCacheEntity", "ApplicantEducationDocumentType")
                         .WithMany()
-                        .HasForeignKey("ApplicantEducationDocumentTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ApplicantEducationDocumentTypeId");
 
                     b.HasOne("Admission.DAL.Entities.ManagerEntity", "Manager")
                         .WithMany()
@@ -242,19 +250,10 @@ namespace Admission.DAL.Migrations
             modelBuilder.Entity("Admission.DAL.Entities.EducationDocumentTypeCacheEntity", b =>
                 {
                     b.HasOne("Admission.DAL.Entities.EducationLevelCacheEntity", "EducationLevel")
-                        .WithMany()
-                        .HasForeignKey("EducationLevelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("CurrentEducationLevelDocumentTypes")
+                        .HasForeignKey("EducationLevelId");
 
                     b.Navigation("EducationLevel");
-                });
-
-            modelBuilder.Entity("Admission.DAL.Entities.EducationLevelCacheEntity", b =>
-                {
-                    b.HasOne("Admission.DAL.Entities.EducationDocumentTypeCacheEntity", null)
-                        .WithMany("NextEducationLevels")
-                        .HasForeignKey("EducationDocumentTypeCacheEntityId");
                 });
 
             modelBuilder.Entity("Admission.DAL.Entities.ManagerEntity", b =>
@@ -277,13 +276,13 @@ namespace Admission.DAL.Migrations
             modelBuilder.Entity("Admission.DAL.Entities.ProgramCacheEntity", b =>
                 {
                     b.HasOne("Admission.DAL.Entities.EducationLevelCacheEntity", "EducationLevel")
-                        .WithMany()
+                        .WithMany("Programs")
                         .HasForeignKey("EducationLevelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Admission.DAL.Entities.FacultyCacheEntity", "Faculty")
-                        .WithMany()
+                        .WithMany("Programs")
                         .HasForeignKey("FacultyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -312,14 +311,36 @@ namespace Admission.DAL.Migrations
                     b.Navigation("Program");
                 });
 
+            modelBuilder.Entity("EducationDocumentTypeCacheEntityEducationLevelCacheEntity", b =>
+                {
+                    b.HasOne("Admission.DAL.Entities.EducationLevelCacheEntity", null)
+                        .WithMany()
+                        .HasForeignKey("NextEducationLevelsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Admission.DAL.Entities.EducationDocumentTypeCacheEntity", null)
+                        .WithMany()
+                        .HasForeignKey("PreviousEducationLevelDocumentTypesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Admission.DAL.Entities.ApplicationEntity", b =>
                 {
                     b.Navigation("Programs");
                 });
 
-            modelBuilder.Entity("Admission.DAL.Entities.EducationDocumentTypeCacheEntity", b =>
+            modelBuilder.Entity("Admission.DAL.Entities.EducationLevelCacheEntity", b =>
                 {
-                    b.Navigation("NextEducationLevels");
+                    b.Navigation("CurrentEducationLevelDocumentTypes");
+
+                    b.Navigation("Programs");
+                });
+
+            modelBuilder.Entity("Admission.DAL.Entities.FacultyCacheEntity", b =>
+                {
+                    b.Navigation("Programs");
                 });
 #pragma warning restore 612, 618
         }

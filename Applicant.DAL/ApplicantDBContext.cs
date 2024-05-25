@@ -13,10 +13,18 @@ namespace Applicant.DAL
         public DbSet<ApplicantEntity> Applicants { get; set; }
         public DbSet<PassportEntity> Passports { get; set; }
         public DbSet<EducationEntity> Educations { get; set; }
+        public DbSet<EducationDocumentTypeCacheEntity> EducationDocumentTypes { get; set; }
+        public DbSet<EducationLevelCacheEntity> EducationLevels { get; set; }
 
         public ApplicantDBContext(DbContextOptions options) : base(options)
         {
 
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<EducationLevelCacheEntity>().HasKey(l => l.Id);
+            modelBuilder.Entity<EducationLevelCacheEntity>().Property(l => l.Id).ValueGeneratedNever();
         }
     }
 }

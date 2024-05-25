@@ -1,7 +1,6 @@
 ﻿using Admission.BL.Models;
 using Admission.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
 
 namespace Admission.DAL
 {
@@ -25,6 +24,23 @@ namespace Admission.DAL
         {
             modelBuilder.Entity<EducationLevelCacheEntity>().HasKey(l => l.Id);
             modelBuilder.Entity<EducationLevelCacheEntity>().Property(l => l.Id).ValueGeneratedNever();
+
+            modelBuilder.Entity<EducationDocumentTypeCacheEntity>()
+               .HasMany(d => d.NextEducationLevels)
+               .WithMany(l => l.PreviousEducationLevelDocumentTypes)
+               .UsingEntity(j => j.ToTable("LevelDocumentType"));
+
+            modelBuilder.Entity<EducationLevelCacheEntity>()
+               .HasMany(l => l.CurrentEducationLevelDocumentTypes)
+               .WithOne(d => d.EducationLevel);
+
+            modelBuilder.Entity<EducationLevelCacheEntity>()
+               .HasMany(l => l.Programs)
+               .WithOne(p => p.EducationLevel);
+
+            modelBuilder.Entity<FacultyCacheEntity>()
+                .HasMany(f => f.Programs)
+                .WithOne(p => p.Faculty);
         }
     }
 }

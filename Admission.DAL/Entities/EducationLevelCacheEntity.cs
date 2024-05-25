@@ -10,5 +10,8 @@ namespace Admission.DAL.Entities
     {
         public int Id { get; set; }
         public required string Name { get; set; }
+        public List<ProgramCacheEntity> Programs { get; set; } = new List<ProgramCacheEntity>();
+        public List<EducationDocumentTypeCacheEntity>? CurrentEducationLevelDocumentTypes { get; set; }
+        public List<EducationDocumentTypeCacheEntity>? PreviousEducationLevelDocumentTypes { get; set; }
     }
 }

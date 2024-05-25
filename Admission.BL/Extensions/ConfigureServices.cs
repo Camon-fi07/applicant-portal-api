@@ -15,7 +15,8 @@ namespace Admission.BL.Extensions
         public static void ConfigureAdmissionServices(this IServiceCollection services)
         {
             var bus = RabbitHutch.CreateBus("host=localhost");
-            services.AddSingleton(bus); 
+            services.AddSingleton(bus);
+            services.AddScoped<ISynchronizationService, SynchronizationService>();
             services.AddScoped<IExternalService, ExternalService>();
             services.AddScoped<IApplicationService, ApplicationService>();
             services.AddScoped<IManagerService, ManagerService>();

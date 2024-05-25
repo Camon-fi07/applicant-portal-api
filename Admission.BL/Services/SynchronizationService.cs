@@ -129,7 +129,7 @@ namespace Admission.BL.Services
             var documentIds = originEducationDocumentTypes.Select(l => l.Id).ToList();
             var newEducationDocumentTypes = await _bus.Rpc.RequestAsync<List<Guid>, List<AddEducationDocumentTypeDto>>(documentIds, x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_EDUCATION_DOCUMENT_TYPES));
 
-            originEducationDocumentTypes.ForEach(async originEducationDocumentType =>
+            await Parallel.ForEachAsync(originEducationDocumentTypes, async (originEducationDocumentType, _) =>
             {
                 var newEducationDocumentType = newEducationDocumentTypes.FirstOrDefault(d => d.Id == originEducationDocumentType.Id);
                 if (newEducationDocumentType == null)
@@ -323,6 +323,8 @@ namespace Admission.BL.Services
                 };
 
             });
+
+            await _admissionDBContext.SaveChangesAsync();
         }
 
         private bool IsProgramsValid(List<ProgramPriorityEntity> programPriorities, EducationDocumentTypeCacheEntity educationDocumentType)

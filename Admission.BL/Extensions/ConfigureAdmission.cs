@@ -8,6 +8,7 @@ using Common.Dto.User;
 using Common.Enums;
 using Common.Models;
 using EasyNetQ;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,6 +65,19 @@ namespace Admission.BL.Extensions
 
                 return new Empty();
             }, x => x.WithQueueName(RabbitMQQueue.SET_MANAGER));
+        }
+
+        public async static void Migrate(this WebApplication app)
+        {
+            using var serviceScope = app.Services.CreateScope();
+
+            var context = serviceScope.ServiceProvider.GetService<AdmissionDBContext>();
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            await context.Database.MigrateAsync();
         }
     }
 }

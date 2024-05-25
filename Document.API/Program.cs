@@ -11,7 +11,6 @@ builder.Services.AddDocumentDB(builder.Configuration);
 builder.Services.AddAuthenticationCustom(builder.Configuration);
 
 builder.Services.AddDocumentServices();
-builder.Services.AddEasyNetQ();
 
 builder.Services.AddSwaggerAuth();
 
@@ -22,6 +21,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.Migrate();
 
 app.UseHttpsRedirection();
 

@@ -9,6 +9,7 @@ using User.BL.Services;
 using Common.Dto;
 using Common.Constants;
 using Common.Dto.User;
+using Microsoft.AspNetCore.Builder;
 
 namespace User.BL.Extensions
 {
@@ -58,6 +59,19 @@ namespace User.BL.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IProfileService, ProfileService>();
             services.AddHostedService<BackgroundTokenService>();
+        }
+
+        public async static void Migrate(this WebApplication app)
+        {
+            using var serviceScope = app.Services.CreateScope();
+
+            var context = serviceScope.ServiceProvider.GetService<UserDBContext>();
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            await context.Database.MigrateAsync();
         }
     }
 }

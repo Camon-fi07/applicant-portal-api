@@ -6,6 +6,7 @@ using Dictionary.BL.Mappers;
 using Dictionary.BL.Services.IServices;
 using Dictionary.DAL;
 using EasyNetQ;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +53,19 @@ namespace Dictionary.BL.Extensions
             bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_FACULTIES, async (_) => await importingService.ImportFaculties(), x => x.WithTopic(RabbitMQQueue.IMPORT_FACULTIES));
             bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_EDUCATION_LEVELS, async (_) => await importingService.ImportEducationLevels(), x => x.WithTopic(RabbitMQQueue.IMPORT_EDUCATION_LEVELS));
             bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_EDUCATION_DOCUMENTS, async (_) => await importingService.ImporDocumentTypes(), x => x.WithTopic(RabbitMQQueue.IMPORT_EDUCATION_DOCUMENTS));
+        }
+
+        public async static void Migrate(this WebApplication app)
+        {
+            using var serviceScope = app.Services.CreateScope();
+
+            var context = serviceScope.ServiceProvider.GetService<DictionaryDBContext>();
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            await context.Database.MigrateAsync();
         }
     }
 }

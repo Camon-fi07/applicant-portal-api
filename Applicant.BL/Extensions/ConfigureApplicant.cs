@@ -9,6 +9,7 @@ using Common.Dto.Applicant;
 using Common.Constants;
 using Common.Enums;
 using Common.Dto.User;
+using Microsoft.AspNetCore.Builder;
 
 namespace Applicant.BL.Extensions
 {
@@ -35,6 +36,19 @@ namespace Applicant.BL.Extensions
 
             await bus.PubSub.SubscribeAsync<RegisterApplicantDto>(RabbitMQQueue.APPLICANT_REGISTER, async data => await applicantService.RegisterApplicant(data));
             await bus.PubSub.SubscribeAsync<AddUserDto>("Applicant_Profile", async data => { await synchronizationService.SychronizeProfile(data); }, x => x.WithTopic(RabbitMQQueue.SYNCHRONIZE_PROFILE));
+        }
+
+        public async static void Migrate(this WebApplication app)
+        {
+            using var serviceScope = app.Services.CreateScope();
+
+            var context = serviceScope.ServiceProvider.GetService<ApplicantDBContext>();
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            await context.Database.MigrateAsync();
         }
     }
 }

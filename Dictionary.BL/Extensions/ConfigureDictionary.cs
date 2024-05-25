@@ -36,13 +36,13 @@ namespace Dictionary.BL.Extensions
             bus.Rpc.Respond<Guid, AddEducationDocumentTypeDto>(async (id) => EducationDocumentTypeMapper.TranslateDocumnetDtoToAddDto(await gettingService.GetCertainDocumentType(id)),
                 x => x.WithQueueName(RabbitMQQueue.ADD_EDUCATION_DOCUMENT_TYPE));
 
-            bus.Rpc.Respond<List<Guid>, List<AddProgramDto>>(async (ids) => await gettingService.SychronizePrograms(ids), x => x.WithQueueName(RabbitMQQueue.ADD_PROGRAM));
+            bus.Rpc.Respond<List<Guid>, List<AddProgramDto>>(async (ids) => await gettingService.SychronizePrograms(ids), x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_PROGRAMS));
 
-            bus.Rpc.Respond<List<Guid>, List<AddFacultyDto>>(async (ids) => await gettingService.SynchronizeFaculties(ids), x => x.WithQueueName(RabbitMQQueue.ADD_FACULTY));
+            bus.Rpc.Respond<List<Guid>, List<AddFacultyDto>>(async (ids) => await gettingService.SynchronizeFaculties(ids), x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_FACULTIES));
 
-            bus.Rpc.Respond<List<int>, List<AddEducationLevelDto>>(async (ids) => await gettingService.SychronizeEducationLevels(ids), x => x.WithQueueName(RabbitMQQueue.ADD_EDUCATION));
+            bus.Rpc.Respond<List<int>, List<AddEducationLevelDto>>(async (ids) => await gettingService.SychronizeEducationLevels(ids), x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_EDUCATIONS));
 
-            bus.Rpc.Respond<List<Guid>, List<AddEducationDocumentTypeDto>>(async (ids) => await gettingService.SychronizeDocumentTypes(ids), x => x.WithQueueName(RabbitMQQueue.ADD_FACULTY));
+            bus.Rpc.Respond<List<Guid>, List<AddEducationDocumentTypeDto>>(async (ids) => await gettingService.SychronizeDocumentTypes(ids), x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_EDUCATION_DOCUMENT_TYPES));
 
             bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_PROGRAMS, async (_) => await importingService.ImportPrograms(), x => x.WithTopic(RabbitMQQueue.IMPORT_PROGRAMS));
             bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_FACULTIES, async (_) => await importingService.ImportFaculties(), x => x.WithTopic(RabbitMQQueue.IMPORT_FACULTIES));

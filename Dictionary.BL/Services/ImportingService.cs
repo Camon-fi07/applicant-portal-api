@@ -88,8 +88,6 @@ namespace Dictionary.BL.Services
 
             var educationLevels = JsonConvert.DeserializeObject<List<EducationLevelDto>>(await httpResponse.Content.ReadAsStringAsync());
 
-            educationLevels = educationLevels.Where(e => e.Id != 6).ToList();
-
             var originEducationLevels = _dictionaryDBContext.EducationLevels.Include(l => l.EducationPrograms).Include(l => l.CurrentEducationLevelDocumentTypes);
 
             await originEducationLevels.ForEachAsync((originLevel) =>

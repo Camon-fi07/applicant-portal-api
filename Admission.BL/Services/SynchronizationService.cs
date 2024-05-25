@@ -43,10 +43,13 @@ namespace Admission.BL.Services
         public async Task SychronizeFaculties()
         {
             var originFaculties = _admissionDBContext.Faculties.Include(f => f.Programs).ToList();
-            var facultiesIds = originFaculties.Select(f => f.Id).ToList();
-            var newFaculties = await _bus.Rpc.RequestAsync<List<Guid>, List<AddFacultyDto>>(facultiesIds, x => x.WithQueueName(RabbitMQQueue.ADD_FACULTY));
 
-            originFaculties.ForEach(originFaculty =>
+            if (originFaculties.Count == 0) return;
+
+            var facultiesIds = originFaculties.Select(f => f.Id).ToList();
+            var newFaculties = await _bus.Rpc.RequestAsync<List<Guid>, List<AddFacultyDto>>(facultiesIds, x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_FACULTIES));
+
+            await Parallel.ForEachAsync(originFaculties, async (originFaculty, _) =>
             {
                 var newFaculty = newFaculties.FirstOrDefault(f => f.Id == originFaculty.Id);
                 if (newFaculty == null)
@@ -54,7 +57,7 @@ namespace Admission.BL.Services
                     if (originFaculty.Programs != null)
                     {
 
-                        originFaculty.Programs.ForEach(async p =>
+                        await Parallel.ForEachAsync(originFaculty.Programs, async (p, _) =>
                         {
                             await RejectApplicationsForProgram(p);
                         });
@@ -75,18 +78,20 @@ namespace Admission.BL.Services
         public async Task SychronizeEducationLevels()
         {
             var originEducationLevels = _admissionDBContext.EducationLevels.Include(l => l.Programs).Include(l => l.CurrentEducationLevelDocumentTypes).ToList();
-            var levelsIds = originEducationLevels.Select(l => l.Id).ToList();
-            var newEducationLevels = await _bus.Rpc.RequestAsync<List<int>, List<AddEducationLevelDto>>(levelsIds, x => x.WithQueueName(RabbitMQQueue.ADD_EDUCATION));
 
-            originEducationLevels.ForEach(originEducationLevel =>
+            if (originEducationLevels.Count == 0) return;
+
+            var levelsIds = originEducationLevels.Select(l => l.Id).ToList();
+            var newEducationLevels = await _bus.Rpc.RequestAsync<List<int>, List<AddEducationLevelDto>>(levelsIds, x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_EDUCATIONS));
+
+            await Parallel.ForEachAsync(originEducationLevels, async (originEducationLevel, _) =>
             {
                 var newEducationLevel = newEducationLevels.FirstOrDefault(l => l.Id == originEducationLevel.Id);
                 if (newEducationLevel == null)
                 {
                     if (originEducationLevel.Programs != null)
                     {
-
-                        originEducationLevel.Programs.ForEach(async p =>
+                        await Parallel.ForEachAsync(originEducationLevel.Programs, async (p, _) =>
                         {
                             await RejectApplicationsForProgram(p);
                         });
@@ -96,7 +101,7 @@ namespace Admission.BL.Services
 
                     if (originEducationLevel.CurrentEducationLevelDocumentTypes != null)
                     {
-                        originEducationLevel.CurrentEducationLevelDocumentTypes.ForEach(async d =>
+                        await Parallel.ForEachAsync(originEducationLevel.CurrentEducationLevelDocumentTypes, async (d, _) =>
                         {
                             await RefreshApplicationForDocument(d, true);
                         });
@@ -118,8 +123,11 @@ namespace Admission.BL.Services
         public async Task SychronizeEducationDocumentTypes()
         {
             var originEducationDocumentTypes = _admissionDBContext.EducationDocumentTypes.Include(d => d.EducationLevel).Include(d => d.NextEducationLevels).ToList();
+
+            if (originEducationDocumentTypes.Count == 0) return;
+
             var documentIds = originEducationDocumentTypes.Select(l => l.Id).ToList();
-            var newEducationDocumentTypes = await _bus.Rpc.RequestAsync<List<Guid>, List<AddEducationDocumentTypeDto>>(documentIds, x => x.WithQueueName(RabbitMQQueue.ADD_EDUCATION_DOCUMENT_TYPE));
+            var newEducationDocumentTypes = await _bus.Rpc.RequestAsync<List<Guid>, List<AddEducationDocumentTypeDto>>(documentIds, x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_EDUCATION_DOCUMENT_TYPES));
 
             originEducationDocumentTypes.ForEach(async originEducationDocumentType =>
             {
@@ -184,10 +192,13 @@ namespace Admission.BL.Services
         public async Task SychronizePrograms()
         {
             var originPrograms = _admissionDBContext.Programs.Include(p => p.EducationLevel).ToList();
-            var documentIds = originPrograms.Select(p => p.Id).ToList();
-            var newPrograms = await _bus.Rpc.RequestAsync<List<Guid>, List<AddProgramDto>>(documentIds, x => x.WithQueueName(RabbitMQQueue.ADD_PROGRAM));
 
-            originPrograms.ForEach(async originProgram =>
+            if(originPrograms.Count == 0) return;
+
+            var documentIds = originPrograms.Select(p => p.Id).ToList();
+            var newPrograms =  await _bus.Rpc.RequestAsync<List<Guid>, List<AddProgramDto>>(documentIds, x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_PROGRAMS));
+
+            await Parallel.ForEachAsync(originPrograms, async (originProgram, _) =>
             {
                 var newProgram = newPrograms.FirstOrDefault(p => p.Id == originProgram.Id);
                 if (newProgram == null)
@@ -238,13 +249,14 @@ namespace Admission.BL.Services
         {
             var applications = _admissionDBContext.Applications.Include(a => a.Programs).Include(a => a.ApplicantEducationDocumentType).Include(a => a.User).Where(a => a.Status != ApplicationStatus.Rejected && a.Programs.Any(p => p.ProgramId == program.Id)).ToList();
 
-            applications.ForEach(async a =>
+            await Parallel.ForEachAsync(applications, async (a, _) =>
             {
                 if (isDelete)
                 {
                     if (a.Status != ApplicationStatus.Rejected && a.Programs.Count == 1)
                     {
                         a.Status = ApplicationStatus.Rejected;
+                        a.EditTime = DateTime.UtcNow;
                     }
 
                     var programPriority = a.Programs.FirstOrDefault(p => p.ProgramId == program.Id);
@@ -271,7 +283,7 @@ namespace Admission.BL.Services
                         });
                     }
                 }
-
+                
             });
 
             await _admissionDBContext.SaveChangesAsync();
@@ -282,12 +294,13 @@ namespace Admission.BL.Services
             var applications = _admissionDBContext.Applications.Include(a => a.User).Include(a => a.ApplicantEducationDocumentType).Include(a => a.Programs).
                 Where(a => a.ApplicantEducationDocumentType != null && a.ApplicantEducationDocumentType.Id == educationDocumentType.Id).ToList();
 
-            applications.ForEach(async a =>
+            await Parallel.ForEachAsync(applications, async (a, _) =>
             {
                 if (isDelete)
                 {
                     a.ApplicantEducationDocumentType = null;
                     a.Status = ApplicationStatus.Rejected;
+                    a.EditTime = DateTime.UtcNow;
 
                     await _bus.PubSub.PublishAsync(new EmailMessageDto()
                     {
@@ -299,6 +312,7 @@ namespace Admission.BL.Services
                 else if (!IsProgramsValid(a.Programs, educationDocumentType))
                 {
                     a.Status = ApplicationStatus.Rejected;
+                    a.EditTime = DateTime.UtcNow;
 
                     await _bus.PubSub.PublishAsync(new EmailMessageDto()
                     {
@@ -309,8 +323,6 @@ namespace Admission.BL.Services
                 };
 
             });
-
-            await _admissionDBContext.SaveChangesAsync();
         }
 
         private bool IsProgramsValid(List<ProgramPriorityEntity> programPriorities, EducationDocumentTypeCacheEntity educationDocumentType)

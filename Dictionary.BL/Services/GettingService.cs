@@ -154,7 +154,7 @@ namespace Dictionary.BL.Services
 
         public async Task<List<AddEducationDocumentTypeDto>> SychronizeDocumentTypes(List<Guid> ids)
         {
-            var educationDocumentTypes = _dictionaryDBContext.EducationDocumentTypes.Where(d => ids.Contains(d.Id));
+            var educationDocumentTypes = _dictionaryDBContext.EducationDocumentTypes.Include(d => d.EducationLevel).Include(d => d.NextEducationLevels).Where(d => ids.Contains(d.Id));
 
             return educationDocumentTypes.Select(d => EducationDocumentTypeMapper.TranslateDocumentEntityToAddDto(d)).ToList();
         }
@@ -168,7 +168,7 @@ namespace Dictionary.BL.Services
 
         public async Task<List<AddProgramDto>> SychronizePrograms(List<Guid> ids)
         {
-            var programs = _dictionaryDBContext.EducationPrograms.Where(p => ids.Contains(p.Id));
+            var programs = _dictionaryDBContext.EducationPrograms.Include(p => p.EducationLevel).Include(p => p.Faculty).Where(p => ids.Contains(p.Id));
 
             return programs.Select(p => ProgramMapper.TranslateProgramEntityToAddDto(p)).ToList();
         }

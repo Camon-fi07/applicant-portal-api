@@ -12,6 +12,5 @@ namespace Common.Interfaces
     {
         Task<TokenResponseDto> Login(LoginDto loginDto, string userAgent);
         Task Logout(Guid userId, string userAgent);
-
     }
 }

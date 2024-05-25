@@ -1,7 +1,7 @@
 ﻿using Common.Dto.Dictionary;
 using Common.Models;
 
-namespace Dictionary.BL.Models
+namespace Common.Models
 {
     public class ProgramPagedListModel
     {

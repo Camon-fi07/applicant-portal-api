@@ -2,6 +2,7 @@
 using Admission.DAL;
 using Admission.DAL.Entities;
 using Common.Constants;
+using Common.Dto.Application;
 using Common.Dto.Manager;
 using Common.Dto.RabbitMQ;
 using Common.Enums;
@@ -101,6 +102,22 @@ namespace Admission.BL.Services
             manager.Faculty = null;
 
             await _admissionDBContext.SaveChangesAsync();
+        }
+
+        public List<UserDto> GetManagers(string? email)
+        {
+            var managers = _admissionDBContext.Managers.Include(m => m.User).ToList();
+            if(email != null) managers = managers.Where(m => m.User.Email.ToLower().Contains(email.ToLower())).ToList();
+
+
+            return managers.Select(m => new UserDto()
+            {
+                Email = m.User.Email,
+                Firstname = m.User.Firstname,
+                Id = m.Id,
+                Lastname = m.User.Lastname,
+                Middlename = m.User.Middlename
+            }).ToList();
         }
     }
 }

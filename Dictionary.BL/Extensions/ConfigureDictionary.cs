@@ -1,5 +1,6 @@
 ﻿using Common.Constants;
 using Common.Dto;
+using Common.Dto.Dictionary;
 using Common.Dto.RabbitMQ;
 using Dictionary.BL.Mappers;
 using Dictionary.BL.Services.IServices;
@@ -43,6 +44,9 @@ namespace Dictionary.BL.Extensions
             bus.Rpc.Respond<List<int>, List<AddEducationLevelDto>>(async (ids) => await gettingService.SychronizeEducationLevels(ids), x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_EDUCATIONS));
 
             bus.Rpc.Respond<List<Guid>, List<AddEducationDocumentTypeDto>>(async (ids) => await gettingService.SychronizeDocumentTypes(ids), x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_EDUCATION_DOCUMENT_TYPES));
+
+            bus.Rpc.Respond<Empty, List<EducationProgramDto>>(async (_) => await gettingService.GetAllPrograms(), x => x.WithQueueName(RabbitMQQueue.GET_ALL_PROGRAMS));
+            bus.Rpc.Respond<Empty, List<EducationFacultyDto>>(async (_) => await gettingService.GetFaculties(null), x => x.WithQueueName(RabbitMQQueue.GET_FACULTIES));
 
             bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_PROGRAMS, async (_) => await importingService.ImportPrograms(), x => x.WithTopic(RabbitMQQueue.IMPORT_PROGRAMS));
             bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_FACULTIES, async (_) => await importingService.ImportFaculties(), x => x.WithTopic(RabbitMQQueue.IMPORT_FACULTIES));

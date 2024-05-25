@@ -1,14 +1,8 @@
 ﻿using AdminPanel.Models;
 using Common.Dto.User;
 using Common.Interfaces;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System.Security.Claims;
-using Common.Dto;
 
 namespace AdminPanel.Controllers
 {

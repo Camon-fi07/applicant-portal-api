@@ -1,0 +1,42 @@
+﻿@using Common.Enums;
+
+@model ApplicationViewModel;
+
+@{
+    ViewData["Title"] = "Заявка";
+    Layout = "_Layout";
+}
+
+<div>
+    <p>@Model.Application.Status</p>
+    <p>Время создания: @Model.Application.CreateTime</p>
+    <p>Время последнего редактирования: @Model.Application.EditTime</p>
+    <p>
+        <span>@Model.Application.User.Email</span>
+        <span>@Model.Application.User.Lastname</span>
+        <span>@Model.Application.User.Firstname</span>
+        <span>@Model.Application.User.Middlename</span>
+    </p>
+    @if (Model.Application.Manager != null)
+    {
+        <span>@Model.Application.Manager.Email</span>
+        <span>@Model.Application.Manager.Lastname</span>
+        <span>@Model.Application.Manager.Firstname</span>
+        <span>@Model.Application.Manager.Middlename</span>
+    }
+    else{
+        <span>Менеджер не назначен</span>
+    }
+    <ul>
+        @foreach (var program in Model.Application.ProgramPriorities)
+        {
+            <li>
+                <span>Приоритет: @program.Priority</span>
+                <span>@program.ProgramName</span>
+                <span>@program.ProgramCode</span>
+                <span>@program.FacultyName</span>
+                <span>@program.EducationLevelName</span>
+            </li>
+        }
+    </ul>
+</div>

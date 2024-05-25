@@ -1,4 +1,5 @@
-﻿using Common.Dto.Manager;
+﻿using Common.Dto.Application;
+using Common.Dto.Manager;
 
 namespace Admission.BL.Services.IServices
 {
@@ -8,5 +9,6 @@ namespace Admission.BL.Services.IServices
         public Task DeleteManager(Guid managerId);
         public Task AddManagerToFaculty(Guid managerId, Guid facultyId);
         public Task DeleteManagerFromFaculty(Guid managerId);
+        public List<UserDto> GetManagers(string? email);
     }
 }

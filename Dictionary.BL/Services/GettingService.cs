@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Common.Dto;
 using Common.Dto.RabbitMQ;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Dictionary.BL.Services
 {
@@ -106,8 +107,6 @@ namespace Dictionary.BL.Services
                     Name = p.Name,
                 }).ToList()
             };
-
-
         }
         public async Task<EducationProgramDto> GetCertainProgram(Guid id)
         {
@@ -171,6 +170,28 @@ namespace Dictionary.BL.Services
             var programs = _dictionaryDBContext.EducationPrograms.Include(p => p.EducationLevel).Include(p => p.Faculty).Where(p => ids.Contains(p.Id));
 
             return programs.Select(p => ProgramMapper.TranslateProgramEntityToAddDto(p)).ToList();
+        }
+
+        public async Task<List<EducationProgramDto>> GetAllPrograms()
+        {
+            var programs = await _dictionaryDBContext.EducationPrograms.Include(p => p.Faculty).Include(p => p.EducationLevel).ToListAsync();
+
+            return programs.Select(p => new EducationProgramDto()
+            {
+                Code = p.Code,
+                CreateTime = p.CreateTime.ToUniversalTime(),
+                EducationForm = p.EducationForm,
+                EducationLevel = EducationLevelMapper.TranslateLevelEntityToDto(p.EducationLevel),
+                Faculty = new EducationFacultyDto()
+                {
+                    CreateTime = p.Faculty.CreateTime.ToUniversalTime(),
+                    Id = p.Faculty.Id,
+                    Name = p.Faculty.Name
+                },
+                Id = p.Id,
+                Language = p.Language,
+                Name = p.Name,
+            }).ToList();
         }
     }
 }

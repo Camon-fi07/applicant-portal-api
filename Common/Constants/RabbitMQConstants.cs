@@ -41,6 +41,13 @@ namespace Common.Constants
         public const string SYCHRONIZE_EDUCATION_DOCUMENT_TYPES = "SYCHRONIZE_EDUCATION_DOCUMENT_TYPES_QUEUE";
         public const string SYCHRONIZE_FACULTIES = "SYCHRONIZE_FACULTIES_QUEUE";
         public const string SYCHRONIZE_EDUCATIONS = "SYCHRONIZE_EDUCATIONS_QUEUE";
+        public const string GET_MANAGERS = "GET_MANAGERS_QUEUE";
+
+        public const string GET_ALL_PROGRAMS = "GET_ALL_PROGRAMS_QUEUE";
+        public const string GET_FACULTIES = "GET_FACULTIES_QUEUE";
+
+        public const string GET_APPLICATIONS = "GET_APPLICATIONS_QUEUE";
+        public const string GET_APPLICATION = "GET_APPLICATION_QUEUE";
 
         public const string REFRESH_GUIDE = "REFRESH_GUIDE_QUEUE";
     }

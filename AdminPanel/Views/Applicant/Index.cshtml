@@ -1,0 +1,165 @@
+﻿@using Common.Enums;
+@model ApplicantViewModel;
+
+@{
+    ViewData["Title"] = "Абитуриент";
+    Layout = "_Layout";
+}
+
+<div class="card p-0 mx-auto container border-0">
+    <div class="card-body">
+        <form id="profileForm">
+            <h3>Профиль</h3>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="EditProfile.Email">Email</label>
+                <input type="email" class="form-control my-2" asp-for="EditProfile.Email" placeholder="Email" value="@Model.Profile.Email">
+                <span class="text-danger" asp-validation-for="EditProfile.Email"></span>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="EditProfile.Lastname">Фамилия</label>
+                <input class="form-control my-2" asp-for="EditProfile.Lastname" placeholder="Фамилия" value="@Model.Profile.LastName">
+                <span class="text-danger" asp-validation-for="EditProfile.Lastname"></span>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="EditProfile.Firstname">Имя</label>
+                <input class="form-control my-2" asp-for="EditProfile.Firstname" placeholder="Имя" value="@Model.Profile.FirstName">
+                <span class="text-danger" asp-validation-for="EditProfile.Firstname"></span>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="EditProfile.Middlename">Отчество</label>
+                <input class="form-control my-2" asp-for="EditProfile.Middlename" placeholder="Отчество (при наличии)" value="@Model.Profile.MiddleName">
+                <span class="text-danger" asp-validation-for="EditProfile.Middlename"></span>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="EditProfile.PhoneNumber">Телефон</label>
+                <input type="tel" class="form-control my-2" asp-for="EditProfile.PhoneNumber" placeholder="Телефон" value="@Model.Profile.PhoneNumber">
+                <span class="text-danger" asp-validation-for="EditProfile.PhoneNumber"></span>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="EditProfile.BirthDate">День рождения</label>
+                <input type="date" class="form-control my-2" asp-for="EditProfile.BirthDate" placeholder="Дата рождения" value="@Model.Profile.BirthDate.ToString("yyyy-MM-dd")>
+                <span class="text-danger" asp-validation-for="EditProfile.BirthDate"></span>
+            </div>
+            <select class="form-select mb-3" asp-for="EditProfile.Gender">
+                <option value="@Gender.Female">Женский</option>
+                <option value="@Gender.Male">Мужской</option>
+            </select>
+            <button type="button" onclick="submitProfileForm('@Model.Profile.Id')" class="btn btn-primary">Редактировать профиль</button>
+
+            @if (ViewData.ModelState["Errors"] != null)
+            {
+                <div class="col-12 mt-2">
+                    <span class="text-danger">
+                        @ViewData.ModelState["Errors"]?.Errors[0].ErrorMessage;
+                    </span>
+                </div>
+            }
+        </form>
+    </div>
+    <hr/>
+    <div class="card-body">
+        <form id="applicantForm">
+            <h3>Данные абитуриента</h3>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="EditApplicantData.Citizenship">Национальность</label>
+                <input class="form-control my-2" asp-for="EditApplicantData.Citizenship" placeholder="национальность" value="@Model.ApplicantData.Citizenship">
+                <span class="text-danger" asp-validation-for="EditApplicantData.Citizenship"></span>
+            </div>
+            <br/>
+            <div class="card-body">
+                <h4>Паспорт</h4>
+                <div class="col-12 mb-3">
+                    <label class="form-label" asp-for="EditApplicantData.Passport.Series">Серия</label>
+                    <input class="form-control my-2" asp-for="EditApplicantData.Passport.Series" placeholder="Серия паспорта" value="@Model.ApplicantData.Passport.Series">
+                    <span class="text-danger" asp-validation-for="EditApplicantData.Passport.Series"></span>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label" asp-for="EditApplicantData.Passport.Number">Номер</label>
+                    <input class="form-control my-2" asp-for="EditApplicantData.Passport.Number" placeholder="Номер паспорта" value="@Model.ApplicantData.Passport.Number">
+                    <span class="text-danger" asp-validation-for="EditApplicantData.Passport.Number"></span>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label" asp-for="EditApplicantData.Passport.BirthPlace">Место рождения</label>
+                    <input class="form-control my-2" asp-for="EditApplicantData.Passport.BirthPlace" placeholder="Место рождения" value="@Model.ApplicantData.Passport.BirthPlace">
+                    <span class="text-danger" asp-validation-for="EditApplicantData.Passport.BirthPlace"></span>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label" asp-for="EditApplicantData.Passport.Issued">Выдан</label>
+                    <input class="form-control my-2" asp-for="EditApplicantData.Passport.Issued" placeholder="Кем выдан" value="@Model.ApplicantData.Passport.Issued">
+                    <span class="text-danger" asp-validation-for="EditApplicantData.Passport.Issued"></span>
+                </div>
+                @if (Model.ApplicantData.Passport.Files.Count > 0)
+                {
+                    <div>
+                        <h4>Сканы: </h4>
+                        <ul>
+                            @foreach (var scan in Model.ApplicantData.Passport.Files)
+                            {
+                                <li>
+                                    <button>@scan.Name</button>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+            <br />
+            <div class="card-body">
+                <h4>Образование</h4>
+                <div class="col-12 mb-3">
+                    <label class="form-label" asp-for="EditApplicantData.EducationDocument.Name">Серия</label>
+                    <input class="form-control my-2" asp-for="EditApplicantData.EducationDocument.Name" placeholder="Название" value="@Model.ApplicantData.EducationDocument.Name">
+                    <span class="text-danger" asp-validation-for="EditApplicantData.EducationDocument.Name"></span>
+                </div>
+
+                @if (Model.ApplicantData.EducationDocument.Files.Count > 0)
+                {
+                    <div>
+                        <h4>Сканы: </h4>
+                        <ul>
+                            @foreach (var scan in Model.ApplicantData.EducationDocument.Files)
+                            {
+                                <li>
+                                    <button>@scan.Name</button>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+
+            <button type="button" onclick="submitApplicantForm('@Model.Profile.Id')" class="btn btn-primary">Редактировать данные абитуриента</button>
+
+            @if (ViewData.ModelState["Errors"] != null)
+            {
+                <div class="col-12 mt-2">
+                    <span class="text-danger">
+                        @ViewData.ModelState["Errors"]?.Errors[0].ErrorMessage;
+                    </span>
+                </div>
+            }
+        </form>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    function submitProfileForm(id) {
+        var formData = $("#profileForm").serialize();
+
+        $.ajax({
+            url: `/Applicant/EditProfile/${id}`,
+            type: 'PUT',
+            data: formData
+        });
+    }
+
+    function submitApplicantForm(id) {
+        var formData = $("#applicantForm").serialize();
+
+        $.ajax({
+            url: `/Applicant/EditApplicant/${id}`,
+            type: 'PUT',
+            data: formData
+        });
+    }
+</script>

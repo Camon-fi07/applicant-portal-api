@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dictionary.DAL\Dictionary.DAL.csproj" />
+    <Folder Include="Mappers\Dictionary\" />
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,12 @@
-﻿using Applicant.BL.Dto;
+﻿using Common.Dto.Applicant;
 
 namespace Applicant.BL.Services.IServices
 {
     public interface IApplicantService
     {
         public Task RegisterApplicant(RegisterApplicantDto registerApplicantDto);
-        public Task<ApplicantProfileDto> EditProfile(EditApplicantProfileDto editApplicantProfileDto, Guid userId);
-        public Task<ApplicantProfileDto> GetProfile(Guid userId);
+        public Task<ApplicantDataDto> EditApplicantData(EditApplicantDataDto editApplicantDataDto, Guid userId);
+        public Task<ApplicantDataDto> GetApplicantData(Guid userId);
         public Task<PassportDto> GetPassport(Guid userId);
         public Task<PassportDto> EditPassport(EditPassportDto editPassportDto, Guid userId);
         public Task<EducationDocumentDto> GetEducationDocument(Guid userId);

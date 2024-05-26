@@ -1,0 +1,76 @@
+﻿@using Common.Enums;
+@model EditProfileViewModel;
+
+@{
+    ViewData["Title"] = "Профиль";
+    Layout = "_Layout";
+}
+
+<div class="card p-0 mx-auto container border-0">
+    <div class="card-body">
+        <form id="form">
+            <h3>Профиль</h3>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="Email">Email</label>
+                <input type="email" class="form-control my-2" asp-for="Email" placeholder="Email" value="@Model.Email">
+                <span class="text-danger" asp-validation-for="Email"></span>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="Lastname">Фамилия</label>
+                <input class="form-control my-2" asp-for="Lastname" placeholder="Фамилия" value="@Model.Lastname">
+                <span class="text-danger" asp-validation-for="Lastname"></span>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="Firstname">Имя</label>
+                <input class="form-control my-2" asp-for="Firstname" placeholder="Имя" value="@Model.Firstname">
+                <span class="text-danger" asp-validation-for="Firstname"></span>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="Middlename">Отчество</label>
+                <input class="form-control my-2" asp-for="Middlename" placeholder="Отчество (при наличии)" value="@Model.Middlename">
+                <span class="text-danger" asp-validation-for="Middlename"></span>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="PhoneNumber">Телефон</label>
+                <input type="tel" class="form-control my-2" asp-for="PhoneNumber" placeholder="Телефон" value="@Model.PhoneNumber">
+                <span class="text-danger" asp-validation-for="PhoneNumber"></span>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="BirthDate">День рождения</label>
+                <input type="date" class="form-control my-2" asp-for="BirthDate" placeholder="Дата рождения" value="@Model.BirthDate.Value.ToString("yyyy-MM-dd")">
+                <span class="text-danger" asp-validation-for="BirthDate"></span>
+            </div>
+            <select class="form-select mb-3" asp-for="Gender">
+                <option value="@Gender.Female">Женский</option>
+                <option value="@Gender.Male">Мужской</option>
+            </select>
+            <button type="button" onclick="submitForm()" class="btn btn-primary">Редактировать</button>
+
+            @if (ViewData.ModelState["Errors"] != null)
+            {
+                <div class="col-12 mt-2">
+                    <span class="text-danger">
+                        @ViewData.ModelState["Errors"]?.Errors[0].ErrorMessage;
+                    </span>
+                </div>
+            }
+        </form>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+
+    function convertDate(data){
+        return new Date(data).toISOString().slice(0, 10)
+    }
+
+    function submitForm(){
+        var formData = $("#form").serialize();
+
+        $.ajax({
+            url: '/Profile/EditProfile',
+            type: 'PUT',
+            data: formData
+        });
+    } 
+</script>

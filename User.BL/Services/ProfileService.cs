@@ -3,52 +3,69 @@ using Microsoft.AspNetCore.Identity;
 using User.BL.Services.IServices;
 using User.DAL.Entities;
 using User.DAL;
-using Microsoft.AspNetCore.Http;
 using User.BL.Dto;
-using Common.Dto;
+using Common.Constants;
+using EasyNetQ;
+using Common.Dto.User;
+using Common.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace User.BL.Services
 {
     public class ProfileService:IProfileService
     {
-        ITokenService _tokenService;
         UserManager<UserEntity> _userManager;
         UserDBContext _userDBContext;
-        public ProfileService(ITokenService tokenService, UserManager<UserEntity> userManager, UserDBContext userDBContext) {
-            _tokenService = tokenService;   
+        IBus _bus;
+        private readonly int maxListLength;
+        public ProfileService(UserManager<UserEntity> userManager, UserDBContext userDBContext, IBus bus, IConfiguration configuration) {
             _userManager = userManager;
             _userDBContext = userDBContext;
+            _bus = bus;
+            if (!int.TryParse(configuration.GetSection("MaxListLength").Value, out maxListLength))
+            {
+                maxListLength = 10;
+            }
         }
 
-        public async Task<List<RoleType?>> GetUserRoles(Guid userId)
+        public async Task<List<RoleType>> GetUserRoles(Guid userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
-            if(user == null) { throw new Exception(); }
+            if(user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400); 
 
             var roles = (await _userManager.GetRolesAsync(user)).Select(role => {
                 var roleType = GetRoleType(role);
-                if (roleType is null) throw new UnauthorizedAccessException();
+                if (roleType is null) throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
 
-                return roleType!;
+                return (RoleType)roleType;
             });
 
             return roles.ToList();
         }
 
+        public async Task<AddUserDto> GetShortProfile(Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
+
+            return new AddUserDto()
+            {
+                Email = user.Email,
+                Id = user.Id,
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
+                Middlename = user.Middlename,
+            };
+        }
+
         public async Task<ProfileDto> GetProfile(Guid userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
-            if (user == null) { throw new Exception(); }
-
-            var roles = (await _userManager.GetRolesAsync(user)).Select(role => {
-                var roleType = GetRoleType(role);
-                if (roleType is null) throw new UnauthorizedAccessException();
-
-                return roleType!;
-            });
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
 
             return new ProfileDto()
             {
+                Id = user.Id,
                 BirthDate = user.BirthDate,
                 Email = user.Email,
                 FirstName = user.Firstname,
@@ -56,7 +73,6 @@ namespace User.BL.Services
                 LastName = user.Lastname,
                 MiddleName = user.Middlename,
                 PhoneNumber = user.PhoneNumber,
-                Roles = roles.ToList()
             };
         }
 
@@ -72,7 +88,7 @@ namespace User.BL.Services
         public async Task<ProfileDto> EditProfile(Guid userId, EditProfileDto editProfileDto)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
-            if (user == null) { throw new Exception(); }
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
 
             if (editProfileDto.Lastname != null) user.Lastname = editProfileDto.Lastname;
             if (editProfileDto.PhoneNumber != null) user.PhoneNumber = editProfileDto.PhoneNumber;
@@ -90,9 +106,18 @@ namespace User.BL.Services
 
                 if (!emailChangeResult.Succeeded)
                 {
-                    throw new BadHttpRequestException("Произошла ошибка");
+                    throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
                 }
             }
+
+            await _bus.PubSub.PublishAsync(new AddUserDto()
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
+                Middlename = user.Middlename,
+            }, RabbitMQQueue.SYNCHRONIZE_PROFILE);
 
             await _userManager.UpdateAsync(user);
             await _userDBContext.SaveChangesAsync();
@@ -100,19 +125,19 @@ namespace User.BL.Services
             return await GetProfile(userId);
         }
 
-        public async Task ResetPassword(string token, ResetPasswordDto resetPasswordDto)
+        public async Task ResetPassword(Guid userId, ResetPasswordDto resetPasswordDto)
         {
-            var user = await _tokenService.GetUserByToken(token);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
             var passwordResetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, passwordResetToken, resetPasswordDto.Password);
 
             if (!result.Succeeded)
             {
-                throw new BadHttpRequestException("Произошла ошибка");
+                throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
             }
 
-            user.RefreshToken = null;
-            await _userDBContext.BannedTokens.AddAsync(new TokenEntity() { Token = token });
             await _userManager.UpdateAsync(user);
             await _userDBContext.SaveChangesAsync();
         }
@@ -121,7 +146,48 @@ namespace User.BL.Services
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
+
             await _userManager.AddToRoleAsync(user, role.ToString());
+        }
+
+        public async Task DeleteRole(RoleType role, Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
+
+            await _userManager.RemoveFromRoleAsync(user, role.ToString());
+        }
+
+        public async Task<List<ProfileWithRolesDto>> GetAllUsers(string? email)
+        {
+            var users = _userDBContext.Users.Where(u => u.NormalizedEmail.Contains(email.ToUpper())).Take(maxListLength).ToList();
+            var result = new List<ProfileWithRolesDto>();
+
+            foreach(var user in users) {
+                var roles = (await _userManager.GetRolesAsync(user)).Select(role => {
+                    var roleType = GetRoleType(role);
+                    if (roleType is null) throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
+
+                    return (RoleType)roleType;
+                }).ToList();
+
+                result.Add(new ProfileWithRolesDto()
+                {
+                    Id = user.Id,
+                    BirthDate = user.BirthDate,
+                    Email = user.Email,
+                    FirstName = user.Firstname,
+                    Gender = user.Gender,
+                    LastName = user.Lastname,
+                    MiddleName = user.Middlename,
+                    PhoneNumber = user.PhoneNumber,
+                    Roles = roles,
+                });
+            }
+
+            return result;
         }
     }
 }

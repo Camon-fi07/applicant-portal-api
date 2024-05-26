@@ -15,30 +15,25 @@ namespace Document.API.Controllers
            _documentService = documentService;
         }
 
+        [Authorize]
         [HttpPost("uploadFile")]
-        public async Task<IActionResult> UploadFile([FromForm] UploadFileDto uploadFileDto)
+        public async Task<ActionResult<FileDto>> UploadFile([FromForm] UploadFileDto uploadFileDto)
         {
-            await _documentService.UploadFile(uploadFileDto);
+            var result = await _documentService.UploadFile(uploadFileDto);
 
-            return Ok();
+            return Ok(result);
         }
 
-        [HttpPost("uploadFiles")]
-        public async Task<IActionResult> UploadFiles([FromForm] List<UploadFileDto> uploadFilesDto)
-        {
-            await _documentService.UploadFiles(uploadFilesDto);
-
-            return Ok();
-        }
-
+        [Authorize]
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<FileResponseDto>> GetFile(Guid id)
+        public async Task<IActionResult> GetFile(Guid id)
         {
             var file = await _documentService.GetFile(id);
 
-            return Ok(file);
+            return file;
         }
 
+        [Authorize]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteFile(Guid id)
         {

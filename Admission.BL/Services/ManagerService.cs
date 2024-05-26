@@ -1,0 +1,118 @@
+﻿using Admission.BL.Services.IServices;
+using Admission.DAL;
+using Admission.DAL.Entities;
+using Common.Constants;
+using Common.Dto.Application;
+using Common.Dto.Manager;
+using Common.Dto.RabbitMQ;
+using Common.Enums;
+using Common.Models;
+using EasyNetQ;
+using Microsoft.EntityFrameworkCore;
+
+namespace Admission.BL.Services
+{
+    public class ManagerService : IManagerService
+    {
+        private readonly AdmissionDBContext _admissionDBContext;
+        private readonly IExternalService _externalService;
+        private readonly IBus _bus;
+
+        public ManagerService(AdmissionDBContext admissionDBContext, IBus bus, IExternalService externalService)
+        {
+            _admissionDBContext = admissionDBContext;
+            _bus = bus;
+            _externalService = externalService;
+        }
+
+        public async Task CreateManager(CreateManagerDto createManagerDto)
+        {
+            var manager = await _admissionDBContext.Managers.FirstOrDefaultAsync(m => m.Id == createManagerDto.UserId);
+
+            if(manager == null)
+            {
+                var user = await _externalService.GetUser(createManagerDto.UserId);
+                manager = new ManagerEntity() { 
+                    User = user,
+                    Id = createManagerDto.UserId,
+                };
+                _admissionDBContext.Managers.Add(manager);
+            }
+
+            FacultyCacheEntity? faculty = null;
+            if (createManagerDto.FacultyId != null) faculty = await _externalService.GetFaculty((Guid)createManagerDto.FacultyId);
+
+            manager.Role = createManagerDto.Role;
+            manager.Faculty = faculty;
+
+            await _bus.PubSub.PublishAsync(new ChangeRoleDto()
+            {
+                Role = createManagerDto.Role == ManagerRole.SimpleManager ? RoleType.Manager : RoleType.GeneralManager,
+                UserId = createManagerDto.UserId
+            }, RabbitMQQueue.ADD_ROLE);
+
+            await _admissionDBContext.SaveChangesAsync();
+        }
+
+        public async Task DeleteManager(Guid managerId)
+        {
+            var manager = await _admissionDBContext.Managers.Include(m => m.User).FirstOrDefaultAsync(m => m.Id == managerId);
+
+            if (manager == null) throw new CustomExceptionModel(ErrorMessages.MANAGER_NOT_FOUND, 400);
+
+            _admissionDBContext.Managers.Remove(manager);
+
+            var hasUserApplications = _admissionDBContext.Applications.Include(a => a.User).Any(a => a.User.Id == managerId);
+
+            if (!hasUserApplications) _admissionDBContext.Users.Remove(manager.User);
+
+            await _admissionDBContext.SaveChangesAsync();
+
+            await _bus.PubSub.PublishAsync(new ChangeRoleDto()
+            {
+                Role = RoleType.Manager,
+                UserId = managerId
+            }, RabbitMQQueue.DELETE_ROLE);
+        }
+
+        public async Task AddManagerToFaculty(Guid managerId, Guid facultyId)
+        {
+            var manager = await _admissionDBContext.Managers.FirstOrDefaultAsync(m => m.Id == managerId);
+
+            if (manager == null) throw new CustomExceptionModel(ErrorMessages.MANAGER_NOT_FOUND, 400);
+
+            var faculty = await _externalService.GetFaculty(facultyId);
+
+            manager.Faculty = faculty;
+
+            await _admissionDBContext.SaveChangesAsync();
+        }
+
+        public async Task DeleteManagerFromFaculty(Guid managerId)
+        {
+            var manager = await _admissionDBContext.Managers.FirstOrDefaultAsync(m => m.Id == managerId);
+
+            if (manager == null) throw new CustomExceptionModel(ErrorMessages.MANAGER_NOT_FOUND, 400);
+
+            manager.Faculty = null;
+
+            await _admissionDBContext.SaveChangesAsync();
+        }
+
+        public List<UserDto> GetManagers(string? email)
+        {
+            var managers = _admissionDBContext.Managers.Include(m => m.User).ToList();
+            if(email != null) managers = managers.Where(m => m.User.Email.ToLower().Contains(email.ToLower())).ToList();
+
+
+            return managers.Select(m => new UserDto()
+            {
+                Email = m.User.Email,
+                Firstname = m.User.Firstname,
+                Id = m.Id,
+                Lastname = m.User.Lastname,
+                Middlename = m.User.Middlename
+            }).ToList();
+        }
+    }
+}

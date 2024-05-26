@@ -10,7 +10,6 @@ namespace User.DAL.Entities
         public string Firstname { get; set; }
         public DateOnly BirthDate { get; set; }
         public Gender Gender { get; set; }
-        public string? RefreshToken { get; set; }
-
+        public List<RefreshTokenEntity> RefreshTokens { get; set; } = new List<RefreshTokenEntity>();
     }
 }

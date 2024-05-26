@@ -1,6 +1,10 @@
-﻿using Dictionary.BL.Dto;
+﻿using Common.Dto;
+using Common.Dto.Dictionary;
+using Common.Enums;
+using Common.Models;
 using Dictionary.BL.Models;
 using Dictionary.BL.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -46,6 +50,16 @@ namespace Dictionary.API.Controllers
             var programs = await _gettingService.GetPrograms(page, size, facultyId, educationLevelId, educationForm, language, name, code);
 
             return Ok(programs);
+        }
+
+
+        [HttpGet("importing_statuses")]
+        [Authorize(Roles =nameof(RoleType.Administrator))]
+        public async Task<ActionResult<ImportingStatusDto>> GetImportingStatuses()
+        {
+            var statuses = await _gettingService.GetImportingStatuses();
+
+            return Ok(statuses);
         }
     }
 }

@@ -4,6 +4,7 @@ using Document.BL.Services;
 using Document.BL.Services.IServices;
 using Document.DAL;
 using EasyNetQ;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,24 +23,17 @@ namespace Document.BL.Extensions
             services.AddScoped<IDocumentService, DocumentService>();
         }
 
-        public async static void AddEasyNetQ(this IServiceCollection services)
+        public static async Task Migrate(this WebApplication app)
         {
-            var serviceProvider = services.BuildServiceProvider();
-            var documentService = serviceProvider.GetRequiredService<IDocumentService>();
-            var bus = RabbitHutch.CreateBus("host=localhost");
-                        
-            bus.Rpc.Respond<GetSingleFileDto, FileResponseDto>(async request => await documentService.GetFile(request.Id));
-            bus.Rpc.Respond<GetFilesDto, List<FileResponseDto>>(async request => await documentService.GetFiles(request.Ids));
-                        
-            await bus.PubSub.SubscribeAsync<DeleteFilesDto>("documentDelete", async (deleteFileDto) =>
-            {
-                await documentService.DeleteFiles(deleteFileDto.FilesIds);
-            });
+            using var serviceScope = app.Services.CreateScope();
 
-            bus.PubSub.Subscribe<DeleteSingleFileDto>("documentDelete", async (deleteFileDto) =>
+            var context = serviceScope.ServiceProvider.GetService<DocumentDBContext>();
+            if (context == null)
             {
-                await documentService.DeleteFile(deleteFileDto.FileId);
-            });
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            await context.Database.MigrateAsync();
         }
     }
 }

@@ -1,12 +1,16 @@
 ﻿using Common.Models;
-using Dictionary.BL.Dto;
+using Common.Dto.Dictionary;
 using Dictionary.BL.Mappers;
 using Dictionary.BL.Models;
 using Dictionary.BL.Services.IServices;
 using Dictionary.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
+using Common.Dto;
+using Common.Dto.RabbitMQ;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Common.Constants;
 
 namespace Dictionary.BL.Services
 {
@@ -19,12 +23,33 @@ namespace Dictionary.BL.Services
             _dictionaryDBContext = dictionaryDBContext;
         }
 
+        public async Task<List<ImportingStatusDto>> GetImportingStatuses()
+        {
+            var statuses = await _dictionaryDBContext.ImportingStatuses.ToListAsync();
+            return statuses.Select(s => new ImportingStatusDto()
+            {
+                CreateTime = s.CreateTime,
+                Description = s.Description,
+                GuideType = s.GuideType,
+                Id = s.Id,
+                StatusCode = s.StatusCode
+            }).ToList();
+        }
+
         public async Task<List<EducationDocumentTypeDto>> GetDocumentTypes(string? name, int? educationLevelId)
         {
             var documentTypes = _dictionaryDBContext.EducationDocumentTypes.Include(d => d.EducationLevel).Include(d => d.NextEducationLevels).ToList();
             if (educationLevelId != null) documentTypes = documentTypes.Where(d => d.EducationLevel.Id == educationLevelId).ToList();
             if(name != null) documentTypes = documentTypes.Where(d => d.Name.ToLower().StartsWith(name.ToLower())).ToList();
             return documentTypes.Select(d => EducationDocumentTypeMapper.TranslateDocumentEntityToDto(d)).ToList();
+        }
+
+        public async Task<EducationDocumentTypeDto> GetCertainDocumentType(Guid id)
+        {
+            var documentType = await _dictionaryDBContext.EducationDocumentTypes.Include(d => d.EducationLevel).Include(d => d.NextEducationLevels).FirstOrDefaultAsync(e => e.Id == id);
+            if (documentType == null) throw new CustomExceptionModel(ErrorMessages.EDUCATION_DOCUMENT_TYPE_NOT_FOUND, 400);
+
+            return EducationDocumentTypeMapper.TranslateDocumentEntityToDto(documentType);
         }
 
         public async Task<List<EducationLevelDto>> GetEducationLevels(string? name)
@@ -83,8 +108,93 @@ namespace Dictionary.BL.Services
                     Name = p.Name,
                 }).ToList()
             };
+        }
+        public async Task<EducationProgramDto> GetCertainProgram(Guid id)
+        {
+            var program = await _dictionaryDBContext.EducationPrograms.Include(p => p.Faculty).Include(p => p.EducationLevel).FirstOrDefaultAsync(p => p.Id == id);
 
+            if (program == null) throw new CustomExceptionModel(ErrorMessages.PROGRAM_NOT_FOUND, 400);
 
+            return new EducationProgramDto()
+            {
+                Code = program.Code,
+                CreateTime = program.CreateTime.ToUniversalTime(),
+                EducationForm = program.EducationForm,
+                EducationLevel = EducationLevelMapper.TranslateLevelEntityToDto(program.EducationLevel),
+                Faculty = new EducationFacultyDto()
+                {
+                    CreateTime = program.Faculty.CreateTime.ToUniversalTime(),
+                    Id = program.Faculty.Id,
+                    Name = program.Faculty.Name
+                },
+                Id = program.Id,
+                Language = program.Language,
+                Name = program.Name,
+            };
+        }
+
+        public async Task<EducationFacultyDto> GetCertainFaculty(Guid id)
+        {
+            var faculty = await _dictionaryDBContext.Faculties.FirstOrDefaultAsync(f => f.Id == id);
+
+            if (faculty == null) throw new CustomExceptionModel(ErrorMessages.FACULTY_NOT_FOUND, 400);
+
+            return new EducationFacultyDto()
+            {
+                CreateTime = faculty.CreateTime.ToUniversalTime(),
+                Id = faculty.Id,
+                Name = faculty.Name
+            };
+        }
+
+        public async Task<List<AddEducationLevelDto>> SychronizeEducationLevels(List<int> ids)
+        {
+            var educationLevels = _dictionaryDBContext.EducationLevels.Where(l => ids.Contains(l.Id));
+
+            return educationLevels.Select(l => EducationLevelMapper.TranslateLevelEntityToAddDto(l)).ToList(); 
+        }
+
+        public async Task<List<AddEducationDocumentTypeDto>> SychronizeDocumentTypes(List<Guid> ids)
+        {
+            var educationDocumentTypes = _dictionaryDBContext.EducationDocumentTypes.Include(d => d.EducationLevel).Include(d => d.NextEducationLevels).Where(d => ids.Contains(d.Id));
+
+            return educationDocumentTypes.Select(d => EducationDocumentTypeMapper.TranslateDocumentEntityToAddDto(d)).ToList();
+        }
+
+        public async Task<List<AddFacultyDto>> SynchronizeFaculties(List<Guid> ids)
+        {
+            var faculties = _dictionaryDBContext.Faculties.Where(f => ids.Contains(f.Id));
+
+            return faculties.Select(f => FacultyMapper.TranslateFacultyEntityToAddDto(f)).ToList();
+        }
+
+        public async Task<List<AddProgramDto>> SychronizePrograms(List<Guid> ids)
+        {
+            var programs = _dictionaryDBContext.EducationPrograms.Include(p => p.EducationLevel).Include(p => p.Faculty).Where(p => ids.Contains(p.Id));
+
+            return programs.Select(p => ProgramMapper.TranslateProgramEntityToAddDto(p)).ToList();
+        }
+
+        public async Task<List<EducationProgramDto>> GetAllPrograms()
+        {
+            var programs = await _dictionaryDBContext.EducationPrograms.Include(p => p.Faculty).Include(p => p.EducationLevel).ToListAsync();
+
+            return programs.Select(p => new EducationProgramDto()
+            {
+                Code = p.Code,
+                CreateTime = p.CreateTime.ToUniversalTime(),
+                EducationForm = p.EducationForm,
+                EducationLevel = EducationLevelMapper.TranslateLevelEntityToDto(p.EducationLevel),
+                Faculty = new EducationFacultyDto()
+                {
+                    CreateTime = p.Faculty.CreateTime.ToUniversalTime(),
+                    Id = p.Faculty.Id,
+                    Name = p.Faculty.Name
+                },
+                Id = p.Id,
+                Language = p.Language,
+                Name = p.Name,
+            }).ToList();
         }
     }
 }

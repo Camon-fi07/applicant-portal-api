@@ -1,9 +1,11 @@
 ﻿using Common.Dto;
+using Common.Models;
 using Document.BL.Dto;
 using Document.BL.Services.IServices;
 using Document.DAL;
 using Document.DAL.Entities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Document.BL.Services
@@ -15,32 +17,20 @@ namespace Document.BL.Services
             _documentDBContext = documentDBContext;
         }
 
-        public async Task<FileResponseDto> GetFile(Guid id) {
+        public async Task<FileStreamResult> GetFile(Guid id)
+        {
             var file = await _documentDBContext.FilesDetails.FirstOrDefaultAsync(f => f.Id == id);
-            if (file == null) throw new Exception();
+            if (file == null) throw new CustomExceptionModel("Файл не найден", 400);
 
-            var data = File.ReadAllBytes(file.Path);
+            var fileStream = new FileStream(file.Path, FileMode.Open, FileAccess.Read);
 
-            return new FileResponseDto()
+            return new FileStreamResult(fileStream, "application/octet-stream")
             {
-                Name = file.Name,
-                Id = file.Id,
-                Data = data
+                FileDownloadName = file.Name,
             };
         }
 
-        public async Task<List<FileResponseDto>> GetFiles(List<Guid> ids)
-        {
-            var files = new List<FileResponseDto>();
-            foreach (var fileId in ids)
-            {
-                files.Add(await GetFile(fileId));
-            }
-
-            return files;
-        }
-
-        public async Task<Guid> UploadFile(UploadFileDto uploadFilesDto)
+        public async Task<FileDto> UploadFile(UploadFileDto uploadFilesDto)
         {
             try
             {
@@ -57,25 +47,18 @@ namespace Document.BL.Services
 
                 _documentDBContext.FilesDetails.Add(fileDetails);
 
-                _documentDBContext.SaveChangesAsync();
+                await _documentDBContext.SaveChangesAsync();
 
-                return fileDetails.Id;
+                return new FileDto()
+                {
+                    Name = fileDetails.Name,
+                    Id = fileDetails.Id,
+                };
             }
             catch (Exception)
             {
                 throw;
             }
-        }
-
-        public async Task<List<Guid>> UploadFiles(List<UploadFileDto> uploadFilesDto)
-        {
-            var filesIds = new List<Guid>();
-            foreach (var file in uploadFilesDto)
-            {
-                filesIds.Add(await UploadFile(file));
-            }
-
-            return filesIds;
         }
 
         public async Task DeleteFile(Guid id)

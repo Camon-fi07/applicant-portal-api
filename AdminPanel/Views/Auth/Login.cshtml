@@ -1,0 +1,34 @@
+﻿@model LoginViewModel
+
+@{
+    ViewData["Title"] = "Авторизация";
+    Layout = "_Layout";
+}
+
+<div class="card p-0 mx-auto container border-0">
+    <div class="card-body">
+        <form asp-action="Login" asp-controller="Auth" method="Post">
+            <h3>Авторизация</h3>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="Email"></label>
+                <input type="email" class="form-control my-2" asp-for="Email" placeholder="Email">
+                <span class="text-danger" asp-validation-for="Email"></span>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label" asp-for="Password"></label>
+                <input type="password" class="form-control my-2" asp-for="Password" placeholder="Пароль">
+                <span class="text-danger" asp-validation-for="Password"></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Войти</button>
+
+            @if (ViewData.ModelState["Errors"] != null)
+            {
+                <div class="col-12 mt-2">
+                    <span class="text-danger">
+                        @ViewData.ModelState["Errors"]?.Errors[0].ErrorMessage;
+                    </span>
+                </div>
+            }
+        </form>
+    </div>
+</div>

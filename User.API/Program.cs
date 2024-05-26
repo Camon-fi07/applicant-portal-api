@@ -1,4 +1,5 @@
 using Common.Extensions;
+using Common.Middlewares;
 using User.BL.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,13 +17,19 @@ builder.Services.AddSwaggerAuth();
 
 var app = builder.Build();
 
-await app.ConfigureRoles();
+app.UseMiddleware<ErrorsHandling>();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+await app.Migrate();
+
+await app.ConfigureRoles();
+
+await app.CreateAdmin();
 
 app.UseHttpsRedirection();
 

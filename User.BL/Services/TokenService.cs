@@ -7,9 +7,11 @@ using System.Text;
 using User.DAL.Entities;
 using Microsoft.AspNetCore.Identity;
 using User.DAL;
-using Common.Dto;
 using User.BL.Dto;
 using Common.Models;
+using Microsoft.EntityFrameworkCore;
+using Common.Dto.User;
+using Common.Constants;
 
 
 namespace User.BL.Services
@@ -62,33 +64,81 @@ namespace User.BL.Services
             return _tokenHandler.WriteToken(token);
         }
 
-        public async Task<TokenResponseDto> RefreshToken(RefreshTokenDto refreshTokenDto)
+        public async Task<TokenResponseDto> RefreshToken(RefreshTokenDto refreshTokenDto, string userAgent)
         {
-            var user = await GetUserByToken(refreshTokenDto.RefreshToken);
+            var userId = await GetUserIdByToken(refreshTokenDto.RefreshToken);
+            var user = await _userDBContext.Users.Include(u => u.RefreshTokens).FirstOrDefaultAsync(u => u.Id == userId);
+            if(user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400); 
 
-            if (user.RefreshToken != refreshTokenDto.RefreshToken) throw new UnauthorizedAccessException("Инвалидный токен");
+            var oldRefreshToken = user.RefreshTokens.FirstOrDefault(rt => rt.RefreshToken == refreshTokenDto.RefreshToken);
 
-            await _userDBContext.BannedTokens.AddAsync(new TokenEntity(){ Token=refreshTokenDto.AccessToken});
+            if (oldRefreshToken == null) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
+
+            if (oldRefreshToken.isRevoked)
+            {
+                foreach (var rt in user.RefreshTokens)
+                {
+                    rt.isRevoked = true;
+                }
+
+                await _userDBContext.SaveChangesAsync();
+
+                throw new CustomExceptionModel(ErrorMessages.DUBLICATE_TOKEN, 403);
+            }
+
+            if(oldRefreshToken.UserAgent !=  userAgent) throw new CustomExceptionModel(ErrorMessages.SESSION, 400);
+
+            if(oldRefreshToken.ExpiredTime < DateTime.UtcNow) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
+
+            oldRefreshToken.isRevoked = true;
+
+            var newRefreshToken = await GenerateRefreshToken(user);
+
+            var newRefreshTokenEntity = new RefreshTokenEntity()
+            {
+                ExpiredTime = GetTokenExpired(newRefreshToken),
+                Id = Guid.NewGuid(),
+                isRevoked = false,
+                RefreshToken = newRefreshToken,
+                User = user,
+                UserAgent = userAgent
+            };
+
+            _userDBContext.RefreshTokens.Add(newRefreshTokenEntity);
+
             await _userDBContext.SaveChangesAsync();
 
-            return new TokenResponseDto() { RefreshToken = refreshTokenDto.RefreshToken, AccessToken = await GenerateAccessToken(user) };
+            return new TokenResponseDto() { RefreshToken = newRefreshToken, AccessToken = await GenerateAccessToken(user) };
         }
 
-        public async Task<UserEntity> GetUserByToken(string token)
+        public DateTime GetTokenExpired(string token)
         {
-            if (!_tokenHandler.CanReadToken(token)) throw new UnauthorizedAccessException("Инвалидный токен");
+            if (!_tokenHandler.CanReadToken(token)) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
+
+            var jwtToken = _tokenHandler.ReadToken(token) as JwtSecurityToken;
+
+            var expClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Exp);
+
+            if (expClaim == null) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
+
+            var expValue = long.Parse(expClaim.Value);
+            var expirationTime = DateTimeOffset.FromUnixTimeSeconds(expValue).UtcDateTime;
+
+            return expirationTime;
+        }
+
+        private async Task<Guid> GetUserIdByToken(string token)
+        {
+            if (!_tokenHandler.CanReadToken(token)) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
 
             var jwtToken = _tokenHandler.ReadToken(token) as JwtSecurityToken;
 
             var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid).Value;
 
-            if (userId == null) throw new UnauthorizedAccessException("Инвалидный токен");
+            if (userId == null) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
 
-            var user = await _userManager.FindByIdAsync(userId.ToString());
+            return new Guid(userId);
 
-            if (user == null) throw new UnauthorizedAccessException("Инвалидный токен");
-
-            return user;
         }
     }
 }

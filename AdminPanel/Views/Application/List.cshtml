@@ -1,0 +1,135 @@
+﻿@using Common.Enums;
+
+@model ApplicationListViewModel
+
+@{
+    ViewData["Title"] = "Заявки на поступление";
+    Layout = "_Layout";
+}
+
+<div class="container mt-3 justify-content-center">
+    <form id="formfilter" class="row g-3 mx-auto border p-2 rounded" asp-action="List" asp-controller="Application" method="get">
+        <div class="col-md-6 border p-3 rounded">
+            <label asp-for="Filter.Name" class="form-label">Имя</label>
+            <input asp-for="Filter.Name" id="Name" name="Name" class="form-control" placeholder="Введите имя" />
+        </div>
+        <div class="col-md-6 border p-3 rounded">
+            <label asp-for="Filter.ProgramId" class="form-label">Программа</label>
+            <select asp-for="Filter.ProgramId" class="form-control w-100 border p-1" name="ProgramId" id="ProgramId">
+                @if (Model.AvailablePrograms != null)
+                {
+                    @foreach (var program in Model.AvailablePrograms)
+                    {
+                        <option value="@program.Id">@program.Name</option>
+                    }
+                    <option selected value="@null">Все</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-6 border p-3 rounded">
+            <label asp-for="Filter.Faculties" class="form-label">Факультеты</label>
+            <select asp-for="Filter.Faculties" id="Faculties" name="Faculties" class="form-select" multiple>
+                @if (Model.AvailableFaculties != null)
+                {
+                    @foreach (var faculty in Model.AvailableFaculties)
+                    {
+                        <option value="@faculty.Id">@faculty.Name</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="col-md-6 border p-3 rounded">
+            <label asp-for="Filter.Status" class="form-label">Статусы заявок</label>
+            <select asp-for="Filter.Status" id="Status" name="Status" class="form-select">
+                <option selected value="@null">Все</option>
+                <option value="@ApplicationStatus.Created" id="Created">Создана</option>
+                <option value="@ApplicationStatus.Pending" id="Pending">На рассмотрении</option>
+                <option value="@ApplicationStatus.Confirmed" id="Confirmed">Одобрена</option>
+                <option value="@ApplicationStatus.Rejected" id="Rejected">Отклонена</option>
+                <option value="@ApplicationStatus.Closed" id="Closed">Закрыта</option>
+            </select>
+        </div>
+
+        <div class="col-md-4 border p-3 rounded">
+            <label asp-for="Filter.HaveManager" class="form-label">Есть менеджер</label>
+            <select asp-for="Filter.HaveManager" id="HaveManager" name="HaveManager" class="form-select">
+                <option selected value="@null" id="null">Все</option>
+                <option value="@false" id="false">Нет</option>
+                <option value="@true" id="true">Есть</option>
+            </select>
+        </div>
+        <div class="col-md-4 border p-3 rounded">
+            <label asp-for="Filter.ManagerId" class="form-label">Менеджер</label>
+            <select class="form-control w-100 border p-1" name="ManagerId" id="ManagerId">
+                <option value="null" selected disabled>Выберите менеджера</option>
+                @if (Model.AvailableManagers != null)
+                {
+                    @foreach (var manager in Model.AvailableManagers)
+                    {
+                        <option value="@manager.Id">@manager.Email</option>
+                    }
+                    <option selected value="@null">Все</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4 border p-3 rounded">
+            <label asp-for="Filter.SortType" class="form-label">Сортировка по дате</label>
+            <select asp-for="Filter.SortType" id="SortType" name="SortType" class="form-select">
+                <option value="@ApplicationsSortType.CreateDesc" id="CreateDesc">Сначала новые</option>
+                <option value="@ApplicationsSortType.CreateAsc" id="CreateAsc">Сначала старые</option>
+                <option value="@ApplicationsSortType.EditDesc" id="EditDesc">Недавно редактированные</option>
+                <option value="@ApplicationsSortType.EditAsc" id="EditAsc">Давно редактированные</option>
+            </select>
+        </div>
+        <div class="col-md-4 border p-3 rounded">
+            <label asp-for="Filter.Size" class="form-label">Количество записей</label>
+            <input asp-for="Filter.Size" id="Size" name="Size" value="10" class="form-control" placeholder="Введите количество записей" />
+        </div>
+        <div class="col-md-4 border p-3 rounded">
+            <label asp-for="Filter.Page" class="form-label">Номер страницы</label>
+            <input asp-for="Filter.Page" id="Page" value="1" name="Page" class="form-control" placeholder="Введите номер страницы" />
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary mt-3" id="apply_button">Применить</button>
+        </div>
+    </form>
+</div>
+
+    <ul>
+        @foreach (var application in Model.ApplicationsPagedListModel.Applications)
+        {
+            <li>
+                <a class="nav-link" asp-controller="Application" asp-action="Index" asp-route-id="@application.ApplicationId">Подробнее</a>
+                <p>@application.Status</p>
+                <div>
+                    <p>
+                        <span>@application.User.Email</span>
+                        <span>@application.User.Lastname</span>
+                        <span>@application.User.Firstname</span>
+                        <span>@application.User.Middlename</span>
+                    </p>
+                    @if(application.Manager != null)
+                    {
+                        <span>@application.Manager.Email</span>
+                        <span>@application.Manager.Lastname</span>
+                        <span>@application.Manager.Firstname</span>
+                        <span>@application.Manager.Middlename</span>
+                    }
+                    <ul>
+                        @foreach(var program in application.ProgramPriorities){
+                            <li>
+                                <span>Приоритет: @program.Priority</span>
+                                <span>@program.ProgramName</span>
+                                <span>@program.ProgramCode</span>
+                                <span>@program.FacultyName</span>
+                                <span>@program.EducationLevelName</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </li>
+        }
+    </ul>
+</div>

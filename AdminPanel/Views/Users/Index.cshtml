@@ -1,0 +1,87 @@
+﻿@using Common.Enums;
+
+@model UsersListViewModel;
+@{
+    ViewData["Title"] = "Список пользователей";
+}
+
+<div class="col-12 mb-3">
+    <form id="form">
+        <label class="form-label" asp-for="EmailQuery">Email</label>
+        <input class="form-control my-2" asp-for="EmailQuery" name="emailQuery" id="enaulQuery" value="@Model.EmailQuery" placeholder="Почта">
+        <span class="text-danger" asp-validation-for="EmailQuery"></span>
+        <button type="button" onclick="requestList()">Применить</button>
+    </form>
+</div>
+
+<ul id="list">
+    @foreach(var user in Model.Users)
+    {
+        <li>
+            <span>@user.Email</span>
+            <span>@user.LastName @user.FirstName @user.MiddleName</span>
+            <ul>
+                @foreach (var role in user.Roles)
+                {
+                    <li>@role.ToString()</li>
+                }
+            </ul>
+            @if (user.Roles.Contains(RoleType.GeneralManager))
+            {
+                <button onclick="setRole('@user.Id', '@ManagerRole.SimpleManager')">Сделать обычным менеджером</button>
+                <button onclick="deleteManager('@user.Id')">Убрать из списка менеджеров</button>
+            }
+            else if (user.Roles.Contains(RoleType.Manager))
+            {
+                <button onclick="setRole('@user.Id', '@ManagerRole.GeneralManager')">Сделать главным менеджером</button>
+                <button onclick="deleteManager('@user.Id')">Убрать из списка менеджеров</button>
+            }
+            else
+            {
+                <select asp-for="ManagerRole" name="managerRole" id="managerRole" class="form-select mb-3">
+                    <option value="@null" selected="true">-</option>
+                    <option value="@ManagerRole.SimpleManager">Менеджер</option>
+                    <option value="@ManagerRole.GeneralManager">Главный менеджер</option>
+                </select>
+                <button onclick="setRole('@user.Id', '@Model.ManagerRole')">Выдать роль</button>
+            }
+        </li>
+    }
+</ul>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    function deleteManager(id) {
+        $.ajax({
+            url: `/User/${id}/Role`,
+            type: 'DELETE',
+            success: function(){
+                location.reload();
+            }
+        });
+    }
+
+    function requestList() {
+        var formData = $("#form").serializeArray();
+        var email = formData[0].value;
+        console.log(email)
+        $.ajax({
+            url: `/Users/?email=${email}`,
+            type: 'GET',
+            success: function(data){
+               $("body").html(data);
+            }
+        });
+    }
+
+    function setRole(id, role) {
+        $.ajax({
+            url: `/User/${id}/Role`,
+            type: 'PUT',
+            contentType: "application/json",
+            data: JSON.stringify(role),
+            success: function () {
+                location.reload();
+            }
+        });
+    }
+</script>

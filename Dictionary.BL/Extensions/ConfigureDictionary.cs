@@ -50,10 +50,10 @@ namespace Dictionary.BL.Extensions
             bus.Rpc.Respond<Empty, List<EducationProgramDto>>(async (_) => await gettingService.GetAllPrograms(), x => x.WithQueueName(RabbitMQQueue.GET_ALL_PROGRAMS));
             bus.Rpc.Respond<Empty, List<EducationFacultyDto>>(async (_) => await gettingService.GetFaculties(null), x => x.WithQueueName(RabbitMQQueue.GET_FACULTIES));
 
-            bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_PROGRAMS, async (_) => await importingService.ImportPrograms(), x => x.WithTopic(RabbitMQQueue.IMPORT_PROGRAMS));
-            bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_FACULTIES, async (_) => await importingService.ImportFaculties(), x => x.WithTopic(RabbitMQQueue.IMPORT_FACULTIES));
-            bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_EDUCATION_LEVELS, async (_) => await importingService.ImportEducationLevels(), x => x.WithTopic(RabbitMQQueue.IMPORT_EDUCATION_LEVELS));
-            bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_EDUCATION_DOCUMENTS, async (_) => await importingService.ImporDocumentTypes(), x => x.WithTopic(RabbitMQQueue.IMPORT_EDUCATION_DOCUMENTS));
+            bus.PubSub.Subscribe<Empty>("importProgram", async (_) => await importingService.ImportPrograms(), x => x.WithTopic(RabbitMQQueue.IMPORT_PROGRAMS));
+            bus.PubSub.Subscribe<Empty>("importFaculties", async (_) => await importingService.ImportFaculties(), x => x.WithTopic(RabbitMQQueue.IMPORT_FACULTIES));
+            bus.PubSub.Subscribe<Empty>("importEducationLevels", async (_) => await importingService.ImportEducationLevels(), x => x.WithTopic(RabbitMQQueue.IMPORT_EDUCATION_LEVELS));
+            bus.PubSub.Subscribe<Empty>("importEducationDocuments", async (_) => await importingService.ImporDocumentTypes(), x => x.WithTopic(RabbitMQQueue.IMPORT_EDUCATION_DOCUMENTS));
         }
 
         public static async Task Migrate(this WebApplication app)

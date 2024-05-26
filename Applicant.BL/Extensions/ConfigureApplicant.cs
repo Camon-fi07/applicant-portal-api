@@ -32,10 +32,10 @@ namespace Applicant.BL.Extensions
             bus.Rpc.Respond<Guid, EducationDocumentDto>(async userId => await applicantService.GetEducationDocument(userId), x => x.WithQueueName(RabbitMQQueue.GET_EDUCATION_DOCUMENT));
             bus.Rpc.Respond<Guid, ApplicantDataDto>(async userId => await applicantService.GetApplicantData(userId), x=> x.WithQueueName(RabbitMQQueue.GET_APPLICANT_DATA));
             bus.Rpc.Respond<EditApplicantDataRabbitDto, ApplicantDataDto>(async data => await applicantService.EditApplicantData(data.EditApplicantDataDto, data.UserId), x => x.WithQueueName(RabbitMQQueue.EDIT_APPLICANT_DATA));
-            bus.PubSub.Subscribe<GuideType>("Applicant_Guide", async (type) => await synchronizationService.SychronizeGuides(type), x => x.WithQueueName(RabbitMQQueue.REFRESH_GUIDE));
+            bus.PubSub.Subscribe<GuideType>("applicantGuide", async (type) => await synchronizationService.SychronizeGuides(type), x => x.WithQueueName(RabbitMQQueue.REFRESH_GUIDE));
 
 
-            await bus.PubSub.SubscribeAsync<RegisterApplicantDto>(RabbitMQQueue.APPLICANT_REGISTER, async data => await applicantService.RegisterApplicant(data));
+            await bus.PubSub.SubscribeAsync<RegisterApplicantDto>("applicantRegister", async data => await applicantService.RegisterApplicant(data));
             await bus.PubSub.SubscribeAsync<AddUserDto>("Applicant_Profile", async data => { await synchronizationService.SychronizeProfile(data); }, x => x.WithTopic(RabbitMQQueue.SYNCHRONIZE_PROFILE));
         }
 

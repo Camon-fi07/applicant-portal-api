@@ -50,18 +50,17 @@ namespace Admission.BL.Services
             var facultiesIds = originFaculties.Select(f => f.Id).ToList();
             var newFaculties = await _bus.Rpc.RequestAsync<List<Guid>, List<AddFacultyDto>>(facultiesIds, x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_FACULTIES));
 
-            await Parallel.ForEachAsync(originFaculties, async (originFaculty, _) =>
+            foreach(var originFaculty in originFaculties)
             {
                 var newFaculty = newFaculties.FirstOrDefault(f => f.Id == originFaculty.Id);
                 if (newFaculty == null)
                 {
                     if (originFaculty.Programs != null)
                     {
-
-                        await Parallel.ForEachAsync(originFaculty.Programs, async (p, _) =>
+                        foreach(var p in originFaculty.Programs)
                         {
                             await RejectApplicationsForProgram(p);
-                        });
+                        }
 
                         _admissionDBContext.Programs.RemoveRange(originFaculty.Programs);
                         _admissionDBContext.Faculties.Remove(originFaculty);
@@ -71,7 +70,7 @@ namespace Admission.BL.Services
                 {
                     originFaculty.Name = newFaculty.Name;
                 }
-            });
+            }
 
             await _admissionDBContext.SaveChangesAsync();
         }
@@ -85,27 +84,27 @@ namespace Admission.BL.Services
             var levelsIds = originEducationLevels.Select(l => l.Id).ToList();
             var newEducationLevels = await _bus.Rpc.RequestAsync<List<int>, List<AddEducationLevelDto>>(levelsIds, x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_EDUCATIONS));
 
-            await Parallel.ForEachAsync(originEducationLevels, async (originEducationLevel, _) =>
+            foreach(var originEducationLevel in originEducationLevels)
             {
                 var newEducationLevel = newEducationLevels.FirstOrDefault(l => l.Id == originEducationLevel.Id);
                 if (newEducationLevel == null)
                 {
                     if (originEducationLevel.Programs != null)
                     {
-                        await Parallel.ForEachAsync(originEducationLevel.Programs, async (p, _) =>
+                        foreach(var p in originEducationLevel.Programs)
                         {
                             await RejectApplicationsForProgram(p);
-                        });
+                        }
 
                         _admissionDBContext.Programs.RemoveRange(originEducationLevel.Programs);
                     };
 
                     if (originEducationLevel.CurrentEducationLevelDocumentTypes != null)
                     {
-                        await Parallel.ForEachAsync(originEducationLevel.CurrentEducationLevelDocumentTypes, async (d, _) =>
+                        foreach(var d in originEducationLevel.CurrentEducationLevelDocumentTypes)
                         {
                             await RefreshApplicationForDocument(d, true);
-                        });
+                        }
 
                         _admissionDBContext.EducationDocumentTypes.RemoveRange(originEducationLevel.CurrentEducationLevelDocumentTypes);
                     }
@@ -116,7 +115,7 @@ namespace Admission.BL.Services
                 {
                     originEducationLevel.Name = originEducationLevel.Name;
                 }
-            });
+            }
 
             await _admissionDBContext.SaveChangesAsync();
         }
@@ -130,7 +129,7 @@ namespace Admission.BL.Services
             var documentIds = originEducationDocumentTypes.Select(l => l.Id).ToList();
             var newEducationDocumentTypes = await _bus.Rpc.RequestAsync<List<Guid>, List<AddEducationDocumentTypeDto>>(documentIds, x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_EDUCATION_DOCUMENT_TYPES));
 
-            await Parallel.ForEachAsync(originEducationDocumentTypes, async (originEducationDocumentType, _) =>
+            foreach(var originEducationDocumentType in originEducationDocumentTypes)
             {
                 var newEducationDocumentType = newEducationDocumentTypes.FirstOrDefault(d => d.Id == originEducationDocumentType.Id);
                 if (newEducationDocumentType == null)
@@ -185,7 +184,7 @@ namespace Admission.BL.Services
 
                     if (isChanged) await RefreshApplicationForDocument(originEducationDocumentType);
                 }
-            });
+            }
 
             await _admissionDBContext.SaveChangesAsync();
         }
@@ -199,7 +198,7 @@ namespace Admission.BL.Services
             var documentIds = originPrograms.Select(p => p.Id).ToList();
             var newPrograms =  await _bus.Rpc.RequestAsync<List<Guid>, List<AddProgramDto>>(documentIds, x => x.WithQueueName(RabbitMQQueue.SYCHRONIZE_PROGRAMS));
 
-            await Parallel.ForEachAsync(originPrograms, async (originProgram, _) =>
+            foreach(var originProgram in originPrograms)
             {
                 var newProgram = newPrograms.FirstOrDefault(p => p.Id == originProgram.Id);
                 if (newProgram == null)
@@ -241,7 +240,7 @@ namespace Admission.BL.Services
 
                     if (isChanged) await RejectApplicationsForProgram(originProgram, false);
                 }
-            });
+            }
 
             await _admissionDBContext.SaveChangesAsync();
         }
@@ -250,8 +249,7 @@ namespace Admission.BL.Services
         {
             var applications = _admissionDBContext.Applications.Include(a => a.Programs).Include(a => a.ApplicantEducationDocumentType).Include(a => a.User).Where(a => a.Status != ApplicationStatus.Rejected && a.Programs.Any(p => p.ProgramId == program.Id)).ToList();
 
-            await Parallel.ForEachAsync(applications, async (a, _) =>
-            {
+            foreach(var a in applications) {
                 if (isDelete)
                 {
                     if (a.Status != ApplicationStatus.Rejected && a.Programs.Count == 1)
@@ -284,8 +282,7 @@ namespace Admission.BL.Services
                         });
                     }
                 }
-                
-            });
+            }
 
             await _admissionDBContext.SaveChangesAsync();
         }
@@ -295,7 +292,7 @@ namespace Admission.BL.Services
             var applications = _admissionDBContext.Applications.Include(a => a.User).Include(a => a.ApplicantEducationDocumentType).Include(a => a.Programs).
                 Where(a => a.ApplicantEducationDocumentType != null && a.ApplicantEducationDocumentType.Id == educationDocumentType.Id).ToList();
 
-            await Parallel.ForEachAsync(applications, async (a, _) =>
+            foreach(var a in applications)
             {
                 if (isDelete)
                 {
@@ -322,8 +319,7 @@ namespace Admission.BL.Services
                         Subject = "Поступления"
                     });
                 };
-
-            });
+            }
 
             await _admissionDBContext.SaveChangesAsync();
         }

@@ -27,12 +27,12 @@ namespace User.BL.Extensions
             var authService = serviceProvider.GetRequiredService<IAuthService>();
             var bus = RabbitHutch.CreateBus("host=localhost");
 
-            bus.PubSub.Subscribe<ChangeRoleDto>(RabbitMQQueue.ADD_ROLE, (addRoleDto) =>
+            bus.PubSub.Subscribe<ChangeRoleDto>("changeRole", (addRoleDto) =>
             {
                 profileService.AddRole(addRoleDto.Role, addRoleDto.UserId);
             }, x => x.WithTopic(RabbitMQQueue.ADD_ROLE));
 
-            bus.PubSub.Subscribe<ChangeRoleDto>(RabbitMQQueue.DELETE_ROLE, (addRoleDto) =>
+            bus.PubSub.Subscribe<ChangeRoleDto>("deleteRole", (addRoleDto) =>
             {
                 profileService.DeleteRole(addRoleDto.Role, addRoleDto.UserId);
             }, x => x.WithTopic(RabbitMQQueue.DELETE_ROLE));
@@ -45,7 +45,7 @@ namespace User.BL.Extensions
 
             bus.Rpc.Respond<EditRabbitProfileDto, ProfileDto>(async request => await profileService.EditProfile(request.UserId, request.EditProfileDto), x => x.WithQueueName(RabbitMQQueue.EDIT_PROFILE));
 
-            bus.Rpc.Respond<string, List<ProfileWithRolesDto>>(async request => await profileService.GetAllUsers(request ?? ""), x => x.WithQueueName(RabbitMQQueue.GET_ALL_USERS));
+            bus.Rpc.Respond<string, List<ProfileWithRolesDto>>(async request => await profileService.GetAllUsers(request), x => x.WithQueueName(RabbitMQQueue.GET_ALL_USERS));
             
             bus.Rpc.Respond<LogoutRabbitDto, Empty>(async (request) =>
             {

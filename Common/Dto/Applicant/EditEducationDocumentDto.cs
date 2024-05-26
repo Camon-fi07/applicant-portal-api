@@ -10,7 +10,7 @@ namespace Common.Dto.Applicant
 {
     public class EditEducationDocumentDto
     { 
-        public string? Name { get; set; }
+        public string? Name { get; set; }     
         public List<FileDto> Files { get; set; }
     }
 }

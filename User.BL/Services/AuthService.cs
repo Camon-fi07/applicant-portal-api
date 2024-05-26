@@ -102,7 +102,8 @@ namespace User.BL.Services
 
             var result = await _userManager.CreateAsync(user, userRegisterDto.Password);
 
-            if (!result.Succeeded) throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
+            if (!result.Succeeded)  throw new CustomExceptionModel($"Произошла ошибка: {result?.Errors.First().Description}", 400);
+            
             await _userManager.UpdateAsync(user);
 
             var refreshToken = await _tokenService.GenerateRefreshToken(user);

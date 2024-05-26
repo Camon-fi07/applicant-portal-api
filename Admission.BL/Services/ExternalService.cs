@@ -148,7 +148,10 @@ namespace Admission.BL.Services
                 foreach (var el in externalDocumentType.NextEducationLevels)
                 {
                     var nextEducationLevel = await _admissionDBContext.EducationLevels.FirstOrDefaultAsync(l => l.Id == el.Id);
-                    if (nextEducationLevel != null) nextEducationLevel.Name = el.Name;
+                    if (nextEducationLevel != null) {
+                        nextEducationLevel.Name = el.Name;
+                        nextEducationLevels.Add(nextEducationLevel);
+                    } 
                     else
                     {
                         nextEducationLevels.Add(new EducationLevelCacheEntity()

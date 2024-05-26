@@ -5,6 +5,7 @@ using Dictionary.BL.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDictionaryDB(builder.Configuration);
 builder.Services.ConfigureDictionaryServices();
+builder.Services.AddAuthenticationCustom(builder.Configuration);
 builder.Services.AddEasyNetQ();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

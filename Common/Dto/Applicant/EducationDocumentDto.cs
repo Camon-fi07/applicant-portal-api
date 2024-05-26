@@ -15,6 +15,6 @@ namespace Common.Dto.Applicant
         public required Guid EducationDocumentTypeId { get; set; }
         public required int EducationLevelId { get; set; }
         public required string EducationLevelName { get; set; }
-        public required List<Guid> Files { get; set; }
+        public required List<FileDto> Files { get; set; }
     }
 }

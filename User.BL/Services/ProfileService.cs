@@ -156,57 +156,5 @@ namespace User.BL.Services
 
             await _userManager.RemoveFromRoleAsync(user, role.ToString());
         }
-
-        public async Task<ApplicantProfileDto> EditApplicantProfile(Guid userId, EditApplicantProfileDto editApplicantProfileDto)
-        {
-            var applicantData = _bus.Rpc.Request<EditApplicantDataRabbitDto, ApplicantDataDto>(new EditApplicantDataRabbitDto()
-            {
-                UserId = userId,
-                EditApplicantDataDto = new EditApplicantDataDto()
-                {
-                    Citizenship = editApplicantProfileDto.Citizenship,
-                    EducationDocument = editApplicantProfileDto.EducationDocument,
-                    Passport = editApplicantProfileDto.Passport,
-
-                }
-            });
-
-            var profile = await EditProfile(userId, editApplicantProfileDto);
-
-            return new ApplicantProfileDto()
-            {
-                Email = profile.Email,
-                Passport = applicantData.Passport,
-                BirthDate = profile.BirthDate,
-                Citizenship = applicantData.Citizenship,
-                EducationDocument = applicantData.EducationDocument,
-                FirstName = profile.FirstName,
-                Gender = profile.Gender,
-                LastName = profile.LastName,
-                MiddleName = profile.MiddleName,
-                PhoneNumber = profile.PhoneNumber,
-            };
-        }
-
-        public async Task<ApplicantProfileDto> GetApplicantProfile(Guid userId)
-        {
-            var applicantData = await _bus.Rpc.RequestAsync<Guid, ApplicantDataDto>(userId);
-
-            var profile = await GetProfile(userId);
-
-            return new ApplicantProfileDto()
-            {
-                Email = profile.Email,
-                Passport = applicantData.Passport,
-                BirthDate = profile.BirthDate,
-                Citizenship = applicantData.Citizenship,
-                EducationDocument = applicantData.EducationDocument,
-                FirstName = profile.FirstName,
-                Gender = profile.Gender,
-                LastName = profile.LastName,
-                MiddleName = profile.MiddleName,
-                PhoneNumber = profile.PhoneNumber,
-            };
-        }
     }
 }

@@ -15,6 +15,7 @@ namespace Applicant.DAL
         public DbSet<EducationEntity> Educations { get; set; }
         public DbSet<EducationDocumentTypeCacheEntity> EducationDocumentTypes { get; set; }
         public DbSet<EducationLevelCacheEntity> EducationLevels { get; set; }
+        public DbSet<FileEntity> Files { get; set; }
 
         public ApplicantDBContext(DbContextOptions options) : base(options)
         {

@@ -27,19 +27,17 @@ namespace Applicant.BL.Services
 
         public async Task<EducationDocumentDto> EditEducationDocument(EditEducationDocumentDto editEducationDocumentDto, Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).FirstOrDefaultAsync(a => a.Id == userId);
+            var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).ThenInclude(e => e.Files).FirstOrDefaultAsync(a => a.Id == userId);
 
             if (applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400); 
 
             if(editEducationDocumentDto.Name != null) applicant.Education.Name = editEducationDocumentDto.Name;
 
-            List<FileResponseDto>? educationFiles = null;
-
             if (editEducationDocumentDto.Files != null)
             {
                 if (editEducationDocumentDto.Files.Count < 1) throw new CustomExceptionModel(ErrorMessages.SCANS_LIST, 400); 
 
-                applicant.Education.Files = editEducationDocumentDto.Files;
+                applicant.Education.Files = editEducationDocumentDto.Files.Select(f => new FileEntity() { Name = f.Name, Id = f.Id }).ToList();
             }
 
             await _applicantDBContext.SaveChangesAsync();
@@ -52,13 +50,13 @@ namespace Applicant.BL.Services
                 EducationName = applicant.Education.EducationDocument.Name,
                 Id = applicant.Education.Id,
                 Name = applicant.Education.Name,
-                Files = applicant.Education.Files,
+                Files = applicant.Education.Files.Select(f => new FileDto() { Name = f.Name, Id = f.Id }).ToList(),
             };
         }
 
         public async Task<PassportDto> EditPassport(EditPassportDto editPassportDto, Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.Include(a => a.Passport).FirstOrDefaultAsync(a => a.Id == userId);
+            var applicant = await _applicantDBContext.Applicants.Include(a => a.Passport).ThenInclude(p => p.Files).FirstOrDefaultAsync(a => a.Id == userId);
 
             if (applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400);
 
@@ -67,13 +65,11 @@ namespace Applicant.BL.Services
             if(editPassportDto.Number != null) applicant.Passport.Number = (int)editPassportDto.Number;
             if(editPassportDto.BirthPlace != null) applicant.Passport.BirthPlace = editPassportDto.BirthPlace;
 
-            List<FileResponseDto>? passportFiles = null;
-
             if(editPassportDto.Files != null)
             {
                 if(editPassportDto.Files.Count < 1) throw new CustomExceptionModel(ErrorMessages.SCANS_LIST, 400);
 
-                applicant.Passport.Files = editPassportDto.Files;
+                applicant.Passport.Files = editPassportDto.Files.Select(f => new FileEntity() { Name = f.Name, Id = f.Id }).ToList();
             }
 
             await _applicantDBContext.SaveChangesAsync();
@@ -85,7 +81,7 @@ namespace Applicant.BL.Services
                 Issued = applicant.Passport.Issued,
                 Number = applicant.Passport.Number,
                 Series = applicant.Passport.Series,
-                Files = applicant.Passport.Files
+                Files = applicant.Passport.Files.Select(f => new FileDto() { Name = f.Name, Id = f.Id }).ToList()
             };
         }
 
@@ -112,7 +108,9 @@ namespace Applicant.BL.Services
 
         public async Task<EducationDocumentDto> GetEducationDocument(Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).ThenInclude(e => e.EducationDocument).ThenInclude(e => e.EducationLevel).FirstOrDefaultAsync(a => a.Id == userId);
+            var applicant = await _applicantDBContext.Applicants.
+                Include(a => a.Education).ThenInclude(e => e.EducationDocument).ThenInclude(e => e.EducationLevel).
+                Include(a => a.Education).ThenInclude(e => e.Files).FirstOrDefaultAsync(a => a.Id == userId);
 
             if (applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400);
 
@@ -124,20 +122,20 @@ namespace Applicant.BL.Services
                 EducationName = applicant.Education.EducationDocument.Name,
                 Id = applicant.Education.Id,
                 Name = applicant.Education.Name,
-                Files = applicant.Education.Files,
+                Files = applicant.Education.Files.Select(f => new FileDto() { Name = f.Name, Id = f.Id }).ToList(),
             };
         }
 
         public async Task<PassportDto> GetPassport(Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.Include(a => a.Passport).FirstOrDefaultAsync(a => a.Id == userId);
+            var applicant = await _applicantDBContext.Applicants.Include(a => a.Passport).ThenInclude(p => p.Files).FirstOrDefaultAsync(a => a.Id == userId);
 
             if (applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400);
 
             return new PassportDto()
             {
                 BirthPlace = applicant.Passport.BirthPlace,
-                Files = applicant.Passport.Files,
+                Files = applicant.Passport.Files.Select(f => new FileDto() { Name = f.Name, Id = f.Id }).ToList(),
                 Id = Guid.NewGuid(),
                 Issued = applicant.Passport.Issued,
                 Number = applicant.Passport.Number,
@@ -147,9 +145,10 @@ namespace Applicant.BL.Services
 
         public async Task<ApplicantDataDto> GetApplicantData(Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.
-                Include(a => a.Education).ThenInclude(e => e.EducationDocument).ThenInclude(e => e.EducationLevel).
-                Include(a => a.Passport).FirstOrDefaultAsync(a => a.Id == userId);
+            var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).ThenInclude(e => e.EducationDocument).ThenInclude(e => e.EducationLevel).
+                Include(a => a.Education).ThenInclude(e => e.Files).
+                Include(a => a.Passport).ThenInclude(p => p.Files).
+                FirstOrDefaultAsync(a => a.Id == userId);
 
             if(applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400);
 
@@ -163,7 +162,7 @@ namespace Applicant.BL.Services
                     Issued = applicant.Passport.Issued,
                     Number = applicant.Passport.Number,
                     Series = applicant.Passport.Series,
-                    Files = applicant.Passport.Files
+                    Files = applicant.Passport.Files.Select(f => new FileDto() { Name = f.Name, Id = f.Id }).ToList()
                 },
                 EducationDocument = new EducationDocumentDto()
                 {
@@ -173,7 +172,7 @@ namespace Applicant.BL.Services
                     EducationName = applicant.Education.EducationDocument.Name,
                     Id = applicant.Education.Id,
                     Name = applicant.Education.Name,
-                    Files = applicant.Education.Files,
+                    Files = applicant.Education.Files.Select(f => new FileDto() { Name = f.Name, Id = f.Id }).ToList(),
                 }
             };
         }
@@ -185,7 +184,7 @@ namespace Applicant.BL.Services
             var passport = new PassportEntity()
             {
                 BirthPlace = registerApplicantDto.Passport.BirthPlace,
-                Files = registerApplicantDto.Passport.Files,
+                Files = registerApplicantDto.Passport.Files.Select(f => new FileEntity() { Name = f.Name, Id = f.Id}).ToList(),
                 Id = Guid.NewGuid(),
                 Issued = registerApplicantDto.Passport.Issued,
                 Number = registerApplicantDto.Passport.Number,
@@ -194,7 +193,7 @@ namespace Applicant.BL.Services
 
             var education = new EducationEntity()
             {
-                Files = registerApplicantDto.Education.Files,
+                Files = registerApplicantDto.Education.Files.Select(f => new FileEntity() { Name = f.Name, Id = f.Id }).ToList(),
                 Id = Guid.NewGuid(),
                 EducationDocument = educationDocumentType,
                 Name = registerApplicantDto.Education.Name

@@ -88,6 +88,20 @@
                     <input class="form-control my-2" asp-for="EditApplicantData.Passport.Issued" placeholder="Кем выдан" value="@Model.ApplicantData.Passport.Issued">
                     <span class="text-danger" asp-validation-for="EditApplicantData.Passport.Issued"></span>
                 </div>
+                @if (Model.ApplicantData.Passport.Files.Count > 0)
+                {
+                    <div>
+                        <h4>Сканы: </h4>
+                        <ul>
+                            @foreach (var scan in Model.ApplicantData.Passport.Files)
+                            {
+                                <li>
+                                    <button>@scan.Name</button>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
             </div>
             <br />
             <div class="card-body">
@@ -97,6 +111,21 @@
                     <input class="form-control my-2" asp-for="EditApplicantData.EducationDocument.Name" placeholder="Название" value="@Model.ApplicantData.EducationDocument.Name">
                     <span class="text-danger" asp-validation-for="EditApplicantData.EducationDocument.Name"></span>
                 </div>
+
+                @if (Model.ApplicantData.EducationDocument.Files.Count > 0)
+                {
+                    <div>
+                        <h4>Сканы: </h4>
+                        <ul>
+                            @foreach (var scan in Model.ApplicantData.EducationDocument.Files)
+                            {
+                                <li>
+                                    <button>@scan.Name</button>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
             </div>
 
             <button type="button" onclick="submitApplicantForm('@Model.Profile.Id')" class="btn btn-primary">Редактировать данные абитуриента</button>

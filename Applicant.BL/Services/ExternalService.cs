@@ -3,15 +3,9 @@ using Applicant.DAL;
 using Applicant.DAL.Entities;
 using Common.Constants;
 using Common.Dto.RabbitMQ;
-using Common.Dto.User;
 using Common.Models;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Applicant.BL.Services
 {

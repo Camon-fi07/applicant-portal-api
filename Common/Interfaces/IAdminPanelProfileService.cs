@@ -14,5 +14,6 @@ namespace Common.Interfaces
         public Task<ProfileDto> EditProfile(Guid userId, EditProfileDto editProfileDto);
         public Task DeleteManagerRole(Guid id);
         public Task SetManagerRole(Guid id, ManagerRole role);
+        public Task<List<ProfileWithRolesDto>> GetAllUsers(string? email);
     }
 }

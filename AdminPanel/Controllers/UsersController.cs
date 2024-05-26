@@ -14,11 +14,13 @@ namespace AdminPanel.Controllers
             _profileService = profileService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index(string? email)
         {
+            var users = await _profileService.GetAllUsers(email);
             var model = new UsersListViewModel()
             {
-                Users = new List<ProfileWithRolesDto>()
+                Users = users,
+                EmailQuery = email ?? "",
             };
 
             return View(model);
@@ -29,25 +31,15 @@ namespace AdminPanel.Controllers
         {
             await _profileService.DeleteManagerRole(id);
 
-            var model = new UsersListViewModel()
-            {
-                Users = new List<ProfileWithRolesDto>()
-            };
-
-            return View("Index", model);
+            return Ok();
         }
 
         [HttpPut("User/{id:guid}/Role")]
-        public async Task<IActionResult> EditManager(Guid id, [FromBody] ManagerRole role)
+        public async Task<IActionResult> SetManager(Guid id, [FromBody] ManagerRole role)
         {
             await _profileService.SetManagerRole(id, role);
 
-            var model = new UsersListViewModel()
-            {
-                Users = new List<ProfileWithRolesDto>()
-            };
-
-            return View("Index", model);
+            return Ok();
         }
     }
 }

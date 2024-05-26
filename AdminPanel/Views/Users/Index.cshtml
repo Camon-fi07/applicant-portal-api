@@ -6,12 +6,15 @@
 }
 
 <div class="col-12 mb-3">
-    <label class="form-label" asp-for="EmailQuery">Email</label>
-    <input class="form-control my-2" asp-for="EmailQuery" placeholder="Почта">
-    <span class="text-danger" asp-validation-for="EmailQuery"></span>
+    <form id="form">
+        <label class="form-label" asp-for="EmailQuery">Email</label>
+        <input class="form-control my-2" asp-for="EmailQuery" name="emailQuery" id="enaulQuery" value="@Model.EmailQuery" placeholder="Почта">
+        <span class="text-danger" asp-validation-for="EmailQuery"></span>
+        <button type="button" onclick="requestList()">Применить</button>
+    </form>
 </div>
-<button type="button">Применить</button>
-<ul>
+
+<ul id="list">
     @foreach(var user in Model.Users)
     {
         <li>
@@ -36,6 +39,7 @@
             else
             {
                 <select asp-for="ManagerRole" name="managerRole" id="managerRole" class="form-select mb-3">
+                    <option value="@null" selected="true">-</option>
                     <option value="@ManagerRole.SimpleManager">Менеджер</option>
                     <option value="@ManagerRole.GeneralManager">Главный менеджер</option>
                 </select>
@@ -49,7 +53,23 @@
     function deleteManager(id) {
         $.ajax({
             url: `/User/${id}/Role`,
-            type: 'DELETE'
+            type: 'DELETE',
+            success: function(){
+                location.reload();
+            }
+        });
+    }
+
+    function requestList() {
+        var formData = $("#form").serializeArray();
+        var email = formData[0].value;
+        console.log(email)
+        $.ajax({
+            url: `/Users/?email=${email}`,
+            type: 'GET',
+            success: function(data){
+               $("body").html(data);
+            }
         });
     }
 
@@ -58,7 +78,10 @@
             url: `/User/${id}/Role`,
             type: 'PUT',
             contentType: "application/json",
-            data: JSON.stringify(role)
+            data: JSON.stringify(role),
+            success: function () {
+                location.reload();
+            }
         });
     }
 </script>

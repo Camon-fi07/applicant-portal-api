@@ -51,9 +51,10 @@ namespace AdminPanel.BL.Services
             return profile;
         }
 
-        public Task SetManager(ManagerRole role, Guid id)
+        public async Task<List<ProfileWithRolesDto>> GetAllUsers(string? email)
         {
-            throw new NotImplementedException();
+            var users =  await _bus.Rpc.RequestAsync<string, List<ProfileWithRolesDto>>(email ?? "", x => x.WithQueueName(RabbitMQQueue.GET_ALL_USERS));
+            return users.Where(u => u.Roles.All(r => r != RoleType.Administrator)).ToList();
         }
     }
 }

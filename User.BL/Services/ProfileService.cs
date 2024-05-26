@@ -3,14 +3,12 @@ using Microsoft.AspNetCore.Identity;
 using User.BL.Services.IServices;
 using User.DAL.Entities;
 using User.DAL;
-using Microsoft.AspNetCore.Http;
 using User.BL.Dto;
 using Common.Constants;
 using EasyNetQ;
-using Common.Dto.Applicant;
-using Common.Dto.RabbitMQ;
 using Common.Dto.User;
 using Common.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace User.BL.Services
 {
@@ -19,10 +17,15 @@ namespace User.BL.Services
         UserManager<UserEntity> _userManager;
         UserDBContext _userDBContext;
         IBus _bus;
-        public ProfileService(UserManager<UserEntity> userManager, UserDBContext userDBContext, IBus bus) {
+        private readonly int maxListLength;
+        public ProfileService(UserManager<UserEntity> userManager, UserDBContext userDBContext, IBus bus, IConfiguration configuration) {
             _userManager = userManager;
             _userDBContext = userDBContext;
             _bus = bus;
+            if (!int.TryParse(configuration.GetSection("MaxListLength").Value, out maxListLength))
+            {
+                maxListLength = 10;
+            }
         }
 
         public async Task<List<RoleType>> GetUserRoles(Guid userId)
@@ -157,30 +160,34 @@ namespace User.BL.Services
             await _userManager.RemoveFromRoleAsync(user, role.ToString());
         }
 
-        public async Task<ProfileWithRolesDto> GetProfileWithRoles(Guid userId)
+        public async Task<List<ProfileWithRolesDto>> GetAllUsers(string? email)
         {
-            var user = await _userManager.FindByIdAsync(userId.ToString());
-            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
+            var users = _userDBContext.Users.Where(u => u.NormalizedEmail.Contains(email.ToUpper())).Take(maxListLength).ToList();
+            var result = new List<ProfileWithRolesDto>();
 
-            var roles = (await _userManager.GetRolesAsync(user)).Select(role => {
-                var roleType = GetRoleType(role);
-                if (roleType is null) throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
+            foreach(var user in users) {
+                var roles = (await _userManager.GetRolesAsync(user)).Select(role => {
+                    var roleType = GetRoleType(role);
+                    if (roleType is null) throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
 
-                return (RoleType)roleType;
-            });
+                    return (RoleType)roleType;
+                }).ToList();
 
-            return new ProfileWithRolesDto()
-            {
-                Id = user.Id,
-                BirthDate = user.BirthDate,
-                Email = user.Email,
-                FirstName = user.Firstname,
-                Gender = user.Gender,
-                LastName = user.Lastname,
-                MiddleName = user.Middlename,
-                PhoneNumber = user.PhoneNumber,
-                Roles = roles.ToList()
-            };
+                result.Add(new ProfileWithRolesDto()
+                {
+                    Id = user.Id,
+                    BirthDate = user.BirthDate,
+                    Email = user.Email,
+                    FirstName = user.Firstname,
+                    Gender = user.Gender,
+                    LastName = user.Lastname,
+                    MiddleName = user.Middlename,
+                    PhoneNumber = user.PhoneNumber,
+                    Roles = roles,
+                });
+            }
+
+            return result;
         }
     }
 }

@@ -44,6 +44,8 @@ namespace User.BL.Extensions
 
             bus.Rpc.Respond<EditRabbitProfileDto, ProfileDto>(async request => await profileService.EditProfile(request.UserId, request.EditProfileDto), x => x.WithQueueName(RabbitMQQueue.EDIT_PROFILE));
 
+            bus.Rpc.Respond<string, List<ProfileWithRolesDto>>(async request => await profileService.GetAllUsers(request ?? ""), x => x.WithQueueName(RabbitMQQueue.GET_ALL_USERS));
+            
             bus.Rpc.Respond<LogoutRabbitDto, Empty>(async (request) =>
             {
                 await authService.Logout(request.UserId, request.UserAgent);

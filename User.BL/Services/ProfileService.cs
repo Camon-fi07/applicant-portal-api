@@ -62,6 +62,7 @@ namespace User.BL.Services
 
             return new ProfileDto()
             {
+                Id = user.Id,
                 BirthDate = user.BirthDate,
                 Email = user.Email,
                 FirstName = user.Firstname,

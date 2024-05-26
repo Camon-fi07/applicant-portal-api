@@ -25,7 +25,7 @@
     <p>Время создания: @Model.Application.CreateTime</p>
     <p>Время последнего редактирования: @Model.Application.EditTime</p>
     <div class="mb-2">
-        <h3>Абитуриент: </h3>
+        <h3><a class="nav-link" asp-controller="Applicant" asp-action="Index" asp-route-id="@Model.Application.User.Id">Абитуриент:</a> </h3>
         <p>Почта: @Model.Application.User.Email</p>
         <p>Фамилия: @Model.Application.User.Lastname</p>
         <p>Имя: @Model.Application.User.Firstname</p>

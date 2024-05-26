@@ -147,7 +147,9 @@ namespace Applicant.BL.Services
 
         public async Task<ApplicantDataDto> GetApplicantData(Guid userId)
         {
-            var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).ThenInclude(e => e.EducationDocument).ThenInclude(e => e.EducationLevel).FirstOrDefaultAsync(a => a.Id == userId);
+            var applicant = await _applicantDBContext.Applicants.
+                Include(a => a.Education).ThenInclude(e => e.EducationDocument).ThenInclude(e => e.EducationLevel).
+                Include(a => a.Passport).FirstOrDefaultAsync(a => a.Id == userId);
 
             if(applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400);
 

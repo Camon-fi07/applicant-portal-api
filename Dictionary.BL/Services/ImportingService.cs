@@ -41,9 +41,9 @@ namespace Dictionary.BL.Services
             var httpResponse = await _httpClient.GetAsync($"{_remoteDictionary.URL}/document_types");
 
             if (!httpResponse.IsSuccessStatusCode) {
-                await AddImportingStatus((int)httpResponse.StatusCode, "Произошла ошибка при запросе", GuideType.DocumentTypes);
+                await AddImportingStatus((int)httpResponse.StatusCode, ErrorMessages.REQUEST, GuideType.DocumentTypes);
 
-                throw new Exception("Произошла ошибка");
+                throw new CustomExceptionModel(ErrorMessages.IMPORT, 500);
             };
 
             var documentTypes = JsonConvert.DeserializeObject<List<EducationDocumentTypeDto>>(await httpResponse.Content.ReadAsStringAsync());
@@ -82,9 +82,9 @@ namespace Dictionary.BL.Services
             var httpResponse = await _httpClient.GetAsync($"{_remoteDictionary.URL}/education_levels");
 
             if (!httpResponse.IsSuccessStatusCode) {
-                await AddImportingStatus((int)httpResponse.StatusCode, "Произошла ошибка при запросе", GuideType.EducationLevels);
+                await AddImportingStatus((int)httpResponse.StatusCode, ErrorMessages.REQUEST, GuideType.EducationLevels);
 
-                throw new Exception("Произошла ошибка");
+                throw new CustomExceptionModel(ErrorMessages.IMPORT, 500);
             };
 
             var educationLevels = JsonConvert.DeserializeObject<List<EducationLevelDto>>(await httpResponse.Content.ReadAsStringAsync());
@@ -124,9 +124,9 @@ namespace Dictionary.BL.Services
             var httpResponse = await _httpClient.GetAsync($"{_remoteDictionary.URL}/faculties");
 
             if (!httpResponse.IsSuccessStatusCode) {
-                await AddImportingStatus((int)httpResponse.StatusCode, "Произошла ошибка при запросе", GuideType.Faculties);
+                await AddImportingStatus((int)httpResponse.StatusCode, ErrorMessages.REQUEST, GuideType.Faculties);
 
-                throw new Exception("Произошла ошибка");
+                throw new CustomExceptionModel(ErrorMessages.IMPORT, 500);
             };
 
             var faculties = JsonConvert.DeserializeObject<List<EducationFacultyDto>>(await httpResponse.Content.ReadAsStringAsync());
@@ -168,9 +168,9 @@ namespace Dictionary.BL.Services
             var httpResponse = await _httpClient.GetAsync(requestURL);
 
             if (!httpResponse.IsSuccessStatusCode) {
-                await AddImportingStatus((int)httpResponse.StatusCode, "Произошла ошибка при запросе", GuideType.EducationPrograms);
+                await AddImportingStatus((int)httpResponse.StatusCode, ErrorMessages.REQUEST, GuideType.EducationPrograms);
 
-                throw new Exception("Произошла ошибка");
+                throw new CustomExceptionModel(ErrorMessages.IMPORT, 500);
             };
 
             var programsPagedListModel = JsonConvert.DeserializeObject<ProgramPagedListModel>(await httpResponse.Content.ReadAsStringAsync());

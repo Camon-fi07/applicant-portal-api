@@ -1,6 +1,7 @@
 ﻿using Admission.BL.Services.IServices;
 using Admission.DAL;
 using Admission.DAL.Entities;
+using Common.Constants;
 using Common.Dto;
 using Common.Dto.Applicant;
 using Common.Dto.Application;
@@ -33,7 +34,7 @@ namespace Admission.BL.Services
         {
             var application = await _admissionDBContext.Applications.Include(a => a.Programs).Include(a => a.User).FirstOrDefaultAsync(a => a.Id == applicationId);
 
-            if (application == null) { throw new Exception(); }
+            if (application == null) throw new CustomExceptionModel(ErrorMessages.APPLICATION_NOT_FOUND, 400);
 
             application.Status = status;
 
@@ -51,12 +52,12 @@ namespace Admission.BL.Services
         {
             if (createApplication.Passport.Series.ToString().Length != 4)
             {
-                throw new Exception();
+                throw new CustomExceptionModel(ErrorMessages.INVALID_PASSPORT_SERIES, 400);
             }
 
             if (createApplication.Passport.Number.ToString().Length != 6)
             {
-                throw new Exception();
+                throw new CustomExceptionModel(ErrorMessages.INVALID_PASSPORT_NUMBER, 400);
             }
 
             var educationDocumentType = await _externalService.GetEducationDocument(createApplication.Education.EducationDocumentTypeId);
@@ -75,7 +76,7 @@ namespace Admission.BL.Services
             }
 
             var isProgramsValid = IsProgramsValid(programs, educationDocumentType);
-            if (!isProgramsValid) throw new Exception();
+            if (!isProgramsValid) throw new CustomExceptionModel(ErrorMessages.INVALID_PROGRAMS, 400);
 
             var user = await _externalService.GetUser(userId);
 
@@ -121,9 +122,9 @@ namespace Admission.BL.Services
                 Include(a => a.ApplicantEducationDocumentType).ThenInclude(d => d.NextEducationLevels).
                 FirstOrDefaultAsync(a => a.Id == applicationId);
 
-            if(application == null) { throw new Exception(); }
+            if(application == null) throw new CustomExceptionModel(ErrorMessages.APPLICATION_NOT_FOUND, 400);
 
-            foreach(var originProgram in application.Programs) {
+            foreach (var originProgram in application.Programs) {
                 var newProgram = programPriorities.FirstOrDefault(p => p.ProgramId == originProgram.ProgramId);
                 if (newProgram == null)
                 {
@@ -151,7 +152,7 @@ namespace Admission.BL.Services
             }
 
             var isProgramsValid = IsProgramsValid(application.Programs, application.ApplicantEducationDocumentType);
-            if(!isProgramsValid) throw new Exception();
+            if (!isProgramsValid) throw new CustomExceptionModel(ErrorMessages.INVALID_PROGRAMS, 400);
 
             application.EditTime = DateTime.UtcNow;
 
@@ -189,7 +190,7 @@ namespace Admission.BL.Services
         public async Task<ApplicationDto> GetApplication(Guid applicationId)
         {
             var application = await _admissionDBContext.Applications.Include(a => a.Programs).ThenInclude(p => p.Program).ThenInclude(p => p.Faculty).Include(a => a.User).Include(a => a.Manager).ThenInclude(m => m.User).FirstOrDefaultAsync(a => a.Id == applicationId);
-            if (application == null) { throw new Exception(); }
+            if (application == null) throw new CustomExceptionModel(ErrorMessages.APPLICATION_NOT_FOUND, 400);
 
             var programPriorities = new List<ProgramPriorityDto>();
 
@@ -317,7 +318,7 @@ namespace Admission.BL.Services
         public async Task ReturnApplication(Guid applicationId)
         {
             var application = await _admissionDBContext.Applications.Include(a => a.Programs).FirstOrDefaultAsync(a => a.Id == applicationId);
-            if (application == null) { throw new Exception(); }
+            if (application == null) throw new CustomExceptionModel(ErrorMessages.APPLICATION_NOT_FOUND, 400);
 
             application.Manager = null;
             application.EditTime = DateTime.UtcNow;
@@ -328,13 +329,13 @@ namespace Admission.BL.Services
         public async Task TakeApplication(Guid managerId, Guid applicationId)
         {
             var manager = await _admissionDBContext.Managers.FirstOrDefaultAsync(m => m.Id == managerId);
-            if(manager == null) { throw new Exception(); }
+            if(manager == null) throw new CustomExceptionModel(ErrorMessages.MANAGER_NOT_FOUND, 400);
 
             var application = await _admissionDBContext.Applications.FirstOrDefaultAsync(a => a.Id == applicationId);
 
             var user = await _externalService.GetUser(managerId);
 
-            if (application == null) { throw new Exception(); }
+            if (application == null) throw new CustomExceptionModel(ErrorMessages.APPLICATION_NOT_FOUND, 400);
 
             application.Manager = manager;
             application.EditTime = DateTime.UtcNow;

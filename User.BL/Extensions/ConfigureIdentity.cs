@@ -5,6 +5,7 @@ using User.DAL.Entities;
 using Common.Enums;
 using User.DAL;
 using System.Data;
+using Common.Models;
 
 namespace User.BL.Extensions
 {
@@ -43,47 +44,47 @@ namespace User.BL.Extensions
 
             if (config == null)
             {
-                throw new ArgumentNullException(nameof(config), "Админ не сконфигурирован");
+                throw new CustomExceptionModel("Админ не сконфигурирован", 500);
             }
 
-            var adminUser = await userManager.FindByEmailAsync(config["Email"] ?? throw new ArgumentNullException(
-                nameof(config), "Email админа не был найден"));
+            var adminUser = await userManager.FindByEmailAsync(config["Email"] ?? throw new CustomExceptionModel(
+                "Email админа не был найден", 500));
 
             var adminGender = config["Gender"] == Gender.Male.ToString() ? Gender.Male : Gender.Female;
             if (adminUser == null)
             {
                 var userResult = await userManager.CreateAsync(new UserEntity
                 {
-                    Lastname = config["Lastname"] ?? throw new ArgumentNullException(
-                        nameof(config), "Поле Lastname для админа не было найдено"),
-                    Firstname = config["Firstname"] ?? throw new ArgumentNullException(
-                        nameof(config), "Поле Firstname для админа не было найдено"),
-                    Middlename = config["Middlename"] ?? throw new ArgumentNullException(
-                        nameof(config), "Поле Middlename для админа не было найдено"),
-                    Email = config["Email"] ?? throw new ArgumentNullException(
-                        nameof(config), "Поле Email для админа не было найдено"),
-                    UserName = config["Email"] ?? throw new ArgumentNullException(
-                        nameof(config), "Поле Email для админа не было найдено"),
-                    PhoneNumber = config["PhoneNumber"] ?? throw new ArgumentNullException(
-                        nameof(config), "Поле PhoneNumber для админа не было найдено"),
+                    Lastname = config["Lastname"] ?? throw new CustomExceptionModel(
+                        "Поле Lastname для админа не было найдено", 500),
+                    Firstname = config["Firstname"] ?? throw new CustomExceptionModel(
+                        "Поле Firstname для админа не было найдено", 500),
+                    Middlename = config["Middlename"] ?? throw new CustomExceptionModel(
+                        "Поле Middlename для админа не было найдено", 500),
+                    Email = config["Email"] ?? throw new CustomExceptionModel(
+                        "Поле Email для админа не было найдено", 500),
+                    UserName = config["Email"] ?? throw new CustomExceptionModel(
+                         "Поле Email для админа не было найдено", 500),
+                    PhoneNumber = config["PhoneNumber"] ?? throw new CustomExceptionModel(
+                        "Поле PhoneNumber для админа не было найдено", 500),
                     Id = Guid.NewGuid(),
                     Gender = adminGender,
                     BirthDate = DateOnly.FromDateTime(DateTime.UtcNow)
-                }, config["Password"] ?? throw new ArgumentNullException(
-                    nameof(config), "Поле Password для админа не было найдено"));
+                }, config["Password"] ?? throw new CustomExceptionModel(
+                    "Поле Password для админа не было найдено", 500));
 
                 if (!userResult.Succeeded)
                 {
-                    throw new InvalidOperationException("Не получилось создать администратора");
+                    throw new CustomExceptionModel("Не получилось создать администратора", 500);
                 }
 
-                adminUser = await userManager.FindByEmailAsync(config["Email"] ?? throw new ArgumentNullException(
-                nameof(config), "Email админа не был найден"));
+                adminUser = await userManager.FindByEmailAsync(config["Email"] ?? throw new CustomExceptionModel(
+                "Email админа не был найден", 500));
             }
 
             if (adminUser == null)
             {
-                throw new ArgumentNullException(nameof(adminUser), "Не получилось найди администратора");
+                throw new CustomExceptionModel("Не получилось найди администратора", 500);
             }
 
             if (!await userManager.IsInRoleAsync(adminUser, RoleType.Administrator.ToString()))

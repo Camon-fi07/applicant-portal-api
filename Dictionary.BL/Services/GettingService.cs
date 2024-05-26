@@ -10,6 +10,7 @@ using Common.Dto;
 using Common.Dto.RabbitMQ;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Common.Constants;
 
 namespace Dictionary.BL.Services
 {
@@ -46,7 +47,7 @@ namespace Dictionary.BL.Services
         public async Task<EducationDocumentTypeDto> GetCertainDocumentType(Guid id)
         {
             var documentType = await _dictionaryDBContext.EducationDocumentTypes.Include(d => d.EducationLevel).Include(d => d.NextEducationLevels).FirstOrDefaultAsync(e => e.Id == id);
-            if (documentType == null) throw new Exception();
+            if (documentType == null) throw new CustomExceptionModel(ErrorMessages.EDUCATION_DOCUMENT_TYPE_NOT_FOUND, 400);
 
             return EducationDocumentTypeMapper.TranslateDocumentEntityToDto(documentType);
         }
@@ -134,7 +135,7 @@ namespace Dictionary.BL.Services
         {
             var faculty = await _dictionaryDBContext.Faculties.FirstOrDefaultAsync(f => f.Id == id);
 
-            if (faculty == null) throw new Exception();
+            if (faculty == null) throw new CustomExceptionModel(ErrorMessages.FACULTY_NOT_FOUND, 400);
 
             return new EducationFacultyDto()
             {

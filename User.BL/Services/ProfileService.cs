@@ -10,6 +10,7 @@ using EasyNetQ;
 using Common.Dto.Applicant;
 using Common.Dto.RabbitMQ;
 using Common.Dto.User;
+using Common.Models;
 
 namespace User.BL.Services
 {
@@ -27,11 +28,11 @@ namespace User.BL.Services
         public async Task<List<RoleType?>> GetUserRoles(Guid userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
-            if(user == null) { throw new Exception(); }
+            if(user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400); 
 
             var roles = (await _userManager.GetRolesAsync(user)).Select(role => {
                 var roleType = GetRoleType(role);
-                if (roleType is null) throw new UnauthorizedAccessException();
+                if (roleType is null) throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
 
                 return roleType!;
             });
@@ -42,7 +43,7 @@ namespace User.BL.Services
         public async Task<AddUserDto> GetShortProfile(Guid userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
-            if (user == null) { throw new Exception(); }
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
 
             return new AddUserDto()
             {
@@ -57,14 +58,7 @@ namespace User.BL.Services
         public async Task<ProfileDto> GetProfile(Guid userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
-            if (user == null) { throw new Exception(); }
-
-            var roles = (await _userManager.GetRolesAsync(user)).Select(role => {
-                var roleType = GetRoleType(role);
-                if (roleType is null) throw new UnauthorizedAccessException();
-
-                return roleType!;
-            });
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
 
             return new ProfileDto()
             {
@@ -90,7 +84,7 @@ namespace User.BL.Services
         public async Task<ProfileDto> EditProfile(Guid userId, EditProfileDto editProfileDto)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
-            if (user == null) { throw new Exception(); }
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
 
             if (editProfileDto.Lastname != null) user.Lastname = editProfileDto.Lastname;
             if (editProfileDto.PhoneNumber != null) user.PhoneNumber = editProfileDto.PhoneNumber;
@@ -108,7 +102,7 @@ namespace User.BL.Services
 
                 if (!emailChangeResult.Succeeded)
                 {
-                    throw new BadHttpRequestException("Произошла ошибка");
+                    throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
                 }
             }
 
@@ -131,13 +125,13 @@ namespace User.BL.Services
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
-            if (user == null) throw new Exception();
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
             var passwordResetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, passwordResetToken, resetPasswordDto.Password);
 
             if (!result.Succeeded)
             {
-                throw new BadHttpRequestException("Произошла ошибка");
+                throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
             }
 
             await _userManager.UpdateAsync(user);
@@ -148,7 +142,7 @@ namespace User.BL.Services
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
-            if (user == null) throw new Exception();
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
 
             await _userManager.AddToRoleAsync(user, role.ToString());
         }
@@ -157,7 +151,7 @@ namespace User.BL.Services
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
-            if (user == null) throw new Exception();
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
 
             await _userManager.RemoveFromRoleAsync(user, role.ToString());
         }

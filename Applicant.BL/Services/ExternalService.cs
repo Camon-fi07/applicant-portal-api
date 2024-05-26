@@ -4,6 +4,7 @@ using Applicant.DAL.Entities;
 using Common.Constants;
 using Common.Dto.RabbitMQ;
 using Common.Dto.User;
+using Common.Models;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -33,7 +34,7 @@ namespace Applicant.BL.Services
                 await ImportEducationDocument(documentId);
                 documentType = await _applicantDBContext.EducationDocumentTypes.Include(d => d.EducationLevel).FirstOrDefaultAsync(u => u.Id == documentId);
 
-                if (documentType == null) throw new Exception();
+                if (documentType == null) throw new CustomExceptionModel(ErrorMessages.EDUCATION_DOCUMENT_TYPE_NOT_FOUND, 400);
             }
 
             return documentType;
@@ -43,7 +44,7 @@ namespace Applicant.BL.Services
         {
             var externalDocumentType = await _bus.Rpc.RequestAsync<Guid, AddEducationDocumentTypeDto>(documentId, x => x.WithQueueName(RabbitMQQueue.ADD_EDUCATION_DOCUMENT_TYPE));
 
-            if (externalDocumentType == null) throw new Exception();
+            if (externalDocumentType == null) throw new CustomExceptionModel(ErrorMessages.EDUCATION_DOCUMENT_TYPE_NOT_FOUND, 400);
 
             var educationLevel = await _applicantDBContext.EducationLevels.FirstOrDefaultAsync(l => l.Id == externalDocumentType.EducationLevel.Id);
             if (educationLevel != null) educationLevel.Name = externalDocumentType.EducationLevel.Name;

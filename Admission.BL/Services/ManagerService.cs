@@ -6,6 +6,7 @@ using Common.Dto.Application;
 using Common.Dto.Manager;
 using Common.Dto.RabbitMQ;
 using Common.Enums;
+using Common.Models;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,10 +55,7 @@ namespace Admission.BL.Services
         {
             var manager = await _admissionDBContext.Managers.Include(m => m.User).FirstOrDefaultAsync(m => m.Id == managerId);
 
-            if (manager == null)
-            {
-                throw new Exception();
-            }
+            if (manager == null) throw new CustomExceptionModel(ErrorMessages.MANAGER_NOT_FOUND, 400);
 
             _admissionDBContext.Managers.Remove(manager);
 
@@ -78,10 +76,7 @@ namespace Admission.BL.Services
         {
             var manager = await _admissionDBContext.Managers.FirstOrDefaultAsync(m => m.Id == managerId);
 
-            if (manager == null)
-            {
-                throw new Exception();
-            }
+            if (manager == null) throw new CustomExceptionModel(ErrorMessages.MANAGER_NOT_FOUND, 400);
 
             var faculty = await _externalService.GetFaculty(facultyId);
 
@@ -94,10 +89,7 @@ namespace Admission.BL.Services
         {
             var manager = await _admissionDBContext.Managers.FirstOrDefaultAsync(m => m.Id == managerId);
 
-            if (manager == null)
-            {
-                throw new Exception();
-            }
+            if (manager == null) throw new CustomExceptionModel(ErrorMessages.MANAGER_NOT_FOUND, 400);
 
             manager.Faculty = null;
 

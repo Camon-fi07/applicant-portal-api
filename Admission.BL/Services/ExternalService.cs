@@ -2,12 +2,10 @@
 using Admission.DAL;
 using Admission.DAL.Entities;
 using Common.Constants;
-using Common.Dto;
 using Common.Dto.RabbitMQ;
 using Common.Dto.User;
-using Common.Enums;
+using Common.Models;
 using EasyNetQ;
-using Microsoft.AspNet.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Admission.BL.Services
@@ -30,7 +28,7 @@ namespace Admission.BL.Services
             {
                 await ImportProgram(programId);
                 program = await _admissionDBContext.Programs.Include(p => p.EducationLevel).FirstOrDefaultAsync(p => p.Id == programId);
-                if (program == null) throw new Exception();
+                if (program == null) throw new CustomExceptionModel(ErrorMessages.PROGRAM_NOT_FOUND, 400);
             }
 
             return program;
@@ -40,7 +38,7 @@ namespace Admission.BL.Services
         {
             var externalProgram = await _bus.Rpc.RequestAsync<Guid, AddProgramDto>(programId, x => x.WithQueueName(RabbitMQQueue.ADD_PROGRAM));
 
-            if (externalProgram == null) throw new Exception();
+            if (externalProgram == null) throw new CustomExceptionModel(ErrorMessages.PROGRAM_NOT_FOUND, 400);
 
             var educationLevel = await _admissionDBContext.EducationLevels.FirstOrDefaultAsync(l => l.Id == externalProgram.EducationLevel.Id);
             if (educationLevel != null) educationLevel.Name = externalProgram.EducationLevel.Name;
@@ -86,7 +84,7 @@ namespace Admission.BL.Services
                 await ImportUser(userId);
                 user = await _admissionDBContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
-                if (user == null) throw new Exception();
+                if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
             }
 
             return user;
@@ -96,7 +94,7 @@ namespace Admission.BL.Services
         {
             var externalUser = await _bus.Rpc.RequestAsync<Guid, AddUserDto>(userId, x => x.WithQueueName(RabbitMQQueue.ADD_USER));
 
-            if (externalUser == null) throw new Exception();
+            if (externalUser == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
 
             var user = new UserCacheEntity()
             {
@@ -120,7 +118,7 @@ namespace Admission.BL.Services
                 await ImportEducationDocument(documentId);
                 documentType = await _admissionDBContext.EducationDocumentTypes.Include(d => d.EducationLevel).Include(d => d.NextEducationLevels).FirstOrDefaultAsync(u => u.Id == documentId);
 
-                if (documentType == null) throw new Exception();
+                if (documentType == null) throw new CustomExceptionModel(ErrorMessages.EDUCATION_DOCUMENT_TYPE_NOT_FOUND, 400);
             }
 
             return documentType;
@@ -130,7 +128,7 @@ namespace Admission.BL.Services
         {
             var externalDocumentType = await _bus.Rpc.RequestAsync<Guid, AddEducationDocumentTypeDto>(documentId, x => x.WithQueueName(RabbitMQQueue.ADD_EDUCATION_DOCUMENT_TYPE));
 
-            if (externalDocumentType == null) throw new Exception();
+            if (externalDocumentType == null) throw new CustomExceptionModel(ErrorMessages.EDUCATION_DOCUMENT_TYPE_NOT_FOUND, 400);
 
             var educationLevel = await _admissionDBContext.EducationLevels.FirstOrDefaultAsync(l => l.Id == externalDocumentType.EducationLevel.Id);
             if (educationLevel != null) educationLevel.Name = externalDocumentType.EducationLevel.Name;
@@ -183,7 +181,7 @@ namespace Admission.BL.Services
             {
                 await ImportFaculty(facultyId);
                 faculty = await _admissionDBContext.Faculties.FirstOrDefaultAsync(f => f.Id == facultyId); ;
-                if (faculty == null) throw new Exception();
+                if (faculty == null) throw new CustomExceptionModel(ErrorMessages.FACULTY_NOT_FOUND, 400);
             }
 
             return faculty;
@@ -193,7 +191,7 @@ namespace Admission.BL.Services
         {
             var externalFaculty = await _bus.Rpc.RequestAsync<Guid, AddFacultyDto>(facultyId, x => x.WithQueueName(RabbitMQQueue.ADD_FACULTY));
 
-            if (externalFaculty == null) throw new Exception();
+            if (externalFaculty == null) throw new CustomExceptionModel(ErrorMessages.FACULTY_NOT_FOUND, 400);
 
             var faculty = new FacultyCacheEntity()
             {

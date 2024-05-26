@@ -1,5 +1,6 @@
 using Admission.BL.Extensions;
 using Common.Extensions;
+using Common.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,5 +28,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseMiddleware<ErrorsHandling>();
 
 app.Run();

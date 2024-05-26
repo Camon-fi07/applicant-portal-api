@@ -6,6 +6,7 @@ using Common.Dto;
 using Common.Dto.Applicant;
 using Common.Dto.RabbitMQ;
 using Common.Enums;
+using Common.Models;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,7 +29,7 @@ namespace Applicant.BL.Services
         {
             var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).FirstOrDefaultAsync(a => a.Id == userId);
 
-            if (applicant == null) { throw new Exception(); }
+            if (applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400); 
 
             if(editEducationDocumentDto.Name != null) applicant.Education.Name = editEducationDocumentDto.Name;
 
@@ -36,7 +37,7 @@ namespace Applicant.BL.Services
 
             if (editEducationDocumentDto.Files != null)
             {
-                if (editEducationDocumentDto.Files.Count < 1) { throw new Exception(); }
+                if (editEducationDocumentDto.Files.Count < 1) throw new CustomExceptionModel(ErrorMessages.SCANS_LIST, 400); 
 
                 applicant.Education.Files = editEducationDocumentDto.Files;
             }
@@ -59,9 +60,9 @@ namespace Applicant.BL.Services
         {
             var applicant = await _applicantDBContext.Applicants.Include(a => a.Passport).FirstOrDefaultAsync(a => a.Id == userId);
 
-            if (applicant == null) { throw new Exception(); }
+            if (applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400);
 
-            if(editPassportDto.Issued != null) applicant.Passport.Issued = editPassportDto.Issued;
+            if (editPassportDto.Issued != null) applicant.Passport.Issued = editPassportDto.Issued;
             if(editPassportDto.Series != null) applicant.Passport.Series = (int)editPassportDto.Series;
             if(editPassportDto.Number != null) applicant.Passport.Number = (int)editPassportDto.Number;
             if(editPassportDto.BirthPlace != null) applicant.Passport.BirthPlace = editPassportDto.BirthPlace;
@@ -70,7 +71,7 @@ namespace Applicant.BL.Services
 
             if(editPassportDto.Files != null)
             {
-                if(editPassportDto.Files.Count < 1) { throw new Exception(); }
+                if(editPassportDto.Files.Count < 1) throw new CustomExceptionModel(ErrorMessages.SCANS_LIST, 400);
 
                 applicant.Passport.Files = editPassportDto.Files;
             }
@@ -92,9 +93,9 @@ namespace Applicant.BL.Services
         {
             var applicant = await _applicantDBContext.Applicants.FirstOrDefaultAsync(a => a.Id == userId);
 
-            if (applicant == null) { throw new Exception(); }
+            if (applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400);
 
-            if(editApplicantDataDto.Citizenship != null) applicant.Citizenship = editApplicantDataDto.Citizenship;
+            if (editApplicantDataDto.Citizenship != null) applicant.Citizenship = editApplicantDataDto.Citizenship;
 
             await _applicantDBContext.SaveChangesAsync();
 
@@ -113,7 +114,7 @@ namespace Applicant.BL.Services
         {
             var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).ThenInclude(e => e.EducationDocument).ThenInclude(e => e.EducationLevel).FirstOrDefaultAsync(a => a.Id == userId);
 
-            if (applicant == null) { throw new Exception(); }
+            if (applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400);
 
             return new EducationDocumentDto()
             {
@@ -131,7 +132,7 @@ namespace Applicant.BL.Services
         {
             var applicant = await _applicantDBContext.Applicants.Include(a => a.Passport).FirstOrDefaultAsync(a => a.Id == userId);
 
-            if (applicant == null) { throw new Exception(); }
+            if (applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400);
 
             return new PassportDto()
             {
@@ -148,7 +149,7 @@ namespace Applicant.BL.Services
         {
             var applicant = await _applicantDBContext.Applicants.Include(a => a.Education).ThenInclude(e => e.EducationDocument).ThenInclude(e => e.EducationLevel).FirstOrDefaultAsync(a => a.Id == userId);
 
-            if(applicant == null) { throw new Exception(); }
+            if(applicant == null) throw new CustomExceptionModel(ErrorMessages.APPLICANT_NOT_FOUND, 400);
 
             return new ApplicantDataDto()
             {

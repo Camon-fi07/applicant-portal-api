@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using EasyNetQ;
 using Common.Dto.User;
 using Microsoft.EntityFrameworkCore;
+using Common.Constants;
+using Common.Models;
 
 namespace User.BL.Services
 {
@@ -29,12 +31,12 @@ namespace User.BL.Services
         public async Task<TokenResponseDto> Login(LoginDto loginDto, string userAgent) {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
             
-            if (user == null) throw new BadHttpRequestException("Пользователя с таким email не существует");
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
             var refreshTokens = _userDBContext.RefreshTokens.Include(rt => rt.User);
 
             var identity = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
-            if (!identity.Succeeded) throw new BadHttpRequestException("Неверный email или пароль");
+            if (!identity.Succeeded) throw new CustomExceptionModel(ErrorMessages.INVALID_CREDINTAILS, 400);
             var refreshToken = await _tokenService.GenerateRefreshToken(user);
             
             var oldRefresh = await refreshTokens.FirstOrDefaultAsync(rt => rt.UserAgent == userAgent && rt.User.Id == user.Id);
@@ -68,10 +70,10 @@ namespace User.BL.Services
 
         public async Task Logout(Guid userId, string userAgent) {
             var user = await _userManager.FindByIdAsync(userId.ToString());
-            if (user == null) { throw new Exception(); }
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400); 
 
             var refreshToken = user.RefreshTokens.FirstOrDefault(rt => rt.UserAgent == userAgent);
-            if (refreshToken == null) throw new UnauthorizedAccessException("Пользователь не имеет сессии на данном устройстве");
+            if (refreshToken == null) throw new CustomExceptionModel(ErrorMessages.SESSION, 401);
 
             refreshToken.isRevoked = true;
 
@@ -82,7 +84,7 @@ namespace User.BL.Services
         {
             if (await _userManager.FindByEmailAsync(userRegisterDto.Email) != null)
             {
-                throw new BadHttpRequestException("Пользователь с таким email уже существует");
+                throw new CustomExceptionModel(ErrorMessages.EMAIL_DUBLICATE, 400);
             }
 
             var user = new UserEntity
@@ -100,7 +102,7 @@ namespace User.BL.Services
 
             var result = await _userManager.CreateAsync(user, userRegisterDto.Password);
 
-            if (!result.Succeeded) throw new BadHttpRequestException("Произошла ошибка");
+            if (!result.Succeeded) throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
             await _userManager.UpdateAsync(user);
 
             var refreshToken = await _tokenService.GenerateRefreshToken(user);

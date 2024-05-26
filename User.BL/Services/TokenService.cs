@@ -11,6 +11,7 @@ using User.BL.Dto;
 using Common.Models;
 using Microsoft.EntityFrameworkCore;
 using Common.Dto.User;
+using Common.Constants;
 
 
 namespace User.BL.Services
@@ -67,11 +68,11 @@ namespace User.BL.Services
         {
             var userId = await GetUserIdByToken(refreshTokenDto.RefreshToken);
             var user = await _userDBContext.Users.Include(u => u.RefreshTokens).FirstOrDefaultAsync(u => u.Id == userId);
-            if(user == null) { throw new Exception(); }
+            if(user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400); 
 
             var oldRefreshToken = user.RefreshTokens.FirstOrDefault(rt => rt.RefreshToken == refreshTokenDto.RefreshToken);
 
-            if (oldRefreshToken == null) throw new UnauthorizedAccessException("Инвалидный токен");
+            if (oldRefreshToken == null) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
 
             if (oldRefreshToken.isRevoked)
             {
@@ -82,12 +83,12 @@ namespace User.BL.Services
 
                 await _userDBContext.SaveChangesAsync();
 
-                throw new Exception("Данный токен уже был использован, все сессии забанены");
+                throw new CustomExceptionModel(ErrorMessages.DUBLICATE_TOKEN, 403);
             }
 
-            if(oldRefreshToken.UserAgent !=  userAgent) throw new Exception("Вы не можете обновить токен с другого устройства");
+            if(oldRefreshToken.UserAgent !=  userAgent) throw new CustomExceptionModel(ErrorMessages.SESSION, 400);
 
-            if(oldRefreshToken.ExpiredTime < DateTime.UtcNow) throw new UnauthorizedAccessException("Инвадижный токен");
+            if(oldRefreshToken.ExpiredTime < DateTime.UtcNow) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
 
             oldRefreshToken.isRevoked = true;
 
@@ -112,13 +113,13 @@ namespace User.BL.Services
 
         public DateTime GetTokenExpired(string token)
         {
-            if (!_tokenHandler.CanReadToken(token)) throw new UnauthorizedAccessException("Инвалидный токен");
+            if (!_tokenHandler.CanReadToken(token)) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
 
             var jwtToken = _tokenHandler.ReadToken(token) as JwtSecurityToken;
 
             var expClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Exp);
 
-            if (expClaim == null) throw new UnauthorizedAccessException("Инвалидный токен");
+            if (expClaim == null) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
 
             var expValue = long.Parse(expClaim.Value);
             var expirationTime = DateTimeOffset.FromUnixTimeSeconds(expValue).UtcDateTime;
@@ -128,13 +129,13 @@ namespace User.BL.Services
 
         private async Task<Guid> GetUserIdByToken(string token)
         {
-            if (!_tokenHandler.CanReadToken(token)) throw new UnauthorizedAccessException("Инвалидный токен");
+            if (!_tokenHandler.CanReadToken(token)) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
 
             var jwtToken = _tokenHandler.ReadToken(token) as JwtSecurityToken;
 
             var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid).Value;
 
-            if (userId == null) throw new UnauthorizedAccessException("Инвалидный токен");
+            if (userId == null) throw new CustomExceptionModel(ErrorMessages.UNAUTHORIZE, 401);
 
             return new Guid(userId);
 

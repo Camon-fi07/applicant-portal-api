@@ -38,7 +38,7 @@ namespace Applicant.BL.Extensions
             await bus.PubSub.SubscribeAsync<AddUserDto>("Applicant_Profile", async data => { await synchronizationService.SychronizeProfile(data); }, x => x.WithTopic(RabbitMQQueue.SYNCHRONIZE_PROFILE));
         }
 
-        public async static void Migrate(this WebApplication app)
+        public static async Task Migrate(this WebApplication app)
         {
             using var serviceScope = app.Services.CreateScope();
 

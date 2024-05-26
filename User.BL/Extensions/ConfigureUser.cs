@@ -61,7 +61,7 @@ namespace User.BL.Extensions
             services.AddHostedService<BackgroundTokenService>();
         }
 
-        public async static void Migrate(this WebApplication app)
+        public static async Task Migrate(this WebApplication app)
         {
             using var serviceScope = app.Services.CreateScope();
 

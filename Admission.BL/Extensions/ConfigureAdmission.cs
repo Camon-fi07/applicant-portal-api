@@ -67,7 +67,7 @@ namespace Admission.BL.Extensions
             }, x => x.WithQueueName(RabbitMQQueue.SET_MANAGER));
         }
 
-        public async static void Migrate(this WebApplication app)
+        public static async Task Migrate(this WebApplication app)
         {
             using var serviceScope = app.Services.CreateScope();
 

@@ -3,7 +3,6 @@ using User.DAL.Entities;
 using Microsoft.AspNetCore.Identity;
 using User.DAL;
 using Microsoft.AspNetCore.Http;
-using Common.Models;
 using EasyNetQ;
 using Common.Dto.User;
 using Microsoft.EntityFrameworkCore;
@@ -79,9 +78,9 @@ namespace User.BL.Services
             await _userDBContext.SaveChangesAsync();
         }
 
-        public async Task<TokenResponseDto> RegisterUser(UserRegisterModel userRegisterModel, string userAgent)
+        public async Task<TokenResponseDto> RegisterUser(UserRegisterDto userRegisterDto, string userAgent)
         {
-            if (await _userManager.FindByEmailAsync(userRegisterModel.Email) != null)
+            if (await _userManager.FindByEmailAsync(userRegisterDto.Email) != null)
             {
                 throw new BadHttpRequestException("Пользователь с таким email уже существует");
             }
@@ -89,17 +88,17 @@ namespace User.BL.Services
             var user = new UserEntity
             {
                 Id = Guid.NewGuid(),
-                Gender = userRegisterModel.Gender,
-                Lastname = userRegisterModel.Lastname,
-                Middlename = userRegisterModel.Middlename,
-                Firstname = userRegisterModel.Firstname,
-                BirthDate = userRegisterModel.BirthDate,
-                Email = userRegisterModel.Email,
-                PhoneNumber = userRegisterModel.PhoneNumber,
-                UserName = userRegisterModel.Email
+                Gender = userRegisterDto.Gender,
+                Lastname = userRegisterDto.Lastname,
+                Middlename = userRegisterDto.Middlename,
+                Firstname = userRegisterDto.Firstname,
+                BirthDate = userRegisterDto.BirthDate,
+                Email = userRegisterDto.Email,
+                PhoneNumber = userRegisterDto.PhoneNumber,
+                UserName = userRegisterDto.Email
             };
 
-            var result = await _userManager.CreateAsync(user, userRegisterModel.Password);
+            var result = await _userManager.CreateAsync(user, userRegisterDto.Password);
 
             if (!result.Succeeded) throw new BadHttpRequestException("Произошла ошибка");
             await _userManager.UpdateAsync(user);

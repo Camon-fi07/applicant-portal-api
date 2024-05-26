@@ -23,7 +23,7 @@ namespace Document.BL.Extensions
             services.AddScoped<IDocumentService, DocumentService>();
         }
 
-        public async static void Migrate(this WebApplication app)
+        public static async Task Migrate(this WebApplication app)
         {
             using var serviceScope = app.Services.CreateScope();
 

@@ -16,15 +16,17 @@ builder.Services.AddSwaggerAuth();
 
 var app = builder.Build();
 
-await app.ConfigureRoles();
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.Migrate();
+await app.Migrate();
+
+await app.ConfigureRoles();
+
+await app.CreateAdmin();
 
 app.UseHttpsRedirection();
 

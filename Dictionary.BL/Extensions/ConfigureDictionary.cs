@@ -55,7 +55,7 @@ namespace Dictionary.BL.Extensions
             bus.PubSub.Subscribe<Empty>(RabbitMQQueue.IMPORT_EDUCATION_DOCUMENTS, async (_) => await importingService.ImporDocumentTypes(), x => x.WithTopic(RabbitMQQueue.IMPORT_EDUCATION_DOCUMENTS));
         }
 
-        public async static void Migrate(this WebApplication app)
+        public static async Task Migrate(this WebApplication app)
         {
             using var serviceScope = app.Services.CreateScope();
 

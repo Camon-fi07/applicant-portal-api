@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using User.BL.Services.IServices;
 using User.BL.Dto;
 using Common.Dto.User;
-using Common.Models;
 
 namespace User.API.Controllers
 {
@@ -27,9 +26,9 @@ namespace User.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<TokenResponseDto>> RegisterApplicant([FromBody] UserRegisterModel userRegisterModel)
+        public async Task<ActionResult<TokenResponseDto>> Register([FromBody] UserRegisterDto userRegisterDto)
         {
-            var token = await _authService.RegisterUser(userRegisterModel, HttpContext.Request.Headers.UserAgent.ToString());
+            var token = await _authService.RegisterUser(userRegisterDto, HttpContext.Request.Headers.UserAgent.ToString());
 
             return Ok(token);
         }

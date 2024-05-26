@@ -37,7 +37,6 @@ namespace Admission.BL.Services
         public async Task ImportProgram(Guid programId)
         {
             var externalProgram = await _bus.Rpc.RequestAsync<Guid, AddProgramDto>(programId, x => x.WithQueueName(RabbitMQQueue.ADD_PROGRAM));
-
             if (externalProgram == null) throw new CustomExceptionModel(ErrorMessages.PROGRAM_NOT_FOUND, 400);
 
             var educationLevel = await _admissionDBContext.EducationLevels.FirstOrDefaultAsync(l => l.Id == externalProgram.EducationLevel.Id);

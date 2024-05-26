@@ -113,6 +113,8 @@ namespace Dictionary.BL.Services
         {
             var program = await _dictionaryDBContext.EducationPrograms.Include(p => p.Faculty).Include(p => p.EducationLevel).FirstOrDefaultAsync(p => p.Id == id);
 
+            if (program == null) throw new CustomExceptionModel(ErrorMessages.PROGRAM_NOT_FOUND, 400);
+
             return new EducationProgramDto()
             {
                 Code = program.Code,

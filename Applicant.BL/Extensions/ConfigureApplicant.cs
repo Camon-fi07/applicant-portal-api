@@ -10,6 +10,7 @@ using Common.Constants;
 using Common.Enums;
 using Common.Dto.User;
 using Microsoft.AspNetCore.Builder;
+using Common.Models;
 
 namespace Applicant.BL.Extensions
 {
@@ -45,7 +46,7 @@ namespace Applicant.BL.Extensions
             var context = serviceScope.ServiceProvider.GetService<ApplicantDBContext>();
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new CustomExceptionModel(nameof(context), 500);
             }
 
             await context.Database.MigrateAsync();

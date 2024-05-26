@@ -2,6 +2,7 @@
 using Common.Dto;
 using Common.Dto.Dictionary;
 using Common.Dto.RabbitMQ;
+using Common.Models;
 using Dictionary.BL.Mappers;
 using Dictionary.BL.Services.IServices;
 using Dictionary.DAL;
@@ -62,7 +63,7 @@ namespace Dictionary.BL.Extensions
             var context = serviceScope.ServiceProvider.GetService<DictionaryDBContext>();
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new CustomExceptionModel(nameof(context), 500);
             }
 
             await context.Database.MigrateAsync();

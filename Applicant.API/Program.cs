@@ -16,6 +16,8 @@ builder.Services.AddSwaggerAuth();
 
 var app = builder.Build();
 
+app.UseMiddleware<ErrorsHandling>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -29,7 +31,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.UseMiddleware<ErrorsHandling>();
 
 app.Run();

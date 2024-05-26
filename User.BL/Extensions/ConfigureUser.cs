@@ -10,6 +10,7 @@ using Common.Dto;
 using Common.Constants;
 using Common.Dto.User;
 using Microsoft.AspNetCore.Builder;
+using Common.Models;
 
 namespace User.BL.Extensions
 {
@@ -70,7 +71,7 @@ namespace User.BL.Extensions
             var context = serviceScope.ServiceProvider.GetService<UserDBContext>();
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new CustomExceptionModel(nameof(context), 500);
             }
 
             await context.Database.MigrateAsync();

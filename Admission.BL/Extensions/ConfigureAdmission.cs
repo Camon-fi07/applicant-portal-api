@@ -89,7 +89,7 @@ namespace Admission.BL.Extensions
             var context = serviceScope.ServiceProvider.GetService<AdmissionDBContext>();
             if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new CustomExceptionModel(nameof(context), 500);
             }
 
             await context.Database.MigrateAsync();

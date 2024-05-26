@@ -1,4 +1,5 @@
 ﻿using AdminPanel.Models;
+using Common.Enums;
 using Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -6,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPanel.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = nameof(RoleType.Administrator))]
     public class DictionaryController : Controller
     {
         private readonly IAdminPanelDictionaryService _adminPanelDictionaryService;

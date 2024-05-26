@@ -20,4 +20,8 @@
     <ProjectReference Include="..\Document.BL\Document.BL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="FileDownloaded\" />
+  </ItemGroup>
+
 </Project>

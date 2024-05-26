@@ -6,7 +6,7 @@
     Layout = "_Layout";
 }
 
-<div class="card p-0 mx-auto container bg-dark border-0">
+<div class="card p-0 mx-auto container border-0">
     <div class="card-body">
         <form id="form">
             <h3>Профиль</h3>
@@ -37,7 +37,7 @@
             </div>
             <div class="col-12 mb-3">
                 <label class="form-label" asp-for="BirthDate">День рождения</label>
-                <input type="date" class="form-control my-2" asp-for="BirthDate" placeholder="Дата рождения" value="@Model.BirthDate">
+                <input type="date" class="form-control my-2" asp-for="BirthDate" placeholder="Дата рождения" value="@Model.BirthDate.Value.ToString("yyyy-MM-dd")">
                 <span class="text-danger" asp-validation-for="BirthDate"></span>
             </div>
             <select class="form-select mb-3" asp-for="Gender">
@@ -59,6 +59,11 @@
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
+
+    function convertDate(data){
+        return new Date(data).toISOString().slice(0, 10)
+    }
+
     function submitForm(){
         var formData = $("#form").serialize();
 

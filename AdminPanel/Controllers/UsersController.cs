@@ -2,10 +2,12 @@
 using Common.Dto.User;
 using Common.Enums;
 using Common.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPanel.Controllers
 {
+    [Authorize(Roles = $"{nameof(RoleType.Administrator)},{nameof(RoleType.GeneralManager)},{nameof(RoleType.Manager)}")]
     public class UsersController : Controller
     {
         private readonly IAdminPanelProfileService _profileService;

@@ -37,7 +37,7 @@
             </div>
             <div class="col-12 mb-3">
                 <label class="form-label" asp-for="EditProfile.BirthDate">День рождения</label>
-                <input type="date" class="form-control my-2" asp-for="EditProfile.BirthDate" placeholder="Дата рождения" value="@Model.Profile.BirthDate">
+                <input type="date" class="form-control my-2" asp-for="EditProfile.BirthDate" placeholder="Дата рождения" value="@Model.Profile.BirthDate.ToString("yyyy-MM-dd")>
                 <span class="text-danger" asp-validation-for="EditProfile.BirthDate"></span>
             </div>
             <select class="form-select mb-3" asp-for="EditProfile.Gender">

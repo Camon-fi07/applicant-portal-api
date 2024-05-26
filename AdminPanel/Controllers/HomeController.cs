@@ -1,9 +1,12 @@
 using AdminPanel.Models;
+using Common.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace AdminPanel.Controllers
 {
+    [Authorize(Roles = $"{nameof(RoleType.Administrator)},{nameof(RoleType.GeneralManager)},{nameof(RoleType.Manager)}")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

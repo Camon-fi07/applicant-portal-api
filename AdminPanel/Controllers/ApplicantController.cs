@@ -2,12 +2,14 @@
 using AdminPanel.Models;
 using Common.Dto.Applicant;
 using Common.Dto.User;
+using Common.Enums;
 using Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPanel.Controllers
 {
+    [Authorize(Roles =$"{nameof(RoleType.Administrator)},{nameof(RoleType.GeneralManager)},{nameof(RoleType.Manager)}")]
     public class ApplicantController : Controller
     {
         private readonly IAdminPanelProfileService _adminPanelProfileService;
@@ -17,7 +19,6 @@ namespace AdminPanel.Controllers
             _adminPanelApplicantService = adminPanelApplicantService;
         }
 
-        [Authorize]
         [HttpGet("Applicant/Index/{applicantId:guid}")]
         public async Task<IActionResult> Index(Guid applicantId)
         {
@@ -34,7 +35,6 @@ namespace AdminPanel.Controllers
             return View(model);
         }
 
-        [Authorize]
         [HttpPut("Applicant/EditProfile/{applicantId:guid}")]
         public async Task<IActionResult> EditProfile(Guid applicantId, [FromForm] EditProfileDto editProfile)
         {
@@ -52,7 +52,6 @@ namespace AdminPanel.Controllers
             return View("Index", model);
         }
 
-        [Authorize]
         [HttpPut("Applicant/EditApplicant/{applicantId:guid}")]
         public async Task<IActionResult> EditApplicant(Guid applicantId, [FromForm] EditApplicantDataDto editApplicantData)
         {

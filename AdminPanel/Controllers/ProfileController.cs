@@ -1,11 +1,13 @@
 ﻿using AdminPanel.Models;
 using Common.Dto.User;
+using Common.Enums;
 using Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPanel.Controllers
 {
+    [Authorize(Roles = $"{nameof(RoleType.Administrator)},{nameof(RoleType.GeneralManager)},{nameof(RoleType.Manager)}")]
     public class ProfileController : Controller
     {
         private readonly IAdminPanelProfileService _adminPanelProfileService;
@@ -14,7 +16,6 @@ namespace AdminPanel.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> Index()
         {
             if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
@@ -39,7 +40,6 @@ namespace AdminPanel.Controllers
         }
 
         [HttpPut]
-        [Authorize]
         public async Task<IActionResult> EditProfile(EditProfileViewModel editProfileViewModel)
         {
             if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)

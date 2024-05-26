@@ -26,11 +26,11 @@ namespace Document.API.Controllers
 
         [Authorize]
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<FileDto>> GetFile(Guid id)
+        public async Task<IActionResult> GetFile(Guid id)
         {
             var file = await _documentService.GetFile(id);
 
-            return Ok(file);
+            return file;
         }
 
         [Authorize]

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPanel.Controllers
 {
+    [Authorize(Roles = $"{nameof(RoleType.Administrator)},{nameof(RoleType.GeneralManager)},{nameof(RoleType.Manager)}")]
     public class ApplicationController : Controller
     {
         private readonly IAdminPanelApplicationService _adminPanelApplicationService;
@@ -24,7 +25,6 @@ namespace AdminPanel.Controllers
         }
 
         [HttpGet("Application/{id:guid}")]
-        [Authorize]
         public async Task<IActionResult> Index(Guid id)
         {
             var application = await _adminPanelApplicationService.GetApplication(id);
@@ -41,7 +41,6 @@ namespace AdminPanel.Controllers
         }
  
         [HttpPut]
-        [Authorize]
         public async Task<IActionResult> EditPrograms(Guid id, [FromBody] List<CreateProgramPriorityDto> programs)
         {
             await _adminPanelApplicationService.EditPrograms(programs, id);
@@ -60,7 +59,6 @@ namespace AdminPanel.Controllers
         }
 
         [HttpPut]
-        [Authorize]
         public async Task<IActionResult> ReturnApplication(Guid id)
         {
             await _adminPanelApplicationService.ReturnApplication(id);
@@ -79,7 +77,6 @@ namespace AdminPanel.Controllers
         }
 
         [HttpPut("Application/{applicationId:guid}/SetManager/{managerId:guid}")]
-        [Authorize]
         public async Task<IActionResult> SetManager(Guid applicationId, Guid managerId)
         {
             await _adminPanelApplicationService.SetManager(managerId, applicationId);
@@ -98,7 +95,6 @@ namespace AdminPanel.Controllers
         }
 
         [HttpPut]
-        [Authorize]
         public async Task<IActionResult> ChangeStatus(Guid id, [FromBody] ApplicationStatus status)
         {
             await _adminPanelApplicationService.ChangeApplicationStatus(id, status);
@@ -117,7 +113,6 @@ namespace AdminPanel.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> List(ApplicationFilterModel filterModel)
         {
             if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)

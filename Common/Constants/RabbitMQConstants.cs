@@ -42,6 +42,8 @@ namespace Common.Constants
         public const string SYCHRONIZE_FACULTIES = "SYCHRONIZE_FACULTIES_QUEUE";
         public const string SYCHRONIZE_EDUCATIONS = "SYCHRONIZE_EDUCATIONS_QUEUE";
         public const string GET_MANAGERS = "GET_MANAGERS_QUEUE";
+        public const string DELETE_MANAGER_ROLE = "DELETE_MANAGER_ROLE_QUEUE";
+        public const string SET_MANAGER_ROLE = "SET_MANAGER_ROLE_QUEUE";
 
         public const string GET_ALL_PROGRAMS = "GET_ALL_PROGRAMS_QUEUE";
         public const string GET_FACULTIES = "GET_FACULTIES_QUEUE";

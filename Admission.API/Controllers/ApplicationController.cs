@@ -30,14 +30,14 @@ namespace Admission.API.Controllers
         }
 
         [HttpGet("{id:guid}")]
-        [Authorize]
+        [Authorize(Roles = nameof(RoleType.Applicant))]
         public async Task<ActionResult<ApplicationDto>> GetApplication(Guid id)
         {
             return Ok(await _applicationService.GetApplication(id));
         }
 
         [HttpGet("all")]
-        [Authorize]
+        [Authorize(Roles = $"{nameof(RoleType.Administrator)},{nameof(RoleType.Manager)},{nameof(RoleType.GeneralManager)}")]
         public async Task<ActionResult<ApplicationsPagedListModel>> GetApplications(string? name, Guid? programId, [FromQuery] List<Guid>? faculties, ApplicationStatus? status, bool? haveManager, Guid? managerId, ApplicationsSortType? sortType, int page = 1, int size=20)
         {
             var applications = await _applicationService.GetApplications(page, size, name, programId, faculties, status, haveManager, managerId, sortType);
@@ -46,7 +46,7 @@ namespace Admission.API.Controllers
         }
 
         [HttpPut("{id:guid}/programs")]
-        [Authorize]
+        [Authorize(Roles = nameof(RoleType.Applicant))]
         public async Task<IActionResult> EditPrograms(Guid id, [FromBody] List<CreateProgramPriorityDto> programPriorities)
         {
             await _applicationService.EditPrograms(programPriorities, id);
@@ -54,7 +54,7 @@ namespace Admission.API.Controllers
         }
 
         [HttpPut("{id:guid}/status")]
-        [Authorize]
+        [Authorize(Roles = nameof(RoleType.Applicant))]
         public async Task<IActionResult> ChangeApplicationStatus(Guid id, [FromBody] ApplicationStatus applicationStatus)
         {
             await _applicationService.ChangeApplicationStatus(id, applicationStatus);

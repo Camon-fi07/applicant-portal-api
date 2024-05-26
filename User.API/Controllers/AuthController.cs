@@ -50,7 +50,6 @@ namespace User.API.Controllers
         [HttpPost("refresh")]
         public async Task<ActionResult<TokenResponseDto>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
         {
-
             var token = await _tokenService.RefreshToken(refreshTokenDto, HttpContext.Request.Headers.UserAgent.ToString());
 
             return Ok(token);

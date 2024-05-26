@@ -25,7 +25,7 @@ namespace User.BL.Services
             _bus = bus;
         }
 
-        public async Task<List<RoleType?>> GetUserRoles(Guid userId)
+        public async Task<List<RoleType>> GetUserRoles(Guid userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if(user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400); 
@@ -34,7 +34,7 @@ namespace User.BL.Services
                 var roleType = GetRoleType(role);
                 if (roleType is null) throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
 
-                return roleType!;
+                return (RoleType)roleType;
             });
 
             return roles.ToList();
@@ -155,6 +155,32 @@ namespace User.BL.Services
             if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
 
             await _userManager.RemoveFromRoleAsync(user, role.ToString());
+        }
+
+        public async Task<ProfileWithRolesDto> GetProfileWithRoles(Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null) throw new CustomExceptionModel(ErrorMessages.USER_NOT_FOUND, 400);
+
+            var roles = (await _userManager.GetRolesAsync(user)).Select(role => {
+                var roleType = GetRoleType(role);
+                if (roleType is null) throw new CustomExceptionModel(ErrorMessages.SERVER_ERROR, 500);
+
+                return (RoleType)roleType;
+            });
+
+            return new ProfileWithRolesDto()
+            {
+                Id = user.Id,
+                BirthDate = user.BirthDate,
+                Email = user.Email,
+                FirstName = user.Firstname,
+                Gender = user.Gender,
+                LastName = user.Lastname,
+                MiddleName = user.Middlename,
+                PhoneNumber = user.PhoneNumber,
+                Roles = roles.ToList()
+            };
         }
     }
 }

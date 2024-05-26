@@ -172,7 +172,7 @@
 
     function returnApplication(applicationId) {
         $.ajax({
-                url: `/Application/ReturnApplication/${applicationId}`,
+            url: `/Application/ReturnApplication/${applicationId}`,
             contentType: "application/json",
             type: 'PUT',
             data: JSON.stringify({}),

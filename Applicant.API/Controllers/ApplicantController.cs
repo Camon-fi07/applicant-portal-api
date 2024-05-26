@@ -2,6 +2,7 @@ using Applicant.BL.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Common.Dto.Applicant;
+using Common.Enums;
 
 namespace Applicant.API.Controllers
 {
@@ -14,16 +15,9 @@ namespace Applicant.API.Controllers
             _applicantService = applicantService;
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> RegisterApplicant([FromBody] RegisterApplicantDto registerApplicantDto)
-        {
-            await _applicantService.RegisterApplicant(registerApplicantDto);
-            return Ok();
-        }
-
-        [Authorize]
+        [Authorize(Roles = nameof(RoleType.Applicant))]
         [HttpGet("profile")]
-        public async Task<ActionResult<ApplicantDataDto>> GetApplicantProfile()
+        public async Task<ActionResult<ApplicantDataDto>> GetApplicantData()
         {
             if (User.Identity == null || Guid.TryParse(User.Identity.Name, out Guid userId) == false)
             {
@@ -34,6 +28,7 @@ namespace Applicant.API.Controllers
             return Ok(profile);
         }
 
+        [Authorize(Roles = nameof(RoleType.Applicant))]
         [HttpPut("profile")]
         public async Task<ActionResult<ApplicantDataDto>> EditApplicantProfile([FromBody] EditApplicantDataDto editApplicantDataDto)
         {
@@ -46,7 +41,7 @@ namespace Applicant.API.Controllers
             return Ok(profile);
         }
 
-        [Authorize]
+        [Authorize(Roles = nameof(RoleType.Applicant))]
         [HttpGet("passport")]
         public async Task<ActionResult<PassportDto>> GetApplicantPassport()
         {
@@ -59,7 +54,7 @@ namespace Applicant.API.Controllers
             return Ok(passport);
         }
 
-        [Authorize]
+        [Authorize(Roles = nameof(RoleType.Applicant))]
         [HttpPut("passport")]
         public async Task<ActionResult<PassportDto>> EditApplicantPassport([FromBody] EditPassportDto editPassportDto)
         {
@@ -72,7 +67,7 @@ namespace Applicant.API.Controllers
             return Ok(passport);
         }
 
-        [Authorize]
+        [Authorize(Roles = nameof(RoleType.Applicant))]
         [HttpGet("education")]
         public async Task<ActionResult<EducationDocumentDto>> GetApplicantEducation()
         {
@@ -85,7 +80,7 @@ namespace Applicant.API.Controllers
             return Ok(educationDocument);
         }
 
-        [Authorize]
+        [Authorize(Roles = nameof(RoleType.Applicant))]
         [HttpPut("education")]
         public async Task<ActionResult<EducationDocumentDto>> EditApplicantEducation([FromBody] EditEducationDocumentDto editEducationDocumentDto)
         {

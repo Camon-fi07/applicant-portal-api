@@ -166,15 +166,19 @@ namespace Admission.BL.Services
                 return false;
             }
             var uniquePriorities = new List<ProgramPriorityEntity>();
-
+            bool? isProgramsFromNextLevel = null;
             foreach (var programPrioritet in programPriorities)
             {
                 var isPriorityValid = programPrioritet.Priority > 0 && programPrioritet.Priority <= maxProgramsCount;
                 var isPriorityUnique = uniquePriorities.All(p => p.Priority != programPrioritet.Priority);
+                var isOneLevel = uniquePriorities.All(p => p.Program.EducationLevel.Id == programPrioritet.Program.EducationLevel.Id);
                 var isNextLevel = educationDocumentType.NextEducationLevels != null && educationDocumentType.NextEducationLevels.Any(l => l.Id == programPrioritet.Program.EducationLevel.Id);
                 var isCurrentLevel = educationDocumentType.EducationLevel.Id == programPrioritet.Program.EducationLevel.Id;
 
-                if (isPriorityValid && isPriorityUnique && (isNextLevel || isCurrentLevel))
+                if (isProgramsFromNextLevel == null) isProgramsFromNextLevel = isNextLevel;
+                else if(isProgramsFromNextLevel != isNextLevel) return false;
+
+                if (isOneLevel && isPriorityValid && isPriorityUnique && (isNextLevel || isCurrentLevel))
                 {
                     uniquePriorities.Add(programPrioritet);
                 }
@@ -328,12 +332,10 @@ namespace Admission.BL.Services
 
         public async Task TakeApplication(Guid managerId, Guid applicationId)
         {
-            var manager = await _admissionDBContext.Managers.FirstOrDefaultAsync(m => m.Id == managerId);
+            var manager = await _admissionDBContext.Managers.Include(m => m.User).FirstOrDefaultAsync(m => m.Id == managerId);
             if(manager == null) throw new CustomExceptionModel(ErrorMessages.MANAGER_NOT_FOUND, 400);
 
-            var application = await _admissionDBContext.Applications.FirstOrDefaultAsync(a => a.Id == applicationId);
-
-            var user = await _externalService.GetUser(managerId);
+            var application = await _admissionDBContext.Applications.Include(a => a.User).FirstOrDefaultAsync(a => a.Id == applicationId);
 
             if (application == null) throw new CustomExceptionModel(ErrorMessages.APPLICATION_NOT_FOUND, 400);
 
@@ -344,15 +346,15 @@ namespace Admission.BL.Services
 
             await _bus.PubSub.PublishAsync(new EmailMessageDto()
             {
-                Body = $"Ваше заявление обрабатывается менеджером {user.Lastname} {user.Firstname} {user.Middlename}",
-                Email = user.Email,
+                Body = $"Ваше заявление обрабатывается менеджером {manager.User.Lastname} {manager.User.Firstname} {manager.User.Middlename}",
+                Email = application.User.Email,
                 Subject = "Заявление на поступления"
             });
 
             await _bus.PubSub.PublishAsync(new EmailMessageDto()
             {
-                Body = $"Вы были назначены менеджером {user.Lastname} {user.Firstname} {user.Middlename}",
-                Email = user.Email,
+                Body = $"Вы были назначены менеджером {application.User.Lastname} {application.User.Firstname} {application.User.Middlename}",
+                Email = manager.User.Email,
                 Subject = "Заявление на поступления"
             });
         }

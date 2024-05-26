@@ -3,6 +3,7 @@ using Admission.DAL;
 using Common.Constants;
 using Common.Dto;
 using Common.Dto.Application;
+using Common.Dto.Manager;
 using Common.Dto.RabbitMQ;
 using Common.Dto.User;
 using Common.Enums;
@@ -58,6 +59,20 @@ namespace Admission.BL.Extensions
 
                 return new Empty();
             }, x => x.WithQueueName(RabbitMQQueue.RETURN_APPLICATION));
+
+            bus.Rpc.Respond<Guid, Empty>(async id =>
+            {
+                await managerService.DeleteManager(id);
+
+                return new Empty();
+            }, x => x.WithQueueName(RabbitMQQueue.DELETE_MANAGER_ROLE));
+
+            bus.Rpc.Respond<CreateManagerDto, Empty>(async data =>
+            {
+                await managerService.CreateManager(data);
+
+                return new Empty();
+            }, x => x.WithQueueName(RabbitMQQueue.SET_MANAGER_ROLE));
 
             bus.Rpc.Respond<SetManagerApplicationDto, Empty>(async data =>
             {

@@ -15,6 +15,7 @@ namespace Document.API.Controllers
            _documentService = documentService;
         }
 
+        [Authorize]
         [HttpPost("uploadFile")]
         public async Task<ActionResult<FileDto>> UploadFile([FromForm] UploadFileDto uploadFileDto)
         {
@@ -23,6 +24,7 @@ namespace Document.API.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<FileDto>> GetFile(Guid id)
         {
@@ -31,6 +33,7 @@ namespace Document.API.Controllers
             return Ok(file);
         }
 
+        [Authorize]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteFile(Guid id)
         {

@@ -27,26 +27,29 @@ namespace Admission.BL.Services
 
         public async Task CreateManager(CreateManagerDto createManagerDto)
         {
-            var user = await _externalService.GetUser(createManagerDto.UserId);
+            var manager = await _admissionDBContext.Managers.FirstOrDefaultAsync(m => m.Id == createManagerDto.UserId);
+
+            if(manager == null)
+            {
+                var user = await _externalService.GetUser(createManagerDto.UserId);
+                manager = new ManagerEntity() { 
+                    User = user,
+                    Id = createManagerDto.UserId,
+                };
+                _admissionDBContext.Managers.Add(manager);
+            }
 
             FacultyCacheEntity? faculty = null;
             if (createManagerDto.FacultyId != null) faculty = await _externalService.GetFaculty((Guid)createManagerDto.FacultyId);
 
-            var manager = new ManagerEntity()
-            {
-                Role = createManagerDto.Role,
-                User = user,
-                Id = createManagerDto.UserId,
-                Faculty = faculty
-            };
+            manager.Role = createManagerDto.Role;
+            manager.Faculty = faculty;
 
             await _bus.PubSub.PublishAsync(new ChangeRoleDto()
             {
-                Role = RoleType.Manager,
+                Role = createManagerDto.Role == ManagerRole.SimpleManager ? RoleType.Manager : RoleType.GeneralManager,
                 UserId = createManagerDto.UserId
             }, RabbitMQQueue.ADD_ROLE);
-
-            _admissionDBContext.Managers.Add(manager);
 
             await _admissionDBContext.SaveChangesAsync();
         }
